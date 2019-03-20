@@ -144,13 +144,17 @@ bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
 
 	CS::instance()->enter(CS_MESSAGE_CS, "enter");
 	if (msg == KTROBO_INPUT_MESSAGE_ID_MOUSEMOVE) {
-		garage_impl->mouse_move(x, y);
+		garage_impl->mouse_move(tex,tex2,game, x, y);
 	}
 	if (msg == KTROBO_INPUT_MESSAGE_ID_MOUSERAWSTATE) {
-		if (input->getMOUSESTATE()->mouse_l_button_pressed) {
-			garage_impl->mouse_clicked(x, y);
+		if (input->getMOUSESTATE()->mouse_button & KTROBO_MOUSESTATE_L_DOWN) {
+			garage_impl->mouse_clicked_down(tex,tex2,game,x, y);
+		}
+		if (input->getMOUSESTATE()->mouse_button & KTROBO_MOUSESTATE_L_UP) {
+			garage_impl->mouse_clicked_up(tex,tex2,game, x, y);
 		}
 	}
+	/*
 	if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
 
 
@@ -207,7 +211,7 @@ bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
 			}
 		}
 	}
-	
+	*/
 
 	CS::instance()->leave(CS_MESSAGE_CS, "enter");
 	return false;
@@ -230,6 +234,7 @@ Garage2::Garage2() :  Loadable2(), Garage2_part() {
 	help_text = 0;
 	help_text_waku = 0;
 	selected_categorypart = 0;
+	focused_part = 0;
 };
 Garage2::~Garage2() {
 	if (robog) {
@@ -273,7 +278,7 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 
 }
 
-void Garage2::mouse_move(int x, int y) {
+void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) {
 	if (!selected_categorypart) {
 		vector<Garage2_part*>::iterator it = this->select_parts.begin();
 		while (it != select_parts.end()) {
@@ -290,17 +295,28 @@ void Garage2::mouse_move(int x, int y) {
 			Garage2_part* p = *it;
 
 			if (p->focused(x, y)) {
+
+				if (p != focused_part) {
+
+					tex2->setRenderTextChangeText(help_text, p->getHelpString());
+					focused_part = p;
+				}
 				return;
 			}
 
 
 			it++;
 		}
+
+		if (focused_part != 0) {
+			focused_part = 0;
+			tex2->setRenderTextChangeText(help_text, this->getHelpStringWhenNoneFocused());
+		}
 		return;
 
 	}
 }
-void Garage2::mouse_clicked_down(int x, int y) {
+void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x, int y) {
 	if (!selected_categorypart) {
 		vector<Garage2_part*>::iterator it = this->select_parts.begin();
 		while (it != select_parts.end()) {
@@ -317,17 +333,29 @@ void Garage2::mouse_clicked_down(int x, int y) {
 			Garage2_part* p = *it;
 
 			if (p->focused(x, y)) {
+				
+				if (p != focused_part) {
+
+					tex2->setRenderTextChangeText(help_text, p->getHelpString());
+					focused_part = p;
+				}
 				return;
 			}
 
 
 			it++;
 		}
+
+
+		if (focused_part != 0) {
+			focused_part = 0;
+			tex2->setRenderTextChangeText(help_text, this->getHelpStringWhenNoneFocused());
+		}
 		return;
 	}
 }
 
-void Garage2::mouse_clicked_up(int x, int y) {
+void Garage2::mouse_clicked_up(Texture* tex, Texture* tex2, Game* game, int x, int y) {
 	if (!selected_categorypart) {
 		vector<Garage2_part*>::iterator it = this->select_parts.begin();
 		while (it != select_parts.end()) {
@@ -509,6 +537,11 @@ void MyRobo_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLo
 	int tex_index = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
 //	tex_waku = tex2->getRenderTex(tex_index, 0xFFFFFFFF, 0, 0, 238, 46, 0, 0, 238, 46);
 	tex_waku = tex2->getRenderTex(tex_index, 0xFFFFFFFF, 50,350,400,400, 245, 0, 200, 200);
+	MYRECT re;
+	re.left = 50;
+	re.right = 50 + 400;
+	re.top = 350;
+	re.bottom = 350 + 400;
 	setLoaded();
 }
 
@@ -581,7 +614,7 @@ void AssembleTex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyText
 	re.left = g->getScreenWidth()-236-50;
 	re.right = re.left + 236;
 	re.top = 50;
-	re.bottom = re.bottom + 51;
+	re.bottom = re.top + 51;
 	this->setRect(&re);
 
 }
@@ -597,7 +630,7 @@ void AsmBodySaveTex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyT
 	re.left = g->getScreenWidth() - 236 - 50;
 	re.right = re.left + 236;
 	re.top = 31+50+26+50;
-	re.bottom = re.bottom + 52;
+	re.bottom = re.top + 52;
 	this->setRect(&re);
 }
 
@@ -612,7 +645,7 @@ void AsmBodyLoadTex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyT
 	re.left = g->getScreenWidth() - 236 - 50;
 	re.right = re.left + 236;
 	re.top = 51+50 + 25 + 52+100;
-	re.bottom = re.bottom + 50;
+	re.bottom = re.top + 50;
 	this->setRect(&re);
 }
 
@@ -623,7 +656,7 @@ void ShopTex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureL
 	re.left = g->getScreenWidth() - 236 - 50;
 	re.right = re.left + 236;
 	re.top = 51+50 + 50 + 52+27+150;
-	re.bottom = re.bottom + 55;
+	re.bottom = re.top + 55;
 	this->setRect(&re);
 }
 void ShopTex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj) {

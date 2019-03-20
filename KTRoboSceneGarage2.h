@@ -38,9 +38,51 @@ public:
 	}
 	virtual void moveTo(MYRECT* dest_re, float time) {};
 	virtual bool moveLoop(float dt) { return false; }; // 動き終わったらtrueを返す
-	virtual bool focused(int x, int y) { return false; }; // カーソルがあわされた　または　マウスで合わされた
-	virtual bool selected(int x, int y) { return false; }; // カーソルがあわされた状態で選択ボタンが押された　またはマウスで選択しているものが押された
-	virtual void unfocused(int x, int y) {}; // カーソルが外れた
+	virtual bool focused(int x, int y) {
+		
+		unsigned int bu = getButukariStatusPoint(x, y, &nowRect);
+		if (bu & BUTUKARIPOINT_IN) {
+			if (is_focused) {
+				return true;
+			}
+			else {
+				has_is_focused_changed = true;
+				is_focused = true;
+				return true;
+			}
+			
+		}
+		if (is_focused) {
+			has_is_focused_changed = true;
+			is_focused = false;
+		}
+		return false; 
+	
+	}; // カーソルがあわされた　または　マウスで合わされた
+	virtual bool selected(int x, int y) {
+		
+		if (is_focused) {
+			unsigned int bu = getButukariStatusPoint(x, y, &nowRect);
+			if (bu & BUTUKARIPOINT_IN) {
+				return true;
+			}
+		}
+		return false; 
+	
+	}; // カーソルがあわされた状態で選択ボタンが押された　またはマウスで選択しているものが押された
+	virtual void unfocused(int x, int y) {
+		if (is_focused) {
+			unsigned int bu = getButukariStatusPoint(x, y, &nowRect);
+			if (bu & BUTUKARIPOINT_IN) {
+			}
+			else {
+				is_focused = false;
+				has_is_focused_changed = true;
+			}
+
+		}
+	}; // カーソルが外れた
+	
 	void touroku() { has_touroku = true; };
 	bool getTouroku() { return has_touroku; };
 	Garage2_part() { 
@@ -95,7 +137,7 @@ class AssembleTex_Garage2 :  public Garage2_part {
 private:
 	int texe;
 public:
-	AssembleTex_Garage2() : Loadable2(), Garage2_part() { texe = 0; };
+	AssembleTex_Garage2() :  Garage2_part() { texe = 0; };
 	~AssembleTex_Garage2() {};
 
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
@@ -110,7 +152,7 @@ class AsmBodySaveTex_Garage2 : public Garage2_part {
 private:
 	int texe;
 public:
-	AsmBodySaveTex_Garage2() : Loadable2(), Garage2_part() { texe = 0; };
+	AsmBodySaveTex_Garage2() :  Garage2_part() { texe = 0; };
 	~AsmBodySaveTex_Garage2() {};
 
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
@@ -169,6 +211,7 @@ private:
 	
 
 	Garage2_part* selected_categorypart;
+	Garage2_part* focused_part;
 
 	char* getHelpStringWhenNoneFocused();
 
@@ -199,9 +242,9 @@ private:
 	void atoload(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
 public:	
 	void render(Graphics* g, Texture* tex, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
-	void mouse_move(int x, int y);
-	void mouse_clicked_down(int x, int y);
-	void mouse_clicked_up(int x, int y);
+	void mouse_move(Texture* tex1, Texture* tex2, Game* game,int x, int y);
+	void mouse_clicked_down(Texture* tex1, Texture* tex2, Game* game, int x, int y);
+	void mouse_clicked_up(Texture* tex1, Texture* tex2, Game* game, int x, int y);
 };
 class SceneGarage2 : public Scene, public INPUTSHORICLASS {
 
