@@ -86,16 +86,22 @@ void SceneGarage2::loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game
 }
 
 void SceneGarage2::enter() {
-//	gg = new Gamen_GARAGE();
-//	gg->Init(g, hantei, tex, tex2, loader);
-//	INPUTGETBYMESSAGESTRUCT* ss = InputMessageDispatcher::getRootInputGetStruct();
-//	while (ss->getParent()) {
-//		ss = ss->getParent();
-//	}
-//	InputMessageDispatcher::registerImpl(gg, NULL, ss->impl);
-
-	garage_impl = new Garage2();
-
+	//	gg = new Gamen_GARAGE();
+	//	gg->Init(g, hantei, tex, tex2, loader);
+	//	INPUTGETBYMESSAGESTRUCT* ss = InputMessageDispatcher::getRootInputGetStruct();
+	//	while (ss->getParent()) {
+	//		ss = ss->getParent();
+	//	}
+	//	InputMessageDispatcher::registerImpl(gg, NULL, ss->impl);
+	if (!garage_impl) {
+		garage_impl = new Garage2();
+	}
+	INPUTGETBYMESSAGESTRUCT* ss = InputMessageDispatcher::getRootInputGetStruct();
+	while (ss->getParent()) {
+		ss = ss->getParent();
+	}
+	InputMessageDispatcher::registerImpl(this, NULL, ss->impl);
+	
 	Scene::enter();
 
 
@@ -105,14 +111,11 @@ void SceneGarage2::enter() {
 void SceneGarage2::leave() {
 
 	Scene::leave();
-/*
-	if (gg) {
-		InputMessageDispatcher::unregisterImpl(gg);
-		gg->Release();
-		delete gg;
-		gg = 0;
-	}
-*/
+
+
+	InputMessageDispatcher::unregisterImpl(this);
+	
+
 
 }
 
@@ -134,17 +137,99 @@ void Garage2::render(Graphics* g,Texture* tex,Texture* tex2, MYMATRIX* view, MYM
 }
 
 bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
+	MYINPUTMESSAGESTRUCT* input = (MYINPUTMESSAGESTRUCT*)data;
+	int x = input->getMOUSESTATE()->mouse_x;
+	int y = input->getMOUSESTATE()->mouse_y;
 
+
+	CS::instance()->enter(CS_MESSAGE_CS, "enter");
+	if (msg == KTROBO_INPUT_MESSAGE_ID_MOUSEMOVE) {
+		garage_impl->mouse_move(x, y);
+	}
+	if (msg == KTROBO_INPUT_MESSAGE_ID_MOUSERAWSTATE) {
+		if (input->getMOUSESTATE()->mouse_l_button_pressed) {
+			garage_impl->mouse_clicked(x, y);
+		}
+	}
+	if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
+
+
+		if (input->getKEYSTATE()[VK_DOWN] & KTROBO_INPUT_BUTTON_DOWN) {
+			pressed_down_count = 1;
+			temp_focused_list->clickedDown();
+
+		}
+		if (input->getKEYSTATE()[VK_UP] & KTROBO_INPUT_BUTTON_DOWN) {
+			pressed_up_count = 1;
+			temp_focused_list->clickedUp();
+		}
+		if (input->getKEYSTATE()[VK_RETURN] & KTROBO_INPUT_BUTTON_DOWN) {
+
+
+
+			try {
+				temp_focused_list->clickedEnter(this, NULL);
+			}
+			catch (GameError* err) {
+				CS::instance()->leave(CS_MESSAGE_CS, "leave");
+				delete err;
+				return true;
+			}
+
+
+		}
+		if (input->getKEYSTATE()[VK_ESCAPE] & KTROBO_INPUT_BUTTON_DOWN) {
+			clickedEscape();
+
+		}
+	}
+
+	if (msg == KTROBO_INPUT_MESSAGE_ID_KEYUP) {
+		if (input->getKEYSTATE()[VK_DOWN] & KTROBO_INPUT_BUTTON_UP) {
+			pressed_down_count = 0;
+		}
+		if (input->getKEYSTATE()[VK_UP] & KTROBO_INPUT_BUTTON_UP) {
+			pressed_up_count = 0;
+		}
+	}
+	if (pressed_up_count > 0) {
+		if (pressed_up_count > 1) {
+			if (input->getKEYSTATE()[VK_UP] & KTROBO_INPUT_BUTTON_PRESSED) {
+				temp_focused_list->clickedUp();
+			}
+
+
+
+		}
+		else {
+			if (input->getKEYSTATE()[VK_UP] & KTROBO_INPUT_BUTTON_PRESSED) {
+				pressed_up_count++;
+			}
+		}
+	}
+	
+
+	CS::instance()->leave(CS_MESSAGE_CS, "enter");
 	return false;
 }
 
+char* Garage2::getHelpStringWhenNoneFocused() {
+	if (!selected_categorypart) {
+		return gtex_g->getHelpString();
+	}
+	return selected_categorypart->getHelpString();
+}
 
-
-Garage2::Garage2() : Loadable2() {
+Garage2::Garage2() :  Loadable2(), Garage2_part() {
 	robog = 0;
 	gtex_g = 0;
-
-	
+	atex_g = 0;
+	abstex_g = 0;
+	abltex_g = 0;
+	stex_g = 0;
+	help_text = 0;
+	help_text_waku = 0;
+	selected_categorypart = 0;
 };
 Garage2::~Garage2() {
 	if (robog) {
@@ -155,7 +240,22 @@ Garage2::~Garage2() {
 		delete gtex_g;
 		gtex_g = 0;
 	}
-	
+	if (atex_g) {
+		delete atex_g;
+		atex_g = 0;
+	}
+	if (abstex_g) {
+		delete abstex_g;
+		abstex_g = 0;
+	}
+	if (abltex_g) {
+		delete abltex_g;
+		abltex_g = 0;
+	}
+	if (stex_g) {
+		delete stex_g;
+		stex_g = 0;
+	}
 
 };
 
@@ -173,6 +273,74 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 
 }
 
+void Garage2::mouse_move(int x, int y) {
+	if (!selected_categorypart) {
+		vector<Garage2_part*>::iterator it = this->select_parts.begin();
+		while (it != select_parts.end()) {
+			Garage2_part* p = *it;
+
+			p->unfocused(x, y);
+
+
+			it++;
+		}
+		it = select_parts.begin();
+
+		while (it != select_parts.end()) {
+			Garage2_part* p = *it;
+
+			if (p->focused(x, y)) {
+				return;
+			}
+
+
+			it++;
+		}
+		return;
+
+	}
+}
+void Garage2::mouse_clicked_down(int x, int y) {
+	if (!selected_categorypart) {
+		vector<Garage2_part*>::iterator it = this->select_parts.begin();
+		while (it != select_parts.end()) {
+			Garage2_part* p = *it;
+
+			p->unfocused(x, y);
+
+
+			it++;
+		}
+		it = select_parts.begin();
+
+		while (it != select_parts.end()) {
+			Garage2_part* p = *it;
+
+			if (p->focused(x, y)) {
+				return;
+			}
+
+
+			it++;
+		}
+		return;
+	}
+}
+
+void Garage2::mouse_clicked_up(int x, int y) {
+	if (!selected_categorypart) {
+		vector<Garage2_part*>::iterator it = this->select_parts.begin();
+		while (it != select_parts.end()) {
+			Garage2_part* p = *it;
+
+			if (p->selected(x, y)) {
+				return;
+			}
+			it++;
+		}
+		return;
+	}
+}
 
 void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader) {
 	
@@ -186,8 +354,38 @@ void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2
 	gtex_g = new Garage2Tex_Garage2();
 	gtex_g->load(g, tex, tex2, loader, hantei);
 
+	atex_g = new AssembleTex_Garage2();
+	atex_g->load(g, tex, tex2, loader, hantei);
+
+	abstex_g = new AsmBodySaveTex_Garage2();
+	abstex_g->load(g, tex, tex2, loader, hantei);
+
+	abltex_g = new AsmBodyLoadTex_Garage2();
+	abltex_g->load(g, tex, tex2, loader, hantei);
+
+	stex_g = new ShopTex_Garage2();
+	stex_g->load(g, tex, tex2, loader, hantei);
+	CS::instance()->enter(CS_LOAD_CS, "garage2part");
+	select_parts.push_back(robog);
+	select_parts.push_back(gtex_g);
+	select_parts.push_back(atex_g);
+	select_parts.push_back(abstex_g);
+	select_parts.push_back(abltex_g);
+	select_parts.push_back(stex_g);
+	CS::instance()->leave(CS_LOAD_CS, "garage2part");
+
+
+	help_text = tex2->getRenderText(gtex_g->getHelpString(), 50, g->getScreenHeight() - 55+11, 18, g->getScreenWidth(),20);
+	tex2->setRenderTextIsRender(help_text, true);
+
+
+
+
+
+
 	setLoaded();
-	
+	int tex_index2 = tex->getTexture(KTROBO_GARAGE2_IMG_PATH);
+	help_text_waku = tex->getRenderTex(tex_index2,0x000000FF,10,g->getScreenHeight()-55+11,g->getScreenWidth()-20,20, 18, 390, 1, 1);
 }
 
 
@@ -305,10 +503,10 @@ void MyRobo_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLo
 	// user/MyRobo.robodat を開いて該当のパーツのロボを作る
 	robo = new Robo();
 	robo->init(g, loader, hantei);
-	int tex_index2  = tex1->getTexture("resrc/img/garage2.png");
+	int tex_index2  = tex1->getTexture(KTROBO_GARAGE2_IMG_PATH);
 	tex_haikei = tex1->getRenderTex(tex_index2, 0xFFFFFFFF, 50, 350, 400, 400, 18, 390, 1, 1);
 	tex1->setRenderTexColor(tex_haikei, 0xAAAAAAFF);
-	int tex_index = tex2->getTexture("resrc/img/garage2.png");
+	int tex_index = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
 //	tex_waku = tex2->getRenderTex(tex_index, 0xFFFFFFFF, 0, 0, 238, 46, 0, 0, 238, 46);
 	tex_waku = tex2->getRenderTex(tex_index, 0xFFFFFFFF, 50,350,400,400, 245, 0, 200, 200);
 	setLoaded();
@@ -355,19 +553,82 @@ void Garage2Tex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMA
 }
 
 void Garage2Tex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei) {
-	int tex_index2 = tex2->getTexture("resrc/img/garage2.png");
-	texe = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, 10, 10, 236, 46, 0, 0, 236, 46);
+	int tex_index2 = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
+	texe = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, 5, 5, 236, 46, 0, 0, 236, 46);
 	MYRECT re;
-	re.left = 10;
-	re.right = 236+10;
-	re.top = 10;
-	re.bottom = 46+10;
+	re.left = 5;
+	re.right = 236+5;
+	re.top = 5;
+	re.bottom = 46+5;
 	this->setRect(&re);
-	tex_waku = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, 10, 10, g->getScreenWidth()-20, g->getScreenHeight()-20 , 245, 0, 200, 200);
-
+	tex_waku = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, 5, 5, g->getScreenWidth()-10, g->getScreenHeight()-10 , 245, 0, 200, 200);
+	
+}
+void AsmBodyLoadTex_Garage2::atoload(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei)
+{
+	// 押された後に呼ぶロード 保存済みの機体構成をロードする
 }
 
 
+void AssembleTex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj) {
+
+}
+
+void AssembleTex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei) {
+	int tex_index2 = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
+	texe = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, g->getScreenWidth() - 236 - 50, 50, 236, 51, 0, 48, 236, 51);
+	MYRECT re;
+	re.left = g->getScreenWidth()-236-50;
+	re.right = re.left + 236;
+	re.top = 50;
+	re.bottom = re.bottom + 51;
+	this->setRect(&re);
+
+}
+
+void AsmBodySaveTex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj) {
+
+}
+
+void AsmBodySaveTex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei) {
+	int tex_index2 = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
+	texe = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, g->getScreenWidth() - 236 - 50,30+51+ 50 + 26, 236, 52, 0, 98, 236, 52);
+	MYRECT re;
+	re.left = g->getScreenWidth() - 236 - 50;
+	re.right = re.left + 236;
+	re.top = 31+50+26+50;
+	re.bottom = re.bottom + 52;
+	this->setRect(&re);
+}
+
+void AsmBodyLoadTex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj) {
+
+}
+
+void AsmBodyLoadTex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei) {
+	int tex_index2 = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
+	texe = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, g->getScreenWidth() - 236 - 50, 100+51+50 + 52 + 25, 236, 50, 0, 150, 236, 50);
+	MYRECT re;
+	re.left = g->getScreenWidth() - 236 - 50;
+	re.right = re.left + 236;
+	re.top = 51+50 + 25 + 52+100;
+	re.bottom = re.bottom + 50;
+	this->setRect(&re);
+}
+
+void ShopTex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei) {
+	int tex_index2 = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
+	texe = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, g->getScreenWidth() - 236 - 50, 150+51+50 + 52 + 50+27, 236, 50, 0, 201, 236, 55);
+	MYRECT re;
+	re.left = g->getScreenWidth() - 236 - 50;
+	re.right = re.left + 236;
+	re.top = 51+50 + 50 + 52+27+150;
+	re.bottom = re.bottom + 55;
+	this->setRect(&re);
+}
+void ShopTex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj) {
+
+}
 
 
 

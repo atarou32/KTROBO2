@@ -28,7 +28,9 @@ protected:
 	bool is_focused;
 	bool has_is_focused_changed;
 	unsigned int color;
+	vector<Garage2_part*> select_parts;
 public:
+	vector<Garage2_part*>* getSelectParts() { return &select_parts; };
 	virtual void setRect(MYRECT* re) {
 		rect = *re;
 		nowRect = *re;
@@ -49,13 +51,16 @@ public:
 		return "default help string";
 	}
 };
+
+#define KTROBO_GARAGE2_IMG_PATH "resrc/img/garage2.png"
+
 class Garage2Tex_Garage2 : public Garage2_part {
 
 private:
 	int texe;
 	int tex_waku;
 public:
-	Garage2Tex_Garage2() {
+	Garage2Tex_Garage2() :  Garage2_part() {
 		texe = 0;
 		tex_waku = 0;
 	}
@@ -86,17 +91,87 @@ public:
 	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
 };
 
+class AssembleTex_Garage2 :  public Garage2_part {
+private:
+	int texe;
+public:
+	AssembleTex_Garage2() : Loadable2(), Garage2_part() { texe = 0; };
+	~AssembleTex_Garage2() {};
 
+	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
 
-class Garage2 : public Loadable2{
+	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
+	char* getHelpString() {
+		return "アセンブルします。購入済みのパーツを使って自分独自の機体構成を作ります。";
+	};
+};
+
+class AsmBodySaveTex_Garage2 : public Garage2_part {
+private:
+	int texe;
+public:
+	AsmBodySaveTex_Garage2() : Loadable2(), Garage2_part() { texe = 0; };
+	~AsmBodySaveTex_Garage2() {};
+
+	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
+	 // load manpai ファイル
+	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
+	char* getHelpString() {
+		return "現在の機体構成をファイルに保存します。16個まで保存できます。";
+	};
+};
+
+class AsmBodyLoadTex_Garage2 : public Loadable2, public Garage2_part {
+private:
+	int texe;
+public:
+	AsmBodyLoadTex_Garage2() : Loadable2(), Garage2_part() { texe = 0; };
+	~AsmBodyLoadTex_Garage2() {};
+
+	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
+	void atoload(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
+	// 押された後に呼ぶロード 保存済みの機体構成をロードする
+	
+	
+	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
+	char* getHelpString() {
+		return "保存済みの機体構成をロードします。ロード完了すると現在の機体構成は失われます。";
+	};
+};
+
+class ShopTex_Garage2 : public Loadable2, public Garage2_part {
+private:
+	int texe;
+public:
+	ShopTex_Garage2() : Loadable2(), Garage2_part() { texe = 0; };
+	~ShopTex_Garage2() {};
+
+	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
+
+	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
+	char* getHelpString() {
+		return "貴重なGを払ってパーツを購入します。ご利用は戦略的に。";
+	};
+};
+
+class Garage2 : public Loadable2, Garage2_part{
 private:
 	MyRobo_Garage2* robog;
-	//MyRobo_Garage2* robog2;
-	//MyRobo_Garage2* robog3;
-	//MyRobo_Garage2* robog4;
-	//MyRobo_Garage2* robog5;
 	Garage2Tex_Garage2* gtex_g;
-	vector<Garage2_part*> parts;
+	AssembleTex_Garage2* atex_g;
+	AsmBodySaveTex_Garage2* abstex_g;
+	AsmBodyLoadTex_Garage2* abltex_g;
+	ShopTex_Garage2* stex_g;
+
+	int help_text;
+	int help_text_waku;
+
+	
+
+	Garage2_part* selected_categorypart;
+
+	char* getHelpStringWhenNoneFocused();
+
 public:
 	Garage2();
 	~Garage2();
@@ -124,15 +199,18 @@ private:
 	void atoload(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
 public:	
 	void render(Graphics* g, Texture* tex, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
-
+	void mouse_move(int x, int y);
+	void mouse_clicked_down(int x, int y);
+	void mouse_clicked_up(int x, int y);
 };
-class SceneGarage2 : public Scene, public INPUTSHORICLASS{
+class SceneGarage2 : public Scene, public INPUTSHORICLASS {
 
 	AtariHantei* hantei;
 	Texture* tex;
 	Texture* tex2;
 	MyTextureLoader* loader;
 	Garage2* garage_impl;
+	
 public:
 	SceneGarage2(AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
 	~SceneGarage2(void);
