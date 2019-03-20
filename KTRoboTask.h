@@ -6,7 +6,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 #include "KTRoboGameError.h"
-
+#include <vector>
+using namespace std;
 namespace KTROBO {
 #define TASK_WORK_SIZE 32
 #define MAX_TASK_COUNT 64
@@ -28,6 +29,7 @@ struct TCB {
 
 
 
+
 class Task {
 private:
 	HWND hWnd;
@@ -35,6 +37,10 @@ private:
 	int err_count;
 	TCB Tasks[MAX_TASK_COUNT];
 	bool is_exec_task;
+public:
+	static vector<Task*> madetasks;
+private:
+	static void killAllTasks();
 	int index;
 	static int NOW_TASK_THREAD_NUM;
 private:
@@ -53,6 +59,7 @@ private:
 
 	
 public:
+	
 	~Task() {};
 	void exec();// 外部からは呼ばないこと
 	// これで取得したTaskは外部でdeleteTaskとdeleteをよばれる必要がある
@@ -61,6 +68,7 @@ public:
 			Task* t = new Task(hwnd, NOW_TASK_THREAD_NUM);
 			t->init();
 			NOW_TASK_THREAD_NUM++;
+			madetasks.push_back(t);
 			return t;
 		}
 		throw new GameError(KTROBO::FATAL_ERROR, "too many task");
@@ -74,7 +82,6 @@ public:
 	void deleteTaskWithoutLock();
 	void waitForTaskEnd();
 };
-
 
 
 

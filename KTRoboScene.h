@@ -32,7 +32,6 @@ private:
 	char scene_name[32];
 public:
 	static Graphics* gs[TASKTHREAD_NUM];
-	static lua_State* Ls[TASKTHREAD_NUM];
 
 	static Game* game;
 
@@ -42,10 +41,10 @@ protected:
 
 public:	
 	virtual void mainrenderIMPL(bool is_focused, Graphics* g, Game* game)=0;
-	virtual void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game)=0;
-	virtual void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game)=0;
-	virtual void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game)=0;
-	virtual void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game)=0;
+	virtual void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game)=0;
+	virtual void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game)=0;
+	virtual void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game)=0;
+	virtual void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game)=0;
 
 public:
 
@@ -53,10 +52,10 @@ public:
 	//（一番上位のスレッド）で他のスレッド（インプット以外？）をロックして行う
 	virtual void leave(); // シーンから抜けるときに呼ばれる
 
-	static void Init(Graphics** mgs, lua_State** mls, Game* mgame) {
+	static void Init(Graphics** mgs,  Game* mgame) {
 		for (int i=0;i<TASKTHREAD_NUM;i++) {
 			gs[i] = mgs[i];
-			Ls[i] = mls[i];
+		
 
 		}
 		Scene::game = mgame; // gs ls game の登録に使う
@@ -90,19 +89,19 @@ public:
 		mainrenderIMPL(is_focused, gs[TASKTHREADS_UPDATEMAINRENDER], game);
 	};
 	void renderhojyo(Task* task, TCB* thisTCB){
-		renderhojyoIMPL(task, thisTCB, gs[TASKTHREADS_UPDATEANIMEFRAMENADO], Ls[TASKTHREADS_UPDATEANIMEFRAMENADO], game);
+		renderhojyoIMPL(task, thisTCB, gs[TASKTHREADS_UPDATEANIMEFRAMENADO], game);
 	
 	};
 	void ai(Task* task, TCB* thisTCB){
-		aiIMPL(task, thisTCB, gs[TASKTHREADS_AIDECISION], Ls[TASKTHREADS_AIDECISION], game);
+		aiIMPL(task, thisTCB, gs[TASKTHREADS_AIDECISION], game);
 	
 	};
 	void posbutukari(Task* task,TCB* thisTCB){
-		posbutukariIMPL(task,thisTCB, gs[TASKTHREADS_UPDATEPOSBUTUKARI], Ls[TASKTHREADS_UPDATEPOSBUTUKARI], game);
+		posbutukariIMPL(task,thisTCB, gs[TASKTHREADS_UPDATEPOSBUTUKARI], game);
 	
 	};
 	void loaddestruct(Task* task, TCB* thisTCB){
-		loaddestructIMPL(task,thisTCB,gs[TASKTHREADS_LOADDESTRUCT], Ls[TASKTHREADS_LOADDESTRUCT], game);
+		loaddestructIMPL(task,thisTCB,gs[TASKTHREADS_LOADDESTRUCT], game);
 	};
 	
 };
@@ -112,10 +111,10 @@ class ONEMESSAGE : public Scene, public INPUTSHORICLASS {
 	string message_str;
 public:
 	void mainrenderIMPL(bool is_focused, Graphics* g, Game* game) {};
-	void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){};
-	void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){};
-	void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){};
-	void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){};
+	void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game){};
+	void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game){};
+	void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game){};
+	void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game){};
 
 	void enter();
 	void leave();
@@ -136,10 +135,10 @@ private:
 	int dtime;
 public:
 	void mainrenderIMPL(bool is_focused, Graphics* g, Game* game) {};
-	void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game);
-	void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){};
-	void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){};
-	void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){};
+	void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+	void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game){};
+	void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game){};
+	void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game){};
 
 	void enter();
 	void leave();
@@ -160,10 +159,10 @@ private:
 	int window_id;
 public:
 	void mainrenderIMPL(bool is_focused, Graphics* g, Game* game) {};
-	void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game) {};
-	void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){};
-	void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){};
-	void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){};
+	void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game) {};
+	void aiIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game){};
+	void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game){};
+	void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game){};
 
 	void enter();
 	void leave();

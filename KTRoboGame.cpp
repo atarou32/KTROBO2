@@ -96,6 +96,7 @@ Game::Game(void)
 	weapon_effect_manager = 0;
 	effect_suuji = 0;
 	lua_ets = 0;
+	rmap = 0;
 }
 
 
@@ -127,6 +128,8 @@ void CALCCOMBINEDTCB(TCB* thisTCB) {
 	//CS::instance()->leave(CS_RENDERDATA_CS, "test");
 	//}
 }
+
+
 
 
 bool TempInputShori::handleMessage(int msg, void * data, DWORD time) {
@@ -228,9 +231,10 @@ void LOADMESHTCB(TCB* thisTCB) {
 	Graphics* g = (Graphics*)thisTCB->Work[1];
 	MeshInstanceds* m = (MeshInstanceds*)thisTCB->Work[2];
 	
-
+	/*
 	char buff[] = "resrc/script/sample.lua.txt";
 	int error=LUA_ERRERR;
+	CS::instance()->enter(CS_LUAEXE_CS, "loadmeshtcb");
 	try {
 		error = luaL_loadfile(L, buff) || lua_pcall(L, 0, 0, 0);
 	//	m->setIsLoad(false);
@@ -239,16 +243,23 @@ void LOADMESHTCB(TCB* thisTCB) {
 	//	MessageBoxA(g->getHWND(), err->getMessage(), err->getErrorCodeString(err->getErrorCode()), MB_OK);
 		delete err;
 	}
+	catch (...) {
+		CS::instance()->leave(CS_LUAEXE_CS, "loadmeshtcb");
+		throw new GameError(KTROBO::FATAL_ERROR, "fatal errordayo in loadmeshtcb");
+	}
     if (error) {
 		mylog::writelog("log/errtxt.txt", "%s", lua_tostring(L, -1));
 		OutputDebugStringA(lua_tostring(L,-1));
         lua_pop(L, 1);
+		CS::instance()->leave(CS_LUAEXE_CS, "loadmeshtcb");
 		throw new GameError(KTROBO::WARNING, "error in lua");
     } else {
 		// 多分device_concs をロックしていてその状態でキルされるのかな？
 		t->kill(thisTCB);
 	}
 	Sleep(1);
+	CS::instance()->leave(CS_LUAEXE_CS, "loadmeshtcb");
+	*/
 }
 
 
@@ -300,11 +311,11 @@ void BUTUKARIPOSTCB(TCB* thisTCB) {
 	Task* t = (Task*)thisTCB->Work[0];
 	Graphics* g = (Graphics*)thisTCB->Work[1];
 	//vector<UMeshUnit*>* m = (vector<UMeshUnit*>*)thisTCB->Work[2];
-	CS::instance()->enter(CS_DEVICECON_CS, "ref");
-	CS::instance()->enter(CS_RENDERDATA_CS,"def");
+//	CS::instance()->enter(CS_DEVICECON_CS, "ref");
+//	CS::instance()->enter(CS_RENDERDATA_CS,"def");
 //	AtariHantei::compileShader(g);
-	CS::instance()->leave(CS_RENDERDATA_CS, "def");
-	CS::instance()->leave(CS_DEVICECON_CS, "ref");
+//	CS::instance()->leave(CS_RENDERDATA_CS, "def");
+//	CS::instance()->leave(CS_DEVICECON_CS, "ref");
 
 
 
@@ -340,18 +351,18 @@ void MessageDispatcherTCB(TCB* thisTCB) {
 
 bool Game::Init(HWND hwnd) {
 	// 順番をかえないこと cs とタスクの間に依存関係がある
-
+	
 	g = new Graphics();
 
 	if (!g->Init(hwnd)) {
 		throw new KTROBO::GameError(KTROBO::FATAL_ERROR, "graphics init error");
 	}
+
 	g_for_task_threads[2] = g;
-	//return true;
 
 	Graphics::InitMSS(g);
 	
-//	return true;
+	
 
 	demo = new KTRoboDemoRender();
 	demo->Init(g);
@@ -379,12 +390,11 @@ bool Game::Init(HWND hwnd) {
 	
 
 	KTROBO::DebugTexts::instance()->Init(g, demo->font);
-//	KTROBO::DebugTexts::instance()->setText(g, 14 , L"少なくとも頑張れる余地はある");
-	//KTROBO::DebugTexts::instance()->setText(g, 3, L"ｄｄｄ");
+
+
 	telop_texts = new TelopTexts();
 	telop_texts->Init(g,demo->font);
 	telop_texts->readFile(g,"resrc/sample/terop.txt",30,14,&MYVECTOR4(1,1,1,1),0.03);
-
 	
 	AtariHantei::compileShader(g);
 	hantei = new AtariHantei();
@@ -399,80 +409,32 @@ bool Game::Init(HWND hwnd) {
 	MeshInstanceds::Init(g);
 	mesh_instanceds = new MeshInstanceds(g, this->demo->tex_loader);
 	//mesh_instanceds->setSkeleton(mesh);
-
+	
 	
 	
 	
 	MYMATRIX kakeru;
 	MyMatrixIdentity(kakeru);
-
+	
 	sound = new MySound();
 	HRESULT hr = sound->initialize();
+
 	if (FAILED(hr)) {
 		throw new GameError(KTROBO::FATAL_ERROR, "error in init sound");
 	}
-	temp_input_shori = new TempInputShori(sound,g);
-	MYMATRIX m;
-	MyMatrixIdentity(m);
-	temp_input_shori->setMAT(&m,&m,&m);
-	sound->playCue(yumes[3]);//temp_input_shori->sound_index]);
-	InputMessageDispatcher::registerImpl(temp_input_shori, NULL,NULL);
+	
+	//temp_input_shori = new TempInputShori(sound,g);
+	//MYMATRIX m;
+	//MyMatrixIdentity(m);
+	//temp_input_shori->setMAT(&m,&m,&m);
+	sound->playCue(yumes[5]);//temp_input_shori->sound_index]);
+	//InputMessageDispatcher::registerImpl(temp_input_shori, NULL,NULL);
 
 	MYMATRIX worl;
-	/*
-	for (int i = 0 ; i < 30;i++) {
 	
-		mesh_is[i] = mesh_instanceds->makeInstanced(mesh2,mesh2,NULL,NULL,false,&kakeru);
-		mesh_is2[i] = mesh_instanceds->makeInstanced(mesh,mesh,NULL,NULL,false,&kakeru);
-		MyMatrixTranslation(worl,2, i*3,2);
-		mesh_is[i]->setWorld(&worl);
-		mesh_is2[i]->setWorld(&worl);
-	}
-	mesh_i = mesh_instanceds->makeInstanced(mesh2,mesh2,NULL,NULL,false,&kakeru);
-	mesh_i2 = mesh_instanceds->makeInstanced(mesh,mesh,NULL,NULL,false, &kakeru);
-	*/
-	/*MeshInstanced* mesh_i3 = mesh_instanceds->makeInstanced(mesh3[10],mesh3[10],mesh_i,mesh2->BoneIndexes["migiArmTekubiBone"],true,&kakeru);
-
-	//MYMATRIX worldforg;
-	MyMatrixRotationZ(worldforg, 3.14/2);
-	MyMatrixMultiply(kakeru, kakeru, worldforg);
-	
-	MyMatrixScaling(worldforg, 1/3.0,1/3.0,1/3.0);
-	MyMatrixMultiply(kakeru, kakeru, worldforg);
-	
-	MyMatrixRotationY(worldforg, -3.14/2);
-	MyMatrixMultiply(kakeru, kakeru, worldforg);
-
-
-	mesh_instanceds->makeInstanced(mesh3[9],mesh3[9], mesh_i3, mesh3[10]->BoneIndexes["MigiHandMotiBone"],false, &kakeru);
-	MYVECTOR4 colors[KTROBO_MESH_INSTANCED_COLOR_MAX];
-	memset(colors,0,sizeof(colors));
-
-
-	*/
-/*	for (int i=0;i<KTROBO_MESH_INSTANCED_COLOR_MAX; i++) {
-		colors[i].x = 1;
-		colors[i].y = 1;
-		colors[i].z = 1;
-		colors[i].w = 1;
-	}
-
-	mesh_i->setColor(colors);
-	*/
-
-
-
-
-
-//	mytest_for_vt = new MyTestForVertexTexture();
-//	mytest_for_vt->Init(g);
-//	mytest_for_vt->readVertexTexture(g,mesh_instanceds->combined_matrix_texture);//anime_matrix_basis_texture);//matrix_local_texture);
-
-
-//	mytest_for_vt->writeInfo(g);
-
 	
 
+	
 	
 	
 
@@ -501,87 +463,32 @@ bool Game::Init(HWND hwnd) {
 	MyLuaGlueSingleton::getInstance()->registerdayo(L);
 
 	for (int i=0;i<TASKTHREAD_NUM;i++) {
-		Ls[i] = luaL_newstate();
-		luaL_openlibs(Ls[i]);
-		MyLuaGlueSingleton::getInstance()->registerdayo(Ls[i]);
+	//	Ls[i] = luaL_newstate();
+	//	luaL_openlibs(Ls[i]);
+	//	MyLuaGlueSingleton::getInstance()->registerdayo(Ls[i]);
 	}
 	
-	LuaTCBMaker::Init(task_threads, Ls);
+	LuaTCBMaker::Init(task_threads, L);
 	Texture::Init(g);
-
-	Scene::Init(g_for_task_threads,Ls,this);
+	
+	Scene::Init(g_for_task_threads,this); // scene init から　Lをなくす　luaが必要なときはluaexector を呼ぶ.
 	
 	texdayo = new Textures(demo->tex_loader);
 	MyLuaGlueSingleton::getInstance()->setColTextures(texdayo);	
 	texdayo->getInstance(0)->getTexture(KTROBO_GUI_PNG,4096);
 	int pp = texdayo->getInstance(1)->getTexture(KTROBO_GUI_PNG, 4096);
-	/*
-	int i = texdayo->getInstance(0)->getTexture("resrc/model/ponko-niyake.png");
-	int j = texdayo->getInstance(0)->getRenderTex(i, 0xFFFFFFFF, 0, 0, 512, 512, 0, 0, 512, 512);
-	texdayo->getInstance(0)->setRenderTexIsRender(j, false);
-	int k = texdayo->getInstance(1)->getRenderTex(pp, 0xFFFFFFFF, 0, 500, 512, 512, 0, 0, 512, 512);
-	texdayo->getInstance(1)->setRenderTexIsRender(k, false);
-
-	MYMATRIX idendd;
-	MyMatrixIdentity(idendd);
-	int jj = texdayo->getInstance(0)->getRenderBillBoard(i, 0xFFFFFFFF, &idendd, 20, 20, 0, 0, 512, 512);
-	texdayo->getInstance(0)->setRenderBillBoardIsRender(jj, false);
-	int kj = texdayo->getInstance(1)->getRenderBillBoard(pp, 0xFFFFFFFF, &idendd, 20, 20, 0, 0, 512, 512);
-	texdayo->getInstance(1)->setRenderBillBoardIsRender(kj, false);
-	*/
-
-//	GUI::Init(hwnd, texdayo->getInstance(0), Ls[TASKTHREADS_AIDECISION], g->getScreenWidth(), g->getScreenHeight());
-//	GUI_INPUTTEXT::Init(hwnd, texdayo->getInstance(0));
-	//inputtext = new GUI_INPUTTEXT(0,100,800,24);
-	//inputtext->setIsRender(true);
-	/*but = new GUI_BUTTON(100,200,120,120,"",0, "決定");
-	but->setIsRender(true);*/
-	MYRECT zem;
-	zem.left = 0;
-	zem.right = 300;
-	zem.top = 130;
-	zem.bottom = 160;
-/*	slih = new GUI_SLIDERH(zem,100,0,10,"test");
-	slih->setIsRender(true);
-	*/
-	//InputMessageDispatcher::registerImpl(slih,NULL,NULL);
-	//InputMessageDispatcher::registerImpl(but, NULL,NULL);
-	//InputMessageDispatcher::registerImpl(inputtext, NULL,NULL);
+	
+	
 	MYMATRIX mat;
 	MyMatrixIdentity(mat);
 
-	/*
-	int j = texdayo->getInstance(0)->getRenderTex(i,0xFFFFFFFF,50,0,200,200,0,0,512,512);
-	int kk = texdayo->getInstance(0)->getRenderText("ganbaru",0,0,10,100,100);
-	int ppl = texdayo->getInstance(0)->getRenderBillBoard(i,0xFFFFFFFF,&mat,1,1,0,0,1,1);
-	texdayo->getInstance(0)->setRenderTextIsRender(kk,false);
-	texdayo->getInstance(0)->setRenderTexIsRender(j,false);
-	texdayo->getInstance(0)->setRenderBillBoardIsRender(ppl,false);
-	{
-	int j = texdayo->getInstance(1)->getRenderTex(pp,0xFFFFFFFF,50,0,200,200,0,0,512,512);
-	int kk = texdayo->getInstance(1)->getRenderText("ganbaru",0,0,10,100,100);
-	int ppl = texdayo->getInstance(1)->getRenderBillBoard(pp,0xFFFFFFFF,&mat,1,1,0,0,1,1);
-	texdayo->getInstance(1)->setRenderTextIsRender(kk,false);
-	texdayo->getInstance(1)->setRenderTexIsRender(j,false);
-	texdayo->getInstance(1)->setRenderBillBoardIsRender(ppl,false);
-	}
-	*/
 	effect_managers = new EffectManagers(texdayo->getInstance(0));// 最初の方
 	weapon_effect_manager = new WeaponEffectManager(effect_managers->getInstance(0));
 	MyLuaGlueSingleton::getInstance()->setColEffectManagers(effect_managers);
 
-	{
-//	MYMATRIX idenmat;
-//	MyMatrixIdentity(idenmat);
-//	int kkk = texdayo->getInstance(0)->getRenderBillBoard(pp,0xFFFFFFFF,&idenmat,10,10,0,0,128,128);
-//	texdayo->getInstance(0)->setRenderBillBoardIsRender(kkk,true);
-	}
-	GUI::Init(hwnd,texdayo->getInstance(0),L,g->getScreenWidth(),g->getScreenHeight());
-	
-/*	ksgene = new KendoSinaiGenerator();
-	ksgene->Init(hwnd,texdayo->getInstance(0),L,g->getScreenWidth(),g->getScreenHeight());
-	*/
 
+	GUI::Init(hwnd,texdayo->getInstance(0),g->getScreenWidth(),g->getScreenHeight());
+	
 	rmap = new RMap();
 	
 	rmap->Init(hantei, mesh_instanceds);
@@ -590,99 +497,27 @@ bool Game::Init(HWND hwnd) {
 
 //	sap = new ShudouArmPositioner(robodayo, robodayo->ap);
 //	sap->Init(hwnd, texdayo->getInstance(0), L , g->getScreenWidth(),g->getScreenHeight());
-	
-	/*
-	makers = new SinaiFuruAnimeMakers();
-	MyLuaGlueSingleton::getInstance()->setColSinaiFuruAnimeMakers(makers);
-	MyLuaGlueSingleton::getInstance()->getColSinaiFuruAnimeMakers(0)->getInstance(0)->Init(ksgene,uum,sinai);
-	
-	InputMessageDispatcher::registerImpl(ksgene,NULL,NULL);
-	*/
 
 	MYMATRIX jiken;
-
-	//mesh2->animate(400,true);
-	//mesh->animate(400,true);
-	//MeshBone* bon = mesh2->Bones[mesh2->BoneIndexes["migiArmSitaBone"]];
-	//MyMatrixRotationZ(bon->offset_matrix,1.6f);
-	//mesh2->animate(400,false);
-
-//	MyMatrixInverse(jiken, NULL, bon->matrix_local);
-
-//	MyMatrixMultiply(jiken,bon->matrix_local, bon->combined_matrix);
 
 	MYVECTOR3 ppos(0,0,0);
 	MyVec3TransformCoord(ppos,ppos,jiken);
 	MyMatrixTranslation(jiken,ppos.float3.x,ppos.float3.y,0);//ppos.float3.z);
 
-	/*texdayo->getInstance(0)->getRenderBillBoard(i,0xFFFFFFFF, &jiken,3,3,150,150,112,112);
-	texdayo->getInstance(0)->setRenderTexIsRender(j,true);*/
-//	MyMatrixTranslation(jiken,0,0,0);
+	
 	MyMatrixRotationX(jiken,0.157);
-//	j = texdayo->getInstance(0)->getRenderBillBoard(i,0x00FFFFFF, &jiken,5,5,0,0,512,512);
-//	texdayo->getInstance(0)->setRenderTexIsRender(j,true);
 
-	//texdayo->getInstance(0)->getRenderText("0.00",0,0,30,400,100);
-
-
-
-//		j = texdayo->getRenderTex(i,0xFFFFFFFF,150,200,512,512,0,0,512,512);
-//	texdayo->setRenderTexColor(i,0xFFFF0022);
-//	texdayo->setRenderTexIsRender(j,true);
-//	j = texdayo->getRenderTex(i,0xFFFFFFFF,350,700,200,200,50,50,100,100);
-//	texdayo->setRenderTexIsRender(j,true);
-//	j = texdayo->getRenderTex(i,0xFFFFFFFF,450,700,200,200,50,50,100,100);
-//	texdayo->setRenderTexIsRender(j,true);
-//	j = texdayo->getRenderTex(i,0xFFFFFFFF,550,700,200,200,50,50,100,100);
-//	texdayo->setRenderTexIsRender(j,true);
-//	j = texdayo->getRenderTex(i,0xFFFFFFFF,650,700,200,200,50,50,100,100);
-//	texdayo->setRenderTexIsRender(j,true);
-//	j = texdayo->getRenderTex(i,0xFFFFFFFF,750,700,200,200,50,50,100,100);
-//	texdayo->setRenderTexIsRender(j,true);
 	MYMATRIX world;
 	MYMATRIX view;
 	MYMATRIX proj = *g->getProj();;
-//	MYVECTOR3 from(0,-1,0);
+
 	MYVECTOR3 from(25,25,12);
 	MYVECTOR3 at(0,0,0);
 	MYVECTOR3 up(0,0,1);
 	MyMatrixIdentity(world);
-//	MyMatrixTranslation(world,0,0.05,0.0);
 
-	
-//	MyMatrixRotationZ(world, 0.5f);
 	MyMatrixLookAtRH(view,from,at,up);
-//	MyMatrixPerspectiveFovRH(proj, 1, g->getScreenWidth() / (float)g->getScreenHeight(), 1, 1000);
-	
-	
-//	j = texdayo->getInstance(0)->getRenderTex(i,0xFFFFFFFF,0,0,200,200,0,0,512,512);//,0.021,0.021,0,0,500,500);
-//	texdayo->getInstance(0)->setRenderTexIsRender(j,true);
 
-/*
-	gg = new Gamen_GARAGE();
-	gg->Init(g,hantei,texdayo->getInstance(0),demo->tex_loader);
-	InputMessageDispatcher::registerImpl(gg, NULL,NULL);
-	*/
-//	MyMatrixTranslation(world,0,0,0);
-//	texdayo->getRenderBillBoard(i,0xFFFF00FF,&world,0.30,0.30,100,100,250,250);
-//	texdayo->setRenderBillBoardIsRender(1,true);
-	/*
-
-	MyMatrixTranslation(world,4,0,0);
-	texdayo->getRenderBillBoard(i,0xFF0000FF,&world,3,3,100,100,250,250);
-	texdayo->setRenderBillBoardIsRender(1,true);
-
-	MyMatrixTranslation(world,0,0,4);
-	texdayo->getRenderBillBoard(i,0xFFFFFFFF,&world,13,13,100,100,250,250);
-	texdayo->setRenderBillBoardIsRender(1,true);
-
-	MyMatrixTranslation(world,0,4,0);
-	texdayo->getRenderBillBoard(i,0x0000FFFF,&world,3,3,100,100,250,250);
-	texdayo->setRenderBillBoardIsRender(1,true);
-	*/
-//	texdayo->setViewProj(g,&view,&proj,&from, &at);
-	
-	//long work[TASK_WORK_SIZE];
 	
 	texdayo->getInstance(0)->setViewProj(g,&view,&proj,&from,&at);
 /*	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER,"resrc/script/effect/EFFECT_bakuhatu.lua");
@@ -694,7 +529,7 @@ bool Game::Init(HWND hwnd) {
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponpulsegun.lua");
 */
 	WeaponEffect::Init(weapon_effect_manager);
-	
+
 	effect_suuji = new EffectSuuji(TASKTHREADS_UPDATEMAINRENDER,effect_managers->getInstance(0));
 
 	unsigned long work[TASK_WORK_SIZE];
@@ -718,24 +553,12 @@ bool Game::Init(HWND hwnd) {
 	work[0] = (unsigned long)task_threads[TASKTHREADS_AIDECISION];
 	work[2] = (unsigned long)mesh_instanceds;
 
-	task_threads[TASKTHREADS_AIDECISION]->make(LOADMESHTCB,Ls[TASKTHREADS_AIDECISION],work,0x0000FFFF);
+	task_threads[TASKTHREADS_AIDECISION]->make(LOADMESHTCB,L,work,0x0000FFFF);
 
 	
 	memset(work,0,sizeof(work));
 	renderTCB = task_threads[TASKTHREADS_UPDATEMAINRENDER]->make(RENDERTCB,this,work,0x0000FFFF);
 	task_threads[TASKTHREADS_AIDECISION]->make(MessageDispatcherTCB, NULL, work, 0x0000FFFF);
-	//InputMessageDispatcher::registerImpl(&k,NULL,NULL);
-
-	/*
-	ONEMESSAGE* mes = new ONEMESSAGE();
-
-	mes->enter();
-	mes->changeText("unkokusai");
-	scenes.push_back(mes);
-	*/
-	
-	//hantei->ataristart();
-
 	
 	
 //	SceneGarage* sg = new SceneGarage(g, hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
@@ -931,12 +754,14 @@ void Game::Del() {
 		L =0;
 	}
 	
+	/*
 	for (int i=0;i<TASKTHREAD_NUM;i++) {
 		if (Ls[i]) {
 		lua_close(Ls[i]);
 		Ls[i] = 0;
 		}
 	}
+	*/
 	/*
 	if (robodayo) {
 		robodayo->release();
@@ -1165,7 +990,12 @@ double Game::stopWatch() {
 	return (timeEnd.QuadPart - timeStart.QuadPart)/(double)timeFreq.QuadPart*1000;
 }
 
+
+
+
 void Game::Run() {
+
+	//throw new GameError(KTROBO::FATAL_ERROR, "test");
 
 	double millisecond = stopWatch();
 	startWatch();
@@ -1196,7 +1026,9 @@ void Game::Run() {
 		CS::instance()->enter(CS_MAINTHREAD_CS, "enter main");
 	}
 	CS::instance()->enter(CS_SOUND_CS, "enter");
-	sound->run();
+	if (sound) {
+		sound->run();
+	}
 	CS::instance()->leave(CS_SOUND_CS, "leave");
 
 
@@ -1231,9 +1063,12 @@ void Game::Run() {
 	float clearColor[4] = {
 		0.3f,0.4f,0.8f,1.0f };
 	CS::instance()->enter(CS_DEVICECON_CS, "test");
-	telop_texts->plusTime(g, millisecond);
+	
 	if (telop_texts->isRenderFinished()) {
-		telop_texts->readFile(g, "resrc/sample/KTROBO.txt", 30, 14, &MYVECTOR4(1, 1, 1, 1), 0.1);
+	//	telop_texts->readFile(g, "resrc/sample/KTROBO.txt", 30, 14, &MYVECTOR4(1, 1, 1, 1), 0.1);
+	}
+	else {
+		telop_texts->plusTime(g, millisecond);
 	}
 	CS::instance()->leave(CS_DEVICECON_CS, "test");
 	//demo->Render(g);
@@ -1322,7 +1157,7 @@ void Game::Run() {
 
 
 	MYMATRIX rotzmat;
-	MyMatrixRotationZ(rotzmat, temp_input_shori->testdayo);
+	//MyMatrixRotationZ(rotzmat, temp_input_shori->testdayo);
 	//	MyMatrixMultiply(view,rotzmat,view);
 	MYVECTOR3 tesdt;
 	tesdt = b - a;
@@ -1331,13 +1166,13 @@ void Game::Run() {
 	//	MyMatrixLookAtRH(view, a, b, up);
 	char bbuf[512];
 	memset(bbuf, 0, 512);
-	sprintf_s(bbuf, "%d,%d,%d,%d", fps, byouga_count
-		, temp_input_shori->x, temp_input_shori->y);
-	WCHAR bbufdayo[512];
-	memset(bbufdayo, 0, sizeof(WCHAR) * 512);
+//	sprintf_s(bbuf, "%d,%d,%d,%d", fps, byouga_count
+//		, temp_input_shori->x, temp_input_shori->y);
+//	WCHAR bbufdayo[512];
+//	memset(bbufdayo, 0, sizeof(WCHAR) * 512);
 	stringconverter scc;
 	CS::instance()->enter(CS_RENDERDATA_CS, "render");
-	scc.charToWCHAR(bbuf, bbufdayo);
+//	scc.charToWCHAR(bbuf, bbufdayo);
 	CS::instance()->leave(CS_RENDERDATA_CS, "render");
 //	te->changeText(bbufdayo, wcslen(bbufdayo));
 	CS::instance()->leave(CS_MESSAGE_CS, "render");
@@ -1379,7 +1214,9 @@ void Game::Run() {
 	g->getDeviceContext()->ClearDepthStencilView(Mesh::pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	KTROBO::DebugTexts::instance()->render(g);
-	//telop_texts->render(g);
+	if (!telop_texts->isRenderFinished()) {
+		telop_texts->render(g);
+	}
 	/*
 	if (te) {
 		te->render(g, 0xFFFF00FF, 10, 0, 30, 450, 40);
@@ -1469,10 +1306,10 @@ void Game::Run() {
 	//mesh2->draw(g, &world, &view, &proj);
 	RAY testdray;
 	CS::instance()->enter(CS_MESSAGE_CS, "test");
-	testdray.org = temp_input_shori->ray.org;
-	testdray.dir = temp_input_shori->ray.dir;
-	MyVec3Normalize(testdray.dir, testdray.dir);
-	testdray.dir = testdray.dir * 50;
+//	testdray.org = temp_input_shori->ray.org;
+//	testdray.dir = temp_input_shori->ray.dir;
+//	MyVec3Normalize(testdray.dir, testdray.dir);
+//	testdray.dir = testdray.dir * 50;
 	/*
 	int sb = mesh2->Bones.size();
 	bool is_ma=false;
@@ -1520,7 +1357,7 @@ void Game::Run() {
 	*/
 	CS::instance()->leave(CS_MESSAGE_CS, "testt");
 	CS::instance()->enter(CS_MESSAGE_CS, "test");
-	temp_input_shori->setMAT(&world, &view, &proj);
+//	temp_input_shori->setMAT(&world, &view, &proj);
 	CS::instance()->leave(CS_MESSAGE_CS, "testt");
 	//	texdayo->getInstance(0)->setViewProj(g,&view,&proj,&a,&b);
 	//	texdayo->getInstance(1)->setViewProj(g,&view, &proj,&a,&b);
@@ -1713,7 +1550,7 @@ void Game::Run() {
 		MYVECTOR3 oo;
 		MYVECTOR3 moto(0, 1.9, -0.20);
 		oo = oo + moto;
-		temp_input_shori->getPos(&oo);
+//		temp_input_shori->getPos(&oo);
 		//	sfuru->setKAMAE(temp_input_shori->getRotY(),0,&oo);
 		//	sinai->umesh_unit->setROTXYZ(temp_input_shori->getRotY(),0,0);
 		//	sinai->umesh_unit->setXYZ(oo.float3.x,oo.float3.y,oo.float3.z);//10*sin(testcc),-4,10*cos(testcc));

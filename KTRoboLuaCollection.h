@@ -22,11 +22,11 @@ public:
 class LuaTCBMaker {
 private:
 	static LuaTCBStruct structs[KTROBO_LUAEXEC_STRUCT_SIZE];	
-	static lua_State* ls[TASKTHREAD_NUM];
+	static lua_State* ls;
 	static Task* ts[TASKTHREAD_NUM];
 public:
-	static void Init(Task** t, lua_State** l);
-	static void doTCBnow(int task_index, bool is_lock_sita, char* lua_filename);
+	static void Init(Task** t, lua_State* l);
+	static void doTCBnow(int task_index, bool is_lock_sita, char* lua_filename); // ‚·‚×‚ÄAIƒXƒŒƒbƒh‚Å“®‚­
 	static void makeTCB(int task_index, bool is_lock_sita, char* lua_filename);
 	static void makeTCBExec();
 	

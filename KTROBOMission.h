@@ -223,10 +223,10 @@ public:
 
 public:
 	void mainrenderIMPL(bool is_focused, Graphics* g, Game* game);
-	void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game);
-	void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game);
-	void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game);
-	void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game);
+	void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+	void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+	void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+	void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
 
 	void enter();
 	void leave();

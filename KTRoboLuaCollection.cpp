@@ -22,6 +22,7 @@ void TCB_luaExec(TCB* thisTCB) {
 	}
 
 	CS::instance()->enter(CS_MESSAGE_CS, "luaexec");
+	CS::instance()->enter(CS_LUAEXE_CS, "luaexec");
 	LuaTCBStruct* tt = (LuaTCBStruct*)thisTCB->Work[0];
 	char* lua_filename = tt->lua_filename;
 
@@ -52,6 +53,7 @@ void TCB_luaExec(TCB* thisTCB) {
 			t->kill(thisTCB);
 		}
 	}
+	CS::instance()->leave(CS_LUAEXE_CS, "luaexec");
 	CS::instance()->leave(CS_MESSAGE_CS, "luaexec");
 	if (is_lock) {
 		
@@ -67,10 +69,10 @@ void TCB_luaExec(TCB* thisTCB) {
 	}
 }
 
-void LuaTCBMaker::Init(Task** t, lua_State** l) {
+void LuaTCBMaker::Init(Task** t, lua_State* l) {
 	for (int i=0;i<TASKTHREAD_NUM;i++) {
 		ts[i] = t[i];
-		ls[i] = l[i];
+		ls = l;
 	}
 
 	for (int i=0;i<KTROBO_LUAEXEC_STRUCT_SIZE;i++) {
@@ -91,7 +93,7 @@ void LuaTCBMaker::makeTCBExec() {
 			unsigned long Work[TASK_WORK_SIZE];
 			memset(Work, 0, sizeof(unsigned long)*TASK_WORK_SIZE);
 			Work[0] = (unsigned long)&structs[i];
-			Work[1] = (unsigned long)ls[structs[i].task_index];
+			Work[1] = (unsigned long)ls;
 			Work[2] = (unsigned long)structs[i].task_index;
 			Work[3] = (unsigned long)structs[i].is_lock_sita;
 			int task_index = structs[i].task_index;
@@ -107,6 +109,7 @@ void LuaTCBMaker::makeTCBExec() {
 }
 
 void LuaTCBMaker::doTCBnow(int task_index, bool is_lock_sita, char* lua_filename) {
+	
 	if (task_index >= 0 && task_index < TASKTHREAD_NUM) {
 	
 		CS::instance()->enter(CS_MESSAGE_CS, "maketcb");
@@ -128,7 +131,7 @@ void LuaTCBMaker::doTCBnow(int task_index, bool is_lock_sita, char* lua_filename
 				unsigned long Work[TASK_WORK_SIZE];
 				memset(Work, 0, sizeof(unsigned long)*TASK_WORK_SIZE);
 				Work[0] = (unsigned long)&structs[i];
-				Work[1] = (unsigned long)ls[structs[i].task_index];
+				Work[1] = (unsigned long)ls;
 				Work[2] = (unsigned long)structs[i].task_index;
 				Work[3] = (unsigned long)structs[i].is_lock_sita;
 				int task_index = structs[i].task_index;
@@ -174,5 +177,5 @@ void LuaTCBMaker::makeTCB(int task_index, bool is_lock_sita, char* lua_filename)
 }
 
 LuaTCBStruct LuaTCBMaker::structs[KTROBO_LUAEXEC_STRUCT_SIZE];
-lua_State* LuaTCBMaker::ls[TASKTHREAD_NUM];
+lua_State* LuaTCBMaker::ls;
 Task* LuaTCBMaker::ts[TASKTHREAD_NUM];

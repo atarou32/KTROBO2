@@ -251,7 +251,7 @@ private:
 	int box_tex_id;
 	char l_str[128]; // pressされたときによばれるLuaファイル
 	int button_text;
-static lua_State* L; // handlemessageが呼ばれるのは AIスレッドなのでAIスレッドのLを呼ぶ
+//static lua_State* L; // handlemessageが呼ばれるのは AIスレッドなのでAIスレッドのLを呼ぶ
 static Texture* texture;
 
 public:
@@ -268,8 +268,8 @@ public:
 	}
 
 
-	static void Init(lua_State* Ld, Texture* tex) {
-		L = Ld;
+	static void Init(Texture* tex) {
+		
 		texture = tex;
 	}
 	bool moveBox(int dx, int dy);
@@ -687,7 +687,7 @@ private:
 	float min;
 	float now;
 	char l_str[64];
-	static lua_State* l;
+	
 	static Texture* tex;
 	bool is_min_pressed;
 	bool is_max_pressed;
@@ -726,9 +726,8 @@ public:
 		tex->setRenderTexIsRender(tex_id_now,t);
 	}
 
-	static void Init(Texture* te,lua_State* ls) {
+	static void Init(Texture* te) {
 		tex = te;
-		l = ls;
 	}
 };
 
@@ -746,7 +745,7 @@ private:
 	float now;
 	char l_str[64];
 	static Texture* tex;
-	static lua_State* l;
+
 	bool is_min_pressed;
 	bool is_max_pressed;
 	bool is_box_moved;
@@ -786,9 +785,8 @@ public:
 		tex->setRenderTexIsRender(tex_id_max,t);
 		tex->setRenderTexIsRender(tex_id_now,t);
 	}
-	static void Init(Texture* te, lua_State* ls) {
+	static void Init(Texture* te) {
 		tex = te;
-		l = ls;
 
 	}
 
@@ -858,10 +856,10 @@ public:
 	GUI(void);
 	~GUI(void);
 
-	static void Init(HWND hw, Texture* tex, lua_State* Ld, int screen_width, int screen_height) {
-		GUI_BUTTON::Init(Ld, tex);
-		GUI_SLIDERH::Init(tex, Ld);
-		GUI_SLIDERV::Init(tex, Ld);
+	static void Init(HWND hw, Texture* tex, int screen_width, int screen_height) {
+		GUI_BUTTON::Init(tex);
+		GUI_SLIDERH::Init(tex);
+		GUI_SLIDERV::Init(tex);
 		GUI_TEX::Init(tex);
 		GUI_TEXT::Init(tex);
 		GUI_WINDOW::Init(tex);

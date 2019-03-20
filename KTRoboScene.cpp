@@ -9,7 +9,6 @@ Scene::~Scene(void)
 }
 
 Graphics* Scene::gs[TASKTHREAD_NUM];
-lua_State* Scene::Ls[TASKTHREAD_NUM];
 Game* Scene::game=0;
 
 void TCB_SCENE_AI(TCB* thisTCB) {
@@ -314,7 +313,7 @@ void LOADTYUU::enter() {
 	InputMessageDispatcher::registerImpl(this, NULL, ss->impl);
 }
 
-void LOADTYUU::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game)
+void LOADTYUU::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game)
 	{
 		time =timeGetTime();
 		Texture* tex = MyLuaGlueSingleton::getInstance()->getColTextures(0)->getInstance(0);

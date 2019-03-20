@@ -445,7 +445,7 @@ void Game_SCENE::mainrenderIMPL(bool is_focused, Graphics* g, Game* game) {
 
 }
 
-void Game_SCENE::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game) {
+void Game_SCENE::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
 	if (game && gm && task->getIsExecTask()) {
 		watches.stopWatch(TASKTHREADS_UPDATEANIMEFRAMENADO);
 		watches.startWatch(TASKTHREADS_UPDATEANIMEFRAMENADO);
@@ -454,12 +454,12 @@ void Game_SCENE::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_Stat
 	}
 }
 
-void Game_SCENE::aiIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game) {
+void Game_SCENE::aiIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
 
 
 }
 
-void Game_SCENE::posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game) {
+void Game_SCENE::posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
 
 	//DebugTexts::instance()->setText(g,12,L"startposimpl");
 	double millisecond = game->stopWatchForButukari();//stopWatch();
@@ -565,7 +565,7 @@ void Game_SCENE::posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_Stat
 	//DebugTexts::instance()->setText(g,10,L"endposimpl");
 }
 
-void Game_SCENE::loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game) {
+void Game_SCENE::loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
 
 
 

@@ -23,8 +23,8 @@ KTROBOEntryPoint::~KTROBOEntryPoint(void)
 #include <crtdbg.h>
 
 HWND g_hWnd = NULL;
-KTROBO::Game* game;
-
+KTROBO::Game* game = 0;
+KTROBO::Input* input = 0;
 HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow, Input* input);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM );
 const WCHAR CLASS_NAME[] =L"KTROBO ver 0.01";
@@ -62,7 +62,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (AnotherInstance()) {
 		return 0;
 	}
-	Input* input = new Input();
+	input = new Input();
 	MSG msg = {0};
 	try {
 	if(FAILED( InitWindow(hInstance, nCmdShow,input))){
@@ -132,11 +132,11 @@ ktrobo_error:
 	
 	if (game) {
 
-		KTROBO::mylog::writelog(KTROBO::INFO, "start game del");
+		//KTROBO::mylog::writelog(KTROBO::INFO, "start game del");
 		game->Del();
 		delete game;
 		game = 0;
-		KTROBO::mylog::writelog(KTROBO::INFO, "end game del");
+		//KTROBO::mylog::writelog(KTROBO::INFO, "end game del");
 	}
 	KTROBO::CS::instance()->Del();
 
@@ -197,6 +197,22 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             break;
 
         case WM_DESTROY:
+
+			if (input) {
+				delete input;
+				input = 0;
+			}
+
+			if (game) {
+
+				//KTROBO::mylog::writelog(KTROBO::INFO, "start game del");
+				game->Del();
+				delete game;
+				game = 0;
+				//KTROBO::mylog::writelog(KTROBO::INFO, "end game del");
+			}
+			KTROBO::CS::instance()->Del();
+
             PostQuitMessage( 0 );
             break;
 

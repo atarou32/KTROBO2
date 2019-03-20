@@ -31,6 +31,7 @@ char* mylog::writelog(int error_num, const char* buffer, ...)
 #ifndef _DEBUG	
 	if (error_num == KTROBO::DEBUG) {
 		OutputDebugStringA(log);
+		CS::instance()->leave(CS_LOG_CS, log);
 		return log;
 	}
 	else {

@@ -1669,7 +1669,7 @@ void GUI_INPUTTEXT::render(Graphics* g) {
 HWND GUI_INPUTTEXT::hwnd=0;
 Texture* GUI_INPUTTEXT::texture=0;
 
-lua_State* GUI_BUTTON::L=0; // handlemessageが呼ばれるのは AIスレッドなのでAIスレッドのLを呼ぶ
+//lua_State* GUI_BUTTON::L=0; // handlemessageが呼ばれるのは AIスレッドなのでAIスレッドのLを呼ぶ
 Texture* GUI_BUTTON::texture=0;
 
 Texture* GUI_TEXT::tex=0;
@@ -2011,8 +2011,8 @@ bool GUI_SLIDERV::handleMessage(int msg, void* data, DWORD time) {
 
 
 }
-lua_State* GUI_SLIDERH::l=0;
-lua_State* GUI_SLIDERV::l=0;
+//lua_State* GUI_SLIDERH::l=0;
+//lua_State* GUI_SLIDERV::l=0;
 
 float GUI_SLIDERH::getTexIdNowX() {
 		float m = max - min;

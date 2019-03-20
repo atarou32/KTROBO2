@@ -97,7 +97,7 @@ void KendoSinaiGenerator::Init(HWND hw, KTROBO::Texture* tex, lua_State* Ld, int
 
 
 	gui = new GUI();
-	gui->Init(hw, tex,Ld,screen_width,screen_height);
+	gui->Init(hw, tex,screen_width,screen_height);
 
 	screen_window_id = gui->makeWindow(0,0,screen_width,screen_height);
 	gui->setEffect(screen_window_id,true);

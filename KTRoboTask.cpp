@@ -37,6 +37,17 @@ void KTROBO::Task::init() {
 	hd = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)THREAD_TaskEXEC,(void*)this,0,NULL);
 };
 
+vector<Task*>Task::madetasks;
+void Task::killAllTasks() {
+	vector<Task*>::iterator it = madetasks.begin();
+
+
+	while (madetasks.end() != it) {
+		(*it)->deleteTaskWithoutLock();
+		it++;
+	}
+	madetasks.clear();
+}
 
 void KTROBO::Task::exec() {
 	TCB* execTCB;
@@ -60,8 +71,10 @@ void KTROBO::Task::exec() {
 			
 	//		MessageBoxA(hWnd,"タスクスレッドを終了させます","FATAL",MB_OK);
 			is_exec_task = false;
+			killAllTasks();
 			delete err;
 			CS::instance()->leave(CS_TASK_CS,"",index);
+			
 			return;
 		}
 		delete err;

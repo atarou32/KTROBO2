@@ -35,7 +35,7 @@ void SceneGarage::mainrenderIMPL(bool is_focused, Graphics* g, Game* game) {
 		tex2->setViewProj(g,&game->view, g->getProj(),&from,&at);
 	}
 }
-void SceneGarage::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game) {
+void SceneGarage::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
 
 
 
@@ -43,15 +43,15 @@ void SceneGarage::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_Sta
 }
 
 
-void SceneGarage::aiIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){
+void SceneGarage::aiIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game){
 
 }
 
-void SceneGarage::posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){
+void SceneGarage::posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game){
 
 }
 
-void SceneGarage::loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game){
+void SceneGarage::loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game){
 	if (gg) {
 		try { 
 		gg->loadData(g,game->getDMSecond(), game->getTimeStamp());
