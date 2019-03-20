@@ -25,6 +25,7 @@ private:
 protected:
 
 	void setLoaded();
+public:
 	bool hasLoaded(); // ループを回すスレッドで呼ぶ
 };
 

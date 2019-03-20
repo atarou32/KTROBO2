@@ -565,10 +565,10 @@ bool Game::Init(HWND hwnd) {
 	//SceneGarage* sg = new SceneGarage(g, hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 
 	
-	//SceneGarage2* sg = new SceneGarage2(hantei,  texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
+	SceneGarage2* sg = new SceneGarage2(hantei,  texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 
 	//Game_SCENE* gs = new Game_SCENE(g,hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
-	//this->setScene(sg);
+	this->setScene(sg);
 
 	return true;
 }
