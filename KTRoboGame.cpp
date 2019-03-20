@@ -8,6 +8,7 @@
 #include "tolua_glue/tolua_glue.h"
 #include "KTRoboSceneGarage.h"
 #include "KTROBOMission.h"
+#include "KTRoboSceneGarage2.h"
 
 using namespace KTROBO;
 
@@ -427,7 +428,7 @@ bool Game::Init(HWND hwnd) {
 	//MYMATRIX m;
 	//MyMatrixIdentity(m);
 	//temp_input_shori->setMAT(&m,&m,&m);
-	sound->playCue(yumes[5]);//temp_input_shori->sound_index]);
+	//sound->playCue(yumes[5]);//temp_input_shori->sound_index]);
 	//InputMessageDispatcher::registerImpl(temp_input_shori, NULL,NULL);
 
 	MYMATRIX worl;
@@ -561,12 +562,13 @@ bool Game::Init(HWND hwnd) {
 	task_threads[TASKTHREADS_AIDECISION]->make(MessageDispatcherTCB, NULL, work, 0x0000FFFF);
 	
 	
-//	SceneGarage* sg = new SceneGarage(g, hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
+	//SceneGarage* sg = new SceneGarage(g, hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 
 	
+	//SceneGarage2* sg = new SceneGarage2(hantei,  texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 
 	//Game_SCENE* gs = new Game_SCENE(g,hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
-//	this->setScene(sg);
+	//this->setScene(sg);
 
 	return true;
 }
@@ -1062,15 +1064,7 @@ void Game::Run() {
 	//demo->Render(g);
 	float clearColor[4] = {
 		0.3f,0.4f,0.8f,1.0f };
-	CS::instance()->enter(CS_DEVICECON_CS, "test");
 	
-	if (telop_texts->isRenderFinished()) {
-	//	telop_texts->readFile(g, "resrc/sample/KTROBO.txt", 30, 14, &MYVECTOR4(1, 1, 1, 1), 0.1);
-	}
-	else {
-		telop_texts->plusTime(g, millisecond);
-	}
-	CS::instance()->leave(CS_DEVICECON_CS, "test");
 	//demo->Render(g);
 
 	static float frame = 0;
@@ -1149,36 +1143,6 @@ void Game::Run() {
 
 
 
-	CS::instance()->enter(CS_DEVICECON_CS, "render game");
-
-	CS::instance()->enter(CS_MESSAGE_CS, "render");
-
-
-
-
-	MYMATRIX rotzmat;
-	//MyMatrixRotationZ(rotzmat, temp_input_shori->testdayo);
-	//	MyMatrixMultiply(view,rotzmat,view);
-	MYVECTOR3 tesdt;
-	tesdt = b - a;
-	MyVec3TransformNormal(tesdt, tesdt, rotzmat);
-	a = b - tesdt;
-	//	MyMatrixLookAtRH(view, a, b, up);
-	char bbuf[512];
-	memset(bbuf, 0, 512);
-//	sprintf_s(bbuf, "%d,%d,%d,%d", fps, byouga_count
-//		, temp_input_shori->x, temp_input_shori->y);
-//	WCHAR bbufdayo[512];
-//	memset(bbufdayo, 0, sizeof(WCHAR) * 512);
-	stringconverter scc;
-	CS::instance()->enter(CS_RENDERDATA_CS, "render");
-//	scc.charToWCHAR(bbuf, bbufdayo);
-	CS::instance()->leave(CS_RENDERDATA_CS, "render");
-//	te->changeText(bbufdayo, wcslen(bbufdayo));
-	CS::instance()->leave(CS_MESSAGE_CS, "render");
-
-	CS::instance()->leave(CS_DEVICECON_CS, "render game");
-
 	memset(animf, 0, sizeof(animf));
 	memset(animl, 0, sizeof(animl));
 	memset(animw, 0, sizeof(animw));
@@ -1214,14 +1178,7 @@ void Game::Run() {
 	g->getDeviceContext()->ClearDepthStencilView(Mesh::pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	KTROBO::DebugTexts::instance()->render(g);
-	if (!telop_texts->isRenderFinished()) {
-		telop_texts->render(g);
-	}
-	/*
-	if (te) {
-		te->render(g, 0xFFFF00FF, 10, 0, 30, 450, 40);
-	}
-	*/
+	
 	CS::instance()->leave(CS_DEVICECON_CS, "render game");
 
 	for (int i = 0; i < TASKTHREAD_NUM; i++) {
@@ -1255,164 +1212,12 @@ void Game::Run() {
 	g->getDeviceContext()->OMSetRenderTargets(1, &v, Mesh::pDepthStencilView);
 	g->getDeviceContext()->RSSetViewports(1, g->getViewPort());
 
-	static float f = 0;
-	f = frame;
-	while (f > 3000) {
-		f = f - 3000;
-	}
+	
 
 
 
-	MyMatrixRotationZ(worldforg, 0);//frame/600.00f);
-//	MYMATRIX unkoko;
-//	MyMatrixRotationY(unkoko,frame/10.00f);
-//	MyMatrixMultiply(worldforg,worldforg,unkoko);
-	for (int i = 0; i < 11; i++) {
-
-		MyMatrixScaling(world, 0.6, 0.6, 0.6);
-		MyMatrixTranslation(world, 0, 0, 0);
-		MyMatrixMultiply(world, world, worldforg);
-		if (i == 1) {
-			MYMATRIX tt;
-			//		MyMatrixTranslation(tt,0,-4,0);
-			//		MyMatrixScaling(world,2,2,2);
-			//		MyMatrixMultiply(world,world,tt);
-			//		MyMatrixMultiply(world, world,worldforg);
-		}
-		//		mesh3[i]->draw(g, &world, &view, &proj);
-
-	}
-	//	mesh3[7]->draw(g,&world,&view,&proj);
-	//	mesh3[8]->draw(g,&world,&view,&proj);
-	//	mesh3[0]->draw(g, &world, &view, &proj);
-	//	mesh3[10]->draw(g, &world, &view, &proj);
-
-	//	mesh->draw(g, &world,&view,&proj);
-	static float ccc;
-	ccc = frame / 60.00f;// * RENDERTIME_SETTIME;
-	int tesss = sizeof(MESH_VERTEX);
-	char bbf[512];
-	sprintf_s(bbf, 512, "%f,%d", ccc, tesss);
-	WCHAR bbc[512];
-	bbc[511] = 0;
-	stringconverter ssf;
-	ssf.charToWCHAR(bbf, bbc);
-	//DebugTexts::instance()->setText(g,wcslen(bbc), bbc);
-
-
-	MyMatrixScaling(world, 0.6, 0.6, 0.6);
-	MyMatrixTranslation(world, 0, 0, 0);
-	MyMatrixMultiply(world, world, worldforg);
-	//mesh2->draw(g, &world, &view, &proj);
-	RAY testdray;
-	CS::instance()->enter(CS_MESSAGE_CS, "test");
-//	testdray.org = temp_input_shori->ray.org;
-//	testdray.dir = temp_input_shori->ray.dir;
-//	MyVec3Normalize(testdray.dir, testdray.dir);
-//	testdray.dir = testdray.dir * 50;
-	/*
-	int sb = mesh2->Bones.size();
-	bool is_ma=false;
-	for (int i=0;i<sb;i++) {
-	MeshBone* vv = mesh2->Bones[i];
-
-		if (vv->houkatuobbuse) {
-
-			OBB henkanobb = vv->houkatuobb;
-			MYMATRIX henkanmat;
-			MYMATRIX idenmat;
-			MyMatrixIdentity(idenmat);
-			//MyMatrixIdentity(world);
-			MyMatrixMultiply(henkanmat,vv->combined_matrix,world);
-			MyVec3TransformCoord(henkanobb.c,henkanobb.c,henkanmat);
-			MyVec3TransformNormal(henkanobb.u[0],henkanobb.u[0],henkanmat);
-
-			henkanobb.e.float3.x = henkanobb.e.float3.x * MyVec3Length(henkanobb.u[0]);
-			MyVec3Normalize(henkanobb.u[0],henkanobb.u[0]);
-
-
-
-			MyVec3TransformNormal(henkanobb.u[1],henkanobb.u[1],henkanmat);
-			henkanobb.e.float3.y = henkanobb.e.float3.y * MyVec3Length(henkanobb.u[1]);
-			MyVec3Normalize(henkanobb.u[1],henkanobb.u[1]);
-			MyVec3TransformNormal(henkanobb.u[2],henkanobb.u[2],henkanmat);
-			henkanobb.e.float3.z = henkanobb.e.float3.z * MyVec3Length(henkanobb.u[2]);
-			MyVec3Normalize(henkanobb.u[2],henkanobb.u[2]);
-
-			if (TestSegmentOBB(&testdray,&henkanobb)) {
-				WCHAR buf[512];
-				memset(buf,0,sizeof(WCHAR)*512);
-				stringconverter sc;
-				sc.charToWCHAR(vv->bone_name,buf);
-				//DebugTexts::instance()->setText(g,wcslen(buf),buf);
-			//	g->drawOBB(g,0xFFFFFFFF,&idenmat,&view,&proj,&henkanobb);
-				is_ma = true;
-			}	else {
-			//	g->drawOBB(g,0xFFFF2222,&idenmat,&view,&proj,&henkanobb);
-			}
-
-		}
-
-	}
-	*/
-	CS::instance()->leave(CS_MESSAGE_CS, "testt");
-	CS::instance()->enter(CS_MESSAGE_CS, "test");
-//	temp_input_shori->setMAT(&world, &view, &proj);
-	CS::instance()->leave(CS_MESSAGE_CS, "testt");
-	//	texdayo->getInstance(0)->setViewProj(g,&view,&proj,&a,&b);
-	//	texdayo->getInstance(1)->setViewProj(g,&view, &proj,&a,&b);
-
-	MYVECTOR3 testr(0, 0, -10);
-	MYMATRIX rotX;
-	static float ff = 0;
-	ff += 0.01f;
-	MyMatrixRotationX(rotX, 0);
-	MyVec3TransformNormal(testr, testr, rotX);
-	//	texdayo->getInstance(0)->setRenderBillBoardPos(0,&rotX);
-
-	CS::instance()->leave(CS_DEVICECON_CS, "render game");
-	/*
-	static Mesh* mm = mesh;
-	if (ff > 3.0f) {
-		CS::instance()->enter(CS_DEVICECON_CS, "lock");
-		for (int i=0;i<100;i++) {
-	//	mesh_instanceds->changeInstanceMeshSkeleton(mesh_is[i]->getInstanceIndex(), mm,mm);
-		}
-		CS::instance()->leave(CS_DEVICECON_CS, "unlock");
-		ff = 0;
-		if (mm == mesh ) {
-			mm = mesh2;
-		} else {
-			mm = mesh;
-		}
-
-	}*/
-
-	CS::instance()->enter(CS_DEVICECON_CS, "render game");
-
-	mesh_instanceds->setViewProj(g, &view, &proj, &MYVECTOR4(testr.float3.x, testr.float3.y, testr.float3.z, 1));
-	/*
-	OBB testobb = mesh2->houkatuobb;
-
-	MYMATRIX idenmat;
-	MyMatrixIdentity(idenmat);
-
-	if (is_ma) {
-//		g->drawRAY(g,0xFF000000,&idenmat,&view,&proj,50,&testdray);
-	} else {
-	//	g->drawRAY(g,0xFFFFFFFF,&idenmat,&view,&proj,50,&testdray);
-	}
-
-	if (TestSegmentOBB(&temp_input_shori->ray,&testobb)) {
-//		g->drawOBB(g,0xFF000000,&idenmat,&view,&proj,&testobb);
-	} else {
-//		g->drawOBB(g,0xFF888888,&idenmat,&view,&proj,&testobb);
-	}
-
-	*/
-
-
-	//g->drawRAY(g,0xFFFF0000,&idenmat,&view,&proj,50,&temp_input_shori->ray);
+	mesh_instanceds->setViewProj(g, &view, &proj, &MYVECTOR4(0, 0, -1, 1));// testr.float3.x, testr.float3.y, testr.float3.z, 1));
+	
 	RAY tempray;
 
 	tempray.org = MYVECTOR3(50, 50, 0);
@@ -1440,27 +1245,7 @@ void Game::Run() {
 	MYMATRIX idenmat;
 	MyMatrixIdentity(idenmat);
 
-	//if (TestSegmentOBB(&tempray, &mesh2->houkatuobb)) {
-	//	g->drawRAY(g,0xFFFF00FF,&idenmat,&view,&proj,50/*MyVec3Length(tempray.dir)*/,&tempray);
-	//	g->drawOBB(g,0xFFFFFF00,&idenmat,&view,&proj,&mesh2->houkatuobb);
-	//} else {
-	//	g->drawRAY(g,0xFF000000,&idenmat,&view,&proj,50/*MyVec3Length(tempray.dir)*/,&tempray);
-	//}
-
-//	mesh->draw(g, &world, &view, &proj);
-	//texdayo->getInstance(0)->setViewProj(g,&view,&proj,&a,&b);
-	//texdayo->setRenderBillBoardPos(0,&world);
-
-	/*
-	MyMatrixTranslation(world,4,0,0);
-	mesh2->draw(g,&world,&view,&proj);
-
-	MyMatrixTranslation(world,0,0,4);
-	mesh2->draw(g,&world,&view,&proj);
-	*/
-
-	//float cc[] = {1.0f,1.0f,0.3f,1.0f};
-	//mesh_instanceds->loadAnimeMatrixBasisToTexture(g);
+	
 
 
 	MYVECTOR3 p1(0, 10, 10 + 30);
@@ -1499,196 +1284,12 @@ void Game::Run() {
 		//	g->drawTriangle(g,0xFFFFFFFF,&world,&view,&proj,&t1.x,&t1.y,&t1.z);
 		//	g->drawTriangle(g,0xFFFFFFFF,&world,&view,&proj,&t2.x,&t2.y,&t2.z);
 	}
-	CS::instance()->enter(CS_RENDERDATA_CS, "render game");
-
-	{
-		static float bui = 0;
-		bui = bui - 4.98*0.0001f * millisecond / 1000 * millisecond / 1000;
-		static float bb = 0;
-		bb = bb + bui * millisecond;
-		/*UMeshUnit* umesh_unit = umesh_units[0];
-		umesh_unit->setDT(millisecond/1000);
-		umesh_unit->setV(&MYVECTOR3(0,0,bui));
-
-	umesh_unit->setROTXYZ(0,0,0);
-	umesh_unit->setSCALEXYZ(1,1,1);*/
-	//umesh_unit->setXYZ(0,0,0);//testcc,testcc,bb);//5-testcc/*-testcc*/);
-
-		float frame_a = testcc;
-		bool com = true;
-
-		//	umesh_unit->calcAnimeFrame(1,&frame_a,&com);
-		//	umesh_unit->calcJyusinAndR();
-		bool calcom = true;
-		//umesh_unit->draw(g,&view,&proj,1, &testcc,&calcom,true, false/*is_calc_anime*/, false,true);
-	}
-
-
-	{
-		static float bui = 0;
-		bui = bui - 4.98*0.0001f * millisecond / 1000 * millisecond / 1000;
-		static float bb = 0;
-		bb = bb + bui * millisecond;
-		//		UMeshUnit* umesh_unit = umesh_units[1];
-				//umesh_unit->setDT(millisecond/1000);
-				//umesh_unit->setV(&MYVECTOR3(0,0,bui));
-
-		//	umesh_unit->setROTXYZ(0,0,0);
-		//	umesh_unit->setSCALEXYZ(1,1,1);
-		//	umesh_unit->setXYZ(testcc,testcc,bb);//5-testcc/*-testcc*/);
-			//float frame_a=testcc;
-		//	bool com=true;
-
-		//	umesh_unit->calcAnimeFrame(1,&frame_a,&com);
-		float frame_a = testcc;
-		bool com = true;
-		//	umesh_unit->setSCALEXYZ(1,1,1);
-		//	umesh_unit->setXYZ(0,3,-5);//5-testcc/*-testcc*/);
-			//umesh_unit->calcAnimeFrame(1,&frame_a,&com);
-
-			//sinai->umesh_unit->setSCALEXYZ(3,3,3);
-		MYVECTOR3 oo;
-		MYVECTOR3 moto(0, 1.9, -0.20);
-		oo = oo + moto;
-//		temp_input_shori->getPos(&oo);
-		//	sfuru->setKAMAE(temp_input_shori->getRotY(),0,&oo);
-		//	sinai->umesh_unit->setROTXYZ(temp_input_shori->getRotY(),0,0);
-		//	sinai->umesh_unit->setXYZ(oo.float3.x,oo.float3.y,oo.float3.z);//10*sin(testcc),-4,10*cos(testcc));
-		//	sinai->umesh_unit->calcAnimeFrame(1,&frame_a,&com);
-		//	sinai->umesh_unit->calcJyusinAndR();
-		//	MYVECTOR3 p = sinai->getHidaritePos();
-		OBB b;
-		MYVECTOR3 p = MYVECTOR3(-0.78, -3.02, 6.15);
-		b.c = p;
-		b.e = MYVECTOR3(0.3, 0.3, 0.3);
-	//	g->drawOBBFill(g, 0xFFFF0000FF, &idenmat, &view, &proj, &b);
-
-		/*	 p = sinai->getMigitePos();*/
-		p = MYVECTOR3(-1.56, -0.36, 6.4);
-		b.c = p;
-		b.e = MYVECTOR3(0.3, 0.3, 0.3);
-//		g->drawOBBFill(g, 0xFFFF00FFFF, &idenmat, &view, &proj, &b);
-
-		//umesh_unit->calcJyusinAndR();
-		//ss->nigiraseru(g,&view, &proj);
-
-
-
-
-	//	float t = this->ksgene->getNigiruhitoAnimeTemp();
-
-	//	this->makers->getInstance(0)->update(testcc,sfuru);
-	//	sfuru->men_furaseru(g,&view,&proj,testcc,t);
-	//	SinaiNigiru sn(sinai, umesh_unit);
-	//	sn.setDefaultAnimeFrameAll(testcc);
-	//	sn.nigiraseru(g,&view,&proj);
-
-		bool calcom = true;
-
-		//umesh_unit->draw(g,&view,&proj,1, &testcc,&calcom,true, false/*is_calc_anime*/, false,true);
-
-	}
-
-	//rmap->update();
-
-	CS::instance()->leave(CS_RENDERDATA_CS, "render game");
+	
 	CS::instance()->leave(CS_DEVICECON_CS, "device game");
 	lua_ets->getInstance(0)->doLoop(this->c->getTimeStamp());
 	CS::instance()->enter(CS_DEVICECON_CS, "device game");
 
-	static float tester = 0;
-	tester += 0.1f;
-
-	//	UMeshUnit* umesh_unit = umesh_units[2+30];
-		//umesh_unit->setXYZ(0,0,205);
-		//umesh_unit->setROTXYZ(0,0,0);//1.57+tester/1000.0f,tester/100.00f,0);
-
-		//umesh_unit->calcJyusinAndR();
-		//mesh_is[2+30]->setWorld(&umesh_unit->world);
-	for (int i = 0; i < 75; i++) {
-		{
-			//		UMeshUnit* umesh_unit = umesh_units[i];
-			//	umesh_unit->setROTXYZ(0,0,0);//testcc/3.00f);
-			//	umesh_unit->setSCALEXYZ(2,2,1);
-			//	umesh_unit->setXYZ(0,0,0);
-			//	umesh_unit->calcJyusinAndR();
-			bool calcom = true;
-			//	umesh_unit->calcJyusinAndR();
-			//	umesh_unit->draw(g,&view,&proj,1, &testcc,&calcom,true, false/*is_calc_anime*/, false,true);
-		}
-	}
-	/*
-	{
-		UMeshUnit* um2 = umesh_units[0];
-		UMeshUnit* um1 = umesh_units[1];
-		TRIANGLEDAYO tri1;
-		for (int inde =0;inde < um1->meshs[0]->mesh->FaceCount;inde++) {
-
-			if (!um1->meshs[0]->indexs) continue;
-			if (!um1->meshs[0]->vertexs) continue;
-			UINT inde1 = um1->meshs[0]->indexs[3*inde];
-			UINT inde2 = um1->meshs[0]->indexs[3*inde+1];
-			UINT inde3 = um1->meshs[0]->indexs[3*inde+2];
-			MESH_VERTEX* v1 = &um1->meshs[0]->vertexs[inde1];
-			MESH_VERTEX* v2 = &um1->meshs[0]->vertexs[inde2];
-			MESH_VERTEX* v3 = &um1->meshs[0]->vertexs[inde3];
-			tri1.x = v1->pos;
-			tri1.y = v2->pos;
-			tri1.z = v3->pos;
-
-			MyVec3TransformCoord(tri1.x,tri1.x,um1->world);
-			MyVec3TransformCoord(tri1.y,tri1.y,um1->world);
-			MyVec3TransformCoord(tri1.z,tri1.z,um1->world);
-			for (int h=0;h<KTROBO_MESH_BONE_MAX;h++) {
-				if (um2->meshs[0]->is_bone_obbs_use[h] && hanteiTRIANGLETOOBB(&tri1,&um2->meshs[0]->bone_obbs[h])) {
-					DebugTexts::instance()->setText(g,3,L"ata");
-				}
-			}
-		}
-	}
-	*/
-
-	/*
-	{
-		UMeshUnit* umesh_unit = umesh_units[2];
-	umesh_unit->setROTXYZ(0,0.5,0.5);
-	umesh_unit->setSCALEXYZ(1,1,1);
-	umesh_unit->setXYZ(testcc,-testcc,0);
-	umesh_unit->calcJyusinAndR();
-	bool calcom = true;
-	umesh_unit->draw(g,&view,&proj,1, &testcc,&calcom,false, false, true,true);
-	}*/
-	/*
-	for(int i=0;i<1;i++)
-	{
-	UMeshUnit* umesh_unit = umesh_units[3+i];
-//	umesh_unit->setROTXYZ(0,0.5,0.5);
-//	umesh_unit->setSCALEXYZ(3,3,0.2);
-//	umesh_unit->setXYZ(testcc,-testcc/2,0);
-	//umesh_unit->calcJyusinAndR();
-	bool calcom = true;
-	umesh_unit->draw(g,&view,&proj,1, &testcc,&calcom,true, false, false,true);
-	}
-	*/
-	//	mesh_instanceds->calcCombinedMatrixToTexture(g);
-	//	mesh_instanceds->loadColorToTexture(g);
-
-
-	//	mesh_instanceds->loadAnimeMatrixBasisToTexture(g);
-	//	mesh_instanceds->loadMatrixLocalToTexture(g);
-	//	mesh_instanceds->calcCombinedMatrixToTexture(g);
-		//mesh_instanceds->loadColorToTexture(g);
-
-		//watches_for_keisoku.startWatch(0);
-	////	mesh_instanceds->render(g);
 	mesh_instanceds->render(g);
-
-
-
-	//g->getDeviceContext()->ClearRenderTargetView(mesh_instanceds->anime_matrix_basis_texture->target_view, cc);
-	//demo->Render(g, mesh_instanceds->combined_matrix_texture);
-
-
 
 	CS::instance()->enter(CS_RENDERDATA_CS, "ee");
 
@@ -1727,57 +1328,10 @@ void Game::Run() {
 
 
 
-		//	inputtext->render(g);
-		//	but->render(g);
-
 	MYMATRIX te;
-	MyMatrixTranslation(world, f / 200.0f, f / 200.0f, 0);
-	//MyMatrixRotationZ(te,f);
-//	MyMatrixMultiply(world,te,world);
-	//texdayo->getInstance(0)->setRenderBillBoardIsRender(0,false);
 
-	//texdayo->getInstance(0)->setRenderBillBoardPos(0, &world);
-	//watches_for_keisoku.stopWatch(0);
 	bool is_sleep = false;
 
-	/*
-	{
-		WCHAR buff[512];
-		char buf[128];
-		char str[128];
-		memset(buf,0,128);
-
-		for (int i=0;i<10;i++) {
-		memset(str,0,128);
-		GamenGARAGE_partsParam::getSuutiChara((int)(watches_for_keisoku.times[i]*100),str);
-		strcat_s(buf,str);
-		strcat_s(buf,",");
-	//	GamenGARAGE_partsParam::getSuutiChara((int)(sizeof(AtariUnitAns)),str);
-	//	strcat_s(buf,str);
-		}
-		strcat_s(buf,"ac:");
-		GamenGARAGE_partsParam::getSuutiChara((int)hantei->getAtattaCount(), str);
-		strcat_s(buf,str);
-		strcat_s(buf,",");
-		GamenGARAGE_partsParam::getSuutiChara((int)hantei->icounter.counter, str);
-		strcat_s(buf,str);
-		strcat_s(buf,",");
-
-		GamenGARAGE_partsParam::getSuutiChara((int)robodayo->atarihan->y, str);
-		strcat_s(buf,str);
-		strcat_s(buf,",");
-		GamenGARAGE_partsParam::getSuutiChara((int)robodayo->atarihan->z, str);
-		strcat_s(buf,str);
-		stringconverter sc;
-		sc.charToWCHAR(buf,buff);
-
-	//	DebugTexts::instance()->setText(g,wcslen(buff),buff);
-		if (watches_for_keisoku.times[5] > 10) {
-			mylog::writelog(KTROBO::INFO, buf);
-			mylog::writelog(KTROBO::INFO, "\n\n");
-		}
-	}
-	*/
 
 	watches_for_keisoku.startWatch(1);
 	texdayo->createIndexBuffer(g);
@@ -1786,46 +1340,10 @@ void Game::Run() {
 	watches_for_keisoku.stopWatch(1);
 
 
-	/*
-
-	if(TestOBBOBB(&hantei->umesh_units[0]->meshs[0]->bone_obbs[0],&hantei->umesh_units[1]->meshs[0]->bone_obbs[0])) {
-		MYMATRIX iden;
-		MyMatrixTranslation(iden,0,0,5);
-	//	g->drawOBB(g,0xFF0000FF,&iden,&view,&proj,&umesh_units[0]->meshs[0]->bone_obbs[0]);
-	}
-	*/
+	
 
 	CS::instance()->enter(CS_RENDERDATA_CS, "unko");
-	/*
-		watches_for_keisoku.startWatch(2);
-		watches_for_keisoku.startWatch(5);
-		hantei->maecalcdayo(g);
-		watches_for_keisoku.stopWatch(5);
-		watches_for_keisoku.startWatch(6);
-		hantei->ataristart();
-		hantei->calc(g);
-		watches_for_keisoku.stopWatch(6);
-		watches_for_keisoku.startWatch(7);
-		hantei->copyKekkaForBufferCopy(g);
-		watches_for_keisoku.stopWatch(7);
-		watches_for_keisoku.startWatch(8);
-		hantei->calc(g);
-		watches_for_keisoku.stopWatch(8);
-		watches_for_keisoku.startWatch(9);
-		hantei->copyKekkaForBufferCopy(g);
-		watches_for_keisoku.stopWatch(9);
-		watches_for_keisoku.stopWatch(2);
-	*/
-	//	CS::instance()->leave(CS_RENDERDATA_CS, "unko");
-	//	CS::instance()->enter(CS_RENDERDATA_CS,"unko");
-	/*
-		hantei->maecalcdayo(g);
-		hantei->ataristart();
-		hantei->calc(g);
-		hantei->copyKekkaForBufferCopy(g);
-		hantei->calc(g);
-		hantei->copyKekkaForBufferCopy(g);
-	*/
+	
 
 	effect_suuji->update(&lookfromtoat);
 	CS::instance()->leave(CS_RENDERDATA_CS, "unko");

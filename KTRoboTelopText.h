@@ -51,13 +51,20 @@ private:
 	TelopTextsCBuf2 cbuf2;
 	ID3D11Buffer* cbuf1_buffer;
 	ID3D11Buffer* cbuf2_buffer;
-
+	bool is_render;
 public:
 	TelopTexts(void);
 	~TelopTexts(void);
 
 	void Init(Graphics* g, Font* f);
 	void Del();
+	void resetTime(Graphics* g) { // Ç‹ÇΩèâÇﬂÇ©ÇÁï\é¶ÇµÇ»Ç®Ç∑
+		sum_plustime = 0;
+		plusTime(g, 0);
+	}
+	void setIsRender(bool t) {
+		is_render = t;
+	}
 	void readFile(Graphics* g, char* filename, int height, int transparent_text_line_num, MYVECTOR4* text_color, float text_speed);
 	bool isRenderFinished();
 	void plusTime(Graphics* g, float dt);

@@ -104,7 +104,9 @@ private:
 	lua_State* L;
 	lua_State* Ls[TASKTHREAD_NUM];
 	KTRoboDemoRender* demo;
+public:
 	TelopTexts* telop_texts;
+private:
 	void startWatch();
 	double stopWatch();
 	LARGE_INTEGER timeStart;

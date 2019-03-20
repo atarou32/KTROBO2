@@ -33,10 +33,27 @@ void SceneGarage::mainrenderIMPL(bool is_focused, Graphics* g, Game* game) {
 
 		tex->setViewProj(g,&game->view,g->getProj(),&from,&at);
 		tex2->setViewProj(g,&game->view, g->getProj(),&from,&at);
+
+		if (game->telop_texts->isRenderFinished()) {
+			//	telop_texts->readFile(g, "resrc/sample/KTROBO.txt", 30, 14, &MYVECTOR4(1, 1, 1, 1), 0.1);
+		}
+		else {
+			game->telop_texts->plusTime(g, game->getDMSecond());
+		}
+
+		if (!game->telop_texts->isRenderFinished()) {
+			game->telop_texts->render(g);
+		}
+
+
 	}
 }
 void SceneGarage::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
 
+	
+
+
+	
 
 
 

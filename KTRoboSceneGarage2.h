@@ -8,10 +8,11 @@
 #endif
 #include "KTRoboInput.h"
 #include "KTRoboAtari.h"
+#include "KTRoboLoadable.h"
 
 namespace KTROBO {
 
-class Garage2 {
+class Garage2 : public Loadable2{
 
 public:
 	Garage2();
@@ -28,12 +29,13 @@ public:
 	// つまり　renderスレッド　と　loadスレッドがあるけど
 	// renderスレッドで該当ロード物のロックをいつも行うのはばかげてるし、
 	// どうやったらいいのかな
-	// 
+	// Loadable2 を使ってみようということになった.
+
 	// ガレージ画面が始まったときに最低限ロードされていなければならないもの
 	// 
 
 	// ガレージ画面が始まってから遅れてロードしてもいいもの
-
+	void load(AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
 
 };
 class SceneGarage2 : public Scene, public INPUTSHORICLASS{
@@ -42,17 +44,17 @@ class SceneGarage2 : public Scene, public INPUTSHORICLASS{
 	Texture* tex;
 	Texture* tex2;
 	MyTextureLoader* loader;
-
+	Garage2* garage_impl;
 public:
 	SceneGarage2(AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
 	~SceneGarage2(void);
 
 public:
 	void mainrenderIMPL(bool is_focused, Graphics* g, Game* game);
-	void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game);
-	void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game);
-	void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game);
-	void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game);
+	void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+	void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+	void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+	void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game);
 
 	void enter();
 	void leave();

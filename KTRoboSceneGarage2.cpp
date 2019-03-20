@@ -4,6 +4,11 @@ using namespace KTROBO;
 
 SceneGarage2::SceneGarage2(AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader) : Scene("garage", 6)
 {
+	garage_impl = 0;
+	this->tex = tex;
+	this->tex2 = tex2;
+	this->loader = loader;
+	this->hantei = hantei;
 }
 
 
@@ -24,7 +29,7 @@ void SceneGarage2::mainrenderIMPL(bool is_focused, Graphics* g, Game* game) {
 		tex2->setViewProj(g, &game->view, g->getProj(), &from, &at);
 	}*/
 }
-void SceneGarage2::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game) {
+void SceneGarage2::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
 
 
 
@@ -32,15 +37,15 @@ void SceneGarage2::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_St
 }
 
 
-void SceneGarage2::aiIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game) {
+void SceneGarage2::aiIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game) {
 
 }
 
-void SceneGarage2::posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game) {
+void SceneGarage2::posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
 
 }
 
-void SceneGarage2::loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_State* l, Game* game) {
+void SceneGarage2::loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
 //	if (gg) {
 //		try {
 //			gg->loadData(g, game->getDMSecond(), game->getTimeStamp());
@@ -50,6 +55,11 @@ void SceneGarage2::loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, lua_S
 //			throw err;
 //		}
 //	}
+
+	garage_impl->load(hantei, tex, tex2, loader);
+
+
+
 }
 
 void SceneGarage2::enter() {
@@ -60,6 +70,8 @@ void SceneGarage2::enter() {
 //		ss = ss->getParent();
 //	}
 //	InputMessageDispatcher::registerImpl(gg, NULL, ss->impl);
+
+	garage_impl = new Garage2();
 
 	Scene::enter();
 
@@ -85,4 +97,17 @@ void SceneGarage2::leave() {
 bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
 
 	return false;
+}
+
+
+
+Garage2::Garage2() : Loadable2() {
+
+};
+Garage2::~Garage2() {
+
+};
+
+void Garage2::load(AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader) {
+
 }
