@@ -18,18 +18,62 @@ private:
 	int pid;
 	static unsigned int part_id;
 	bool has_touroku;
+
+	MYRECT rect;
+	MYRECT nowRect;
+	MYRECT destRect;
+	float speed;
+	float dt;
+protected:
+	bool is_focused;
+	bool has_is_focused_changed;
+	unsigned int color;
 public:
-	virtual void focused(unsigned int focused_pid) {}; // カーソルがあわされた　または　マウスで合わされた
-	virtual void selected(unsigned int selected_pid) {}; // カーソルがあわされた状態で選択ボタンが押された　またはマウスで選択しているものが押された
-	virtual void unfocused() {}; // カーソルが外れた
+	virtual void setRect(MYRECT* re) {
+		rect = *re;
+		nowRect = *re;
+		destRect = *re;
+	}
+	virtual void moveTo(MYRECT* dest_re, float time) {};
+	virtual bool moveLoop(float dt) { return false; }; // 動き終わったらtrueを返す
+	virtual bool focused(int x, int y) { return false; }; // カーソルがあわされた　または　マウスで合わされた
+	virtual bool selected(int x, int y) { return false; }; // カーソルがあわされた状態で選択ボタンが押された　またはマウスで選択しているものが押された
+	virtual void unfocused(int x, int y) {}; // カーソルが外れた
 	void touroku() { has_touroku = true; };
 	bool getTouroku() { return has_touroku; };
-	Garage2_part() { pid = part_id; part_id++; has_touroku = false; };
+	Garage2_part() { 
+		pid = part_id; part_id++; has_touroku = false; is_focused = false; has_is_focused_changed = false; color = 0xFFFFFFFF; 
+	};
 	~Garage2_part() {};
+	virtual char* getHelpString() {
+		return "default help string";
+	}
+};
+class Garage2Tex_Garage2 : public Garage2_part {
+
+private:
+	int texe;
+	int tex_waku;
+public:
+	Garage2Tex_Garage2() {
+		texe = 0;
+		tex_waku = 0;
+	}
+	~Garage2Tex_Garage2() {};
+
+	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
+
+	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
+	char* getHelpString() {
+		return "ガレージ画面です。ここでアセンブルやショップなどの出撃の準備ができます。";
+	};
 };
 
 class MyRobo_Garage2 : public Loadable2 , public Garage2_part{
 private:
+	int tex_waku;
+	int tex_haikei;
+
 public:
 	Robo* robo;
 private:
@@ -37,9 +81,9 @@ private:
 public:
 	MyRobo_Garage2();
 	~MyRobo_Garage2();
-	void render(Graphics* g, MYMATRIX* view, MYMATRIX* proj);
+	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
 
-	void load(Graphics* g, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
+	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
 };
 
 
@@ -47,11 +91,11 @@ public:
 class Garage2 : public Loadable2{
 private:
 	MyRobo_Garage2* robog;
-	MyRobo_Garage2* robog2;
-	MyRobo_Garage2* robog3;
-	MyRobo_Garage2* robog4;
-	MyRobo_Garage2* robog5;
-
+	//MyRobo_Garage2* robog2;
+	//MyRobo_Garage2* robog3;
+	//MyRobo_Garage2* robog4;
+	//MyRobo_Garage2* robog5;
+	Garage2Tex_Garage2* gtex_g;
 	vector<Garage2_part*> parts;
 public:
 	Garage2();
@@ -79,7 +123,7 @@ private:
 	// atoniyobareru
 	void atoload(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
 public:	
-	void render(Graphics* g, MYMATRIX* view, MYMATRIX* proj);
+	void render(Graphics* g, Texture* tex, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
 
 };
 class SceneGarage2 : public Scene, public INPUTSHORICLASS{

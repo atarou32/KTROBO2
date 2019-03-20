@@ -166,7 +166,16 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow, Input* input)
 	RECT rc = { 0, 0, 1000, 800 };
 	AdjustWindowRect( &rc, WS_OVERLAPPEDWINDOW, FALSE );
 
-	g_hWnd = CreateWindow( CLASS_NAME, CLASS_NAME, WS_OVERLAPPEDWINDOW,
+	g_hWnd = CreateWindow( CLASS_NAME, CLASS_NAME, 
+		
+		
+		(WS_OVERLAPPED | \
+			WS_CAPTION | \
+			WS_SYSMENU | \
+			WS_THICKFRAME)
+		
+		
+		,
 						CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top,
 						NULL, NULL, hInstance, NULL);
 	
