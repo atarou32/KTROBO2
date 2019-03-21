@@ -1,6 +1,7 @@
 #include "KTRoboSceneGarage2.h"
 #include "KTRoboGame.h"
 
+
 using namespace KTROBO;
 
 SceneGarage2::SceneGarage2(AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader) : Scene("garage", 6)
@@ -664,5 +665,14 @@ void ShopTex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRI
 }
 
 
+bool AssembleTex_Garage2::selected(int x, int y) {
+
+	bool  t = Garage2_part::selected(x, y);
+	if (t) {
+		LOADTYUU* l = new LOADTYUU();
+		l->enter();
+	}
+	return t;
+};
 
 unsigned int Garage2_part::part_id = 0;

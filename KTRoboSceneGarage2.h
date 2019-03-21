@@ -146,6 +146,10 @@ public:
 	char* getHelpString() {
 		return "アセンブルします。購入済みのパーツを使って自分独自の機体構成を作ります。";
 	};
+
+	bool selected(int x, int y);
+	
+
 };
 
 class AsmBodySaveTex_Garage2 : public Garage2_part {

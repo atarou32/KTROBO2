@@ -207,21 +207,6 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
 
         case WM_DESTROY:
 
-			if (input) {
-				delete input;
-				input = 0;
-			}
-
-			if (game) {
-
-				//KTROBO::mylog::writelog(KTROBO::INFO, "start game del");
-				game->Del();
-				delete game;
-				game = 0;
-				//KTROBO::mylog::writelog(KTROBO::INFO, "end game del");
-			}
-			KTROBO::CS::instance()->Del();
-
             PostQuitMessage( 0 );
             break;
 

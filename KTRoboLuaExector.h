@@ -70,6 +70,7 @@ private:
 	lua_State* L;
 	long now_timestamp;
 	LuaExec tasks[KTROBO_LUA_EXECTOR_TASK_MAX]; 
+	bool is_donow;
 	// 256しかないので　即実行でないまたは繰り返してｃ＋＋で呼んでもらうファイルはなるべく少なくする　lua側でまとめる
 	//setexecしなくていいdonowはロックをかけない？ いちおうかけておこう donowもいったんタスクに設定してから呼ぶ
 public:
@@ -85,7 +86,7 @@ private:
 	int getEmptyTaskIndex();
 	LuaExec* setExecTask(LuaExec::LUAEXEC_EXEC_TYPE type, char* filename, int second_delay, int key);
 public:
-	void setExecDoNow(char* lua_filename);
+	void setExecDoNow(char* lua_filename); //どのセットも 読んだ時点ですぐ実行されない。　AIスレッドのループで即実行される
 	void setExecDoUntilTime(char* lua_filename, int second_delay);
 	void setExecDoUntilKey(char* lua_filename, int key);
 	void setExecCoDoNow(char* lua_filename);
@@ -95,7 +96,7 @@ public:
 
 	void doAndCoDoExecByKey(int key); // codoでも 登録しているタスクから実行させる
 	void resetAllLuaTask();
-	void doLoop(long timestamp); // 一秒ごとに呼ばれる
+	void doLoop(long timestamp); // 一秒ごとに呼ばれる もし実行されるタスクがある場合はすぐに実行される
 };
 
 class LuaExectors {

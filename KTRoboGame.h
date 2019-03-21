@@ -190,6 +190,12 @@ public:
 		return effect_managers->getInstance(0);
 	}
 
+	void doLoopInAI() {
+		if (lua_ets) {
+			lua_ets->getInstance(0)->doLoop(c->getTimeStamp());
+		}
+
+	}
 
 
 	MySound* getSound() {

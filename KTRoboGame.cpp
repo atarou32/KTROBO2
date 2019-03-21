@@ -112,6 +112,12 @@ void RENDERTCB(TCB* thisTCB) {
 	g->Run();
 }
 
+void LuaExecDoLoopTCB(TCB* thisTCB) {
+
+	Game* g = (Game*)thisTCB->data;
+	g->doLoopInAI();
+
+}
 
 void CALCCOMBINEDTCB(TCB* thisTCB) {
 	
@@ -232,7 +238,7 @@ void LOADMESHTCB(TCB* thisTCB) {
 	Graphics* g = (Graphics*)thisTCB->Work[1];
 	MeshInstanceds* m = (MeshInstanceds*)thisTCB->Work[2];
 	
-	/*
+/*
 	char buff[] = "resrc/script/sample.lua.txt";
 	int error=LUA_ERRERR;
 	CS::instance()->enter(CS_LUAEXE_CS, "loadmeshtcb");
@@ -560,7 +566,10 @@ bool Game::Init(HWND hwnd) {
 	memset(work,0,sizeof(work));
 	renderTCB = task_threads[TASKTHREADS_UPDATEMAINRENDER]->make(RENDERTCB,this,work,0x0000FFFF);
 	task_threads[TASKTHREADS_AIDECISION]->make(MessageDispatcherTCB, NULL, work, 0x0000FFFF);
-	
+
+	memset(work, 0, sizeof(work));
+	task_threads[TASKTHREADS_AIDECISION]->make(LuaExecDoLoopTCB, this, work, 0x0000FFFF);
+
 	
 	//SceneGarage* sg = new SceneGarage(g, hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 
@@ -1286,7 +1295,7 @@ void Game::Run() {
 	}
 	
 	CS::instance()->leave(CS_DEVICECON_CS, "device game");
-	lua_ets->getInstance(0)->doLoop(this->c->getTimeStamp());
+	//lua_ets->getInstance(0)->doLoop(this->c->getTimeStamp());
 	CS::instance()->enter(CS_DEVICECON_CS, "device game");
 
 	mesh_instanceds->render(g);

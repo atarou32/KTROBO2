@@ -61,6 +61,7 @@ LuaExector::LuaExector(lua_State* L)
 {
 	this->L = L;
 	now_timestamp = 0;
+	is_donow = false;
 }
 
 
@@ -305,6 +306,7 @@ void LuaExector::doAndCoDoExecByKey(int key) {
 }
 void LuaExector::setExecDoNow(char* lua_filename) {
 	LuaExec* le  = setExecTask(LuaExec::LUAEXEC_EXEC_TYPE::DONOW, lua_filename, 0, 0);
+	/*
 	CS::instance()->enter(CS_LUAEXE_CS, "test");
 	try {
 		dodayo(le);
@@ -315,6 +317,8 @@ void LuaExector::setExecDoNow(char* lua_filename) {
 
 		}
 	CS::instance()->leave(CS_LUAEXE_CS, "test");
+	*/
+	is_donow = true;
 }
 void LuaExector::setExecDoUntilTime(char* lua_filename, int second_delay) {
 	setExecTask(LuaExec::LUAEXEC_EXEC_TYPE::DO_UNTIL_TIME, lua_filename, second_delay, 0);
@@ -324,6 +328,7 @@ void LuaExector::setExecDoUntilKey(char* lua_filename, int key) {
 }
 void LuaExector::setExecCoDoNow(char* lua_filename) {
 	LuaExec* le = setExecTask(LuaExec::LUAEXEC_EXEC_TYPE::DONOW__COROUTINE, lua_filename, 0, 0);
+	/*
 	CS::instance()->enter(CS_LUAEXE_CS, "test");
 	try {
 		cododayo(le);
@@ -334,6 +339,8 @@ void LuaExector::setExecCoDoNow(char* lua_filename) {
 
 	}
 	CS::instance()->leave(CS_LUAEXE_CS, "test");
+	*/
+	is_donow = true;
 }
 void LuaExector::setExecCoDoUntilTime(char* lua_filename, int second_delay) {
 	setExecTask(LuaExec::LUAEXEC_EXEC_TYPE::DO_UNTIL_TIME__COROUTINE, lua_filename, second_delay, 0);
@@ -343,7 +350,7 @@ void LuaExector::setExecCoDoUntilKey(char* lua_filename, int key) {
 }
 void LuaExector::doLoop(long timestamp) {
 	
-	if (this->now_timestamp == timestamp) return; // ˆê•b‚²‚Æ‚ÉŒÄ‚Ô‚æ‚¤‚É‚·‚é
+	if (!is_donow && this->now_timestamp == timestamp) return; // ˆê•b‚²‚Æ‚ÉŒÄ‚Ô‚æ‚¤‚É‚·‚é
 	this->now_timestamp = timestamp;
 	CS::instance()->enter(CS_LUAEXE_CS, "test");
 	try {
@@ -385,6 +392,7 @@ void LuaExector::doLoop(long timestamp) {
 
 
 	CS::instance()->leave(CS_LUAEXE_CS, "test");
+	is_donow = false;
 }
 
 void LuaExector::resetAllLuaTask() {

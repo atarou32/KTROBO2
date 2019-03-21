@@ -34,9 +34,9 @@ class TextFromLua : public ITextFromLua
 private:
 	Graphics* g;
 	Game* gdayo;
-	TWOTAKU* two;
-	ONEMESSAGE* one;
-	LOADTYUU* load;
+//	TWOTAKU* two;
+//	ONEMESSAGE* one;
+//	LOADTYUU* load;
 public:
 	TextFromLua(Graphics* gg, Game* ggg);
 	~TextFromLua(void);
