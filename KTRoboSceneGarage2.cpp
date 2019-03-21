@@ -1,6 +1,6 @@
 #include "KTRoboSceneGarage2.h"
 #include "KTRoboGame.h"
-
+#include "tolua_glue/tolua_glue.h"
 
 using namespace KTROBO;
 
@@ -669,8 +669,7 @@ bool AssembleTex_Garage2::selected(int x, int y) {
 
 	bool  t = Garage2_part::selected(x, y);
 	if (t) {
-		LOADTYUU* l = new LOADTYUU();
-		l->enter();
+		MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/SCENE_LOADTYUU.lua");
 	}
 	return t;
 };

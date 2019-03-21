@@ -197,7 +197,6 @@ public:
 
 	}
 
-
 	MySound* getSound() {
 		return sound;
 	}
