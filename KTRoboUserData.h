@@ -2,6 +2,7 @@
 #define KTROBO_USER_DATA_H
 #pragma once
 #include "KTRoboRobo.h"
+#include "KTRoboLoadable.h"
 
 namespace KTROBO {
 
@@ -10,7 +11,8 @@ namespace KTROBO {
 
 class AsmRobo;
 
-class AsmBody {
+class AsmBody : public Loadable2 {
+	// ファイルを読み込んでアセンブルロボをロードするまで
 public:
 	AsmRobo* arobo;
 private:
@@ -62,14 +64,15 @@ public:
 	string getHyoukaName() { return hyouka_name; };
 };
 	
-class Item {
+class Item : public Loadable2 {
 private:
 	int item_id;
 	int parts_id;
 	RoboParts* part;
 	bool is_equiped; // 出撃する機体のパーツのときは
+	bool is_part_loaded;
 public:
-	Item();
+	Item(int item_id);
 	~Item();
 	enum ITEM_SOUBI_KASHO {
 		UNKNOWN = 0,
@@ -88,9 +91,9 @@ public:
 	};
 
 	ITEM_SOUBI_KASHO kasho;
-	void init(Item* ite);
+
 	void init(RoboParts* parts);
-	void init(int item_id);
+	void init(int item_id); // userdat ファイルから読み込む
 
 
 	void equip(Robo* robo); // robo に装備させる
@@ -98,7 +101,7 @@ public:
 
 
 
-class AsmRobo {
+class AsmRobo{
 private:
 
 	Item* head;
@@ -147,6 +150,7 @@ public:
 	void setRShoulderWeapon(Item* h);
 	void setLShoulderWeapon(Item* h);
 
+	void setParam();
 
 };
 
@@ -164,6 +168,7 @@ public:
 
 	void makeNewAsmBodyFile(); // 最初のデフォルトの機体構成はアセンブルボディがない場合　
 	// ロードした時になってる構成もアセンブルボディで書く
+
 	void overWriteAsmBodyFile();
 	void loadAsmBodyfile();
 
