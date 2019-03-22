@@ -225,13 +225,15 @@ char* Garage2::getHelpStringWhenNoneFocused() {
 	return selected_categorypart->getHelpString();
 }
 
-Garage2::Garage2() :  Loadable2(), Garage2_part() {
+Garage2::Garage2() :  Loadable2(), Gamen2_part() {
 	robog = 0;
 	gtex_g = 0;
+	/*
 	atex_g = 0;
 	abstex_g = 0;
 	abltex_g = 0;
 	stex_g = 0;
+	*/
 	help_text = 0;
 	help_text_waku = 0;
 	selected_categorypart = 0;
@@ -246,6 +248,7 @@ Garage2::~Garage2() {
 		delete gtex_g;
 		gtex_g = 0;
 	}
+	/*
 	if (atex_g) {
 		delete atex_g;
 		atex_g = 0;
@@ -262,7 +265,7 @@ Garage2::~Garage2() {
 		delete stex_g;
 		stex_g = 0;
 	}
-
+	*/
 };
 
 void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* tex2, MyTextureLoader* loader) {
@@ -281,9 +284,10 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 
 void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) {
 	if (!selected_categorypart) {
-		vector<Garage2_part*>::iterator it = this->select_parts.begin();
+		/*
+		vector<Gamen2_part*>::iterator it = this->select_parts.begin();
 		while (it != select_parts.end()) {
-			Garage2_part* p = *it;
+			Gamen2_part* p = *it;
 
 			p->unfocused(x, y);
 
@@ -293,7 +297,7 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 		it = select_parts.begin();
 
 		while (it != select_parts.end()) {
-			Garage2_part* p = *it;
+			Gamen2_part* p = *it;
 
 			if (p->focused(x, y)) {
 
@@ -314,14 +318,15 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 			tex2->setRenderTextChangeText(help_text, this->getHelpStringWhenNoneFocused());
 		}
 		return;
-
+		*/
 	}
 }
 void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x, int y) {
 	if (!selected_categorypart) {
-		vector<Garage2_part*>::iterator it = this->select_parts.begin();
+		/*
+		vector<Gamen2_part*>::iterator it = this->select_parts.begin();
 		while (it != select_parts.end()) {
-			Garage2_part* p = *it;
+			Gamen2_part* p = *it;
 
 			p->unfocused(x, y);
 
@@ -331,7 +336,7 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 		it = select_parts.begin();
 
 		while (it != select_parts.end()) {
-			Garage2_part* p = *it;
+			Gamen2_part* p = *it;
 
 			if (p->focused(x, y)) {
 				
@@ -353,14 +358,15 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 			tex2->setRenderTextChangeText(help_text, this->getHelpStringWhenNoneFocused());
 		}
 		return;
+		*/
 	}
 }
 
 void Garage2::mouse_clicked_up(Texture* tex, Texture* tex2, Game* game, int x, int y) {
 	if (!selected_categorypart) {
-		vector<Garage2_part*>::iterator it = this->select_parts.begin();
+/*		vector<Gamen2_part*>::iterator it = this->select_parts.begin();
 		while (it != select_parts.end()) {
-			Garage2_part* p = *it;
+			Gamen2_part* p = *it;
 
 			if (p->selected(x, y)) {
 				return;
@@ -368,6 +374,7 @@ void Garage2::mouse_clicked_up(Texture* tex, Texture* tex2, Game* game, int x, i
 			it++;
 		}
 		return;
+		*/
 	}
 }
 
@@ -380,9 +387,10 @@ void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2
 	robog = new MyRobo_Garage2();
 	
 //	robog->load(g, loader, hantei);
+	
 	gtex_g = new Garage2Tex_Garage2();
 	gtex_g->load(g, tex, tex2, loader, hantei);
-
+/*
 	atex_g = new AssembleTex_Garage2();
 	atex_g->load(g, tex, tex2, loader, hantei);
 
@@ -394,13 +402,16 @@ void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2
 
 	stex_g = new ShopTex_Garage2();
 	stex_g->load(g, tex, tex2, loader, hantei);
+	*/
 	CS::instance()->enter(CS_LOAD_CS, "garage2part");
+	/*
 	select_parts.push_back(robog);
 	select_parts.push_back(gtex_g);
 	select_parts.push_back(atex_g);
 	select_parts.push_back(abstex_g);
 	select_parts.push_back(abltex_g);
 	select_parts.push_back(stex_g);
+	*/
 	CS::instance()->leave(CS_LOAD_CS, "garage2part");
 
 
@@ -418,7 +429,7 @@ void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2
 }
 
 
-MyRobo_Garage2::MyRobo_Garage2() : Loadable2(), Garage2_part() {
+MyRobo_Garage2::MyRobo_Garage2() : Loadable2(), Gamen2_part() {
 	robo = 0;
 	tex_waku = 0;
 }
@@ -598,12 +609,13 @@ void Garage2Tex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextu
 	tex_waku = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, 5, 5, g->getScreenWidth()-10, g->getScreenHeight()-10 , 245, 0, 200, 200);
 	
 }
+/*
 void AsmBodyLoadTex_Garage2::atoload(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei)
 {
 	// 押された後に呼ぶロード 保存済みの機体構成をロードする
 }
-
-
+*/
+/*
 void AssembleTex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj) {
 
 }
@@ -673,5 +685,5 @@ bool AssembleTex_Garage2::selected(int x, int y) {
 	}
 	return t;
 };
-
-unsigned int Garage2_part::part_id = 0;
+*/
+unsigned int Gamen2_part::part_id = 0;

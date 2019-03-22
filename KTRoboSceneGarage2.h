@@ -13,7 +13,7 @@
 
 namespace KTROBO {
 
-class Garage2_part {
+class Gamen2_part {
 private:
 	int pid;
 	static unsigned int part_id;
@@ -28,9 +28,7 @@ protected:
 	bool is_focused;
 	bool has_is_focused_changed;
 	unsigned int color;
-	vector<Garage2_part*> select_parts;
 public:
-	vector<Garage2_part*>* getSelectParts() { return &select_parts; };
 	virtual void setRect(MYRECT* re) {
 		rect = *re;
 		nowRect = *re;
@@ -85,24 +83,51 @@ public:
 	
 	void touroku() { has_touroku = true; };
 	bool getTouroku() { return has_touroku; };
-	Garage2_part() { 
+	Gamen2_part() { 
 		pid = part_id; part_id++; has_touroku = false; is_focused = false; has_is_focused_changed = false; color = 0xFFFFFFFF; 
 	};
-	~Garage2_part() {};
+	~Gamen2_part() {};
 	virtual char* getHelpString() {
 		return "default help string";
 	}
 };
 
+
+struct GAMEN2_PARTGROUPSTRUCT {
+	int tex_or_textindex;
+	bool is_tex;
+};
+
+class Gamen2_partGroup : public Gamen2_part {
+public:
+	Gamen2_partGroup() : Gamen2_part() {};
+	~Gamen2_partGroup(){};
+
+private:
+	int gamen_id;
+	int group_index;
+	vector<MYRECT> now_rects; // これにマウスの動きのフォーカス判定にも使用する
+	vector<MYRECT> dest_rects;
+	vector<MYRECT> rects;
+	vector<GAMEN2_PARTGROUPSTRUCT> tex_or_textindexs;
+
+	// rects および　textindexs help_text に関しては　外部からロードされる可能性があるので使うときは CS_LOAD_CS のロックをかける
+	
+	string help_text;
+
+
+
+};
+
 #define KTROBO_GARAGE2_IMG_PATH "resrc/img/garage2.png"
 
-class Garage2Tex_Garage2 : public Garage2_part {
+class Garage2Tex_Garage2 : public Gamen2_part {
 
 private:
 	int texe;
 	int tex_waku;
 public:
-	Garage2Tex_Garage2() :  Garage2_part() {
+	Garage2Tex_Garage2() :  Gamen2_part() {
 		texe = 0;
 		tex_waku = 0;
 	}
@@ -116,7 +141,7 @@ public:
 	};
 };
 
-class MyRobo_Garage2 : public Loadable2 , public Garage2_part{
+class MyRobo_Garage2 : public Loadable2 , public Gamen2_part{
 private:
 	int tex_waku;
 	int tex_haikei;
@@ -133,11 +158,11 @@ public:
 	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
 };
 
-class AssembleTex_Garage2 :  public Garage2_part {
+class AssembleTex_Garage2 :  public Gamen2_part {
 private:
 	int texe;
 public:
-	AssembleTex_Garage2() :  Garage2_part() { texe = 0; };
+	AssembleTex_Garage2() :  Gamen2_part() { texe = 0; };
 	~AssembleTex_Garage2() {};
 
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
@@ -151,12 +176,12 @@ public:
 	
 
 };
-
-class AsmBodySaveTex_Garage2 : public Garage2_part {
+/*
+class AsmBodySaveTex_Garage2 : public Gamen2_part {
 private:
 	int texe;
 public:
-	AsmBodySaveTex_Garage2() :  Garage2_part() { texe = 0; };
+	AsmBodySaveTex_Garage2() :  Gamen2_part() { texe = 0; };
 	~AsmBodySaveTex_Garage2() {};
 
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
@@ -167,11 +192,11 @@ public:
 	};
 };
 
-class AsmBodyLoadTex_Garage2 : public Loadable2, public Garage2_part {
+class AsmBodyLoadTex_Garage2 : public Loadable2, public Gamen2_part {
 private:
 	int texe;
 public:
-	AsmBodyLoadTex_Garage2() : Loadable2(), Garage2_part() { texe = 0; };
+	AsmBodyLoadTex_Garage2() : Loadable2(), Gamen2_part() { texe = 0; };
 	~AsmBodyLoadTex_Garage2() {};
 
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
@@ -185,11 +210,11 @@ public:
 	};
 };
 
-class ShopTex_Garage2 : public Loadable2, public Garage2_part {
+class ShopTex_Garage2 : public Loadable2, public Gamen2_part {
 private:
 	int texe;
 public:
-	ShopTex_Garage2() : Loadable2(), Garage2_part() { texe = 0; };
+	ShopTex_Garage2() : Loadable2(), Gamen2_part() { texe = 0; };
 	~ShopTex_Garage2() {};
 
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
@@ -199,23 +224,26 @@ public:
 		return "貴重なGを払ってパーツを購入します。ご利用は戦略的に。";
 	};
 };
+*/
 
-class Garage2 : public Loadable2, Garage2_part{
+class Garage2 : public Loadable2, Gamen2_part{
 private:
 	MyRobo_Garage2* robog;
+	
 	Garage2Tex_Garage2* gtex_g;
-	AssembleTex_Garage2* atex_g;
+/*	AssembleTex_Garage2* atex_g;
 	AsmBodySaveTex_Garage2* abstex_g;
 	AsmBodyLoadTex_Garage2* abltex_g;
 	ShopTex_Garage2* stex_g;
+	*/
 
 	int help_text;
 	int help_text_waku;
 
 	
 
-	Garage2_part* selected_categorypart;
-	Garage2_part* focused_part;
+	Gamen2_part* selected_categorypart;
+	Gamen2_part* focused_part;
 
 	char* getHelpStringWhenNoneFocused();
 

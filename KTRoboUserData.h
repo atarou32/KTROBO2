@@ -9,7 +9,61 @@ namespace KTROBO {
 #define KTROBO_USERDATA_ASMBODY_MAX 16
 #define KTROBO_USERDATA_ITEM_MAX 1024
 
-class AsmRobo;
+class Item;
+	// AsmRobo では　Item*　および　Robo*　の　デストラクタは呼ばない
+class AsmRobo {
+	private:
+
+		Item* head;
+		Item* body;
+		Item* arm;
+		Item* leg;
+		Item* booster;
+		Item* engine;
+		Item* fcs;
+		Item* rarm_weapon;
+		Item* larm_weapon;
+		Item* rshoulder_weapon;
+		Item* lshoulder_weapon;
+		Item* inside_weapon;
+		Robo* robo;
+
+		int ap;
+		int def;
+		int e_def;
+		int max_weight;
+		int weight;
+		int energy_pool;
+		int energy_supply;
+		int energy_shuturyoku;
+		int jump_power;
+		int booster_power;
+		int booster_useenergy;
+
+		int move_speed;
+		int boost_speed;
+		int on_speed;
+
+
+	public:
+		AsmRobo() {};
+		~AsmRobo() {};
+		void setHead(Item* h) {};
+		void setBody(Item* h) {};
+		void setLeg(Item* h) {};
+		void setArm(Item* h) {};
+		void setBooster(Item* h) {};
+		void setEngine(Item* h) {};
+		void setFCS(Item* h) {};
+		void setRArmWeapon(Item* h) {};
+		void setLArmWeapon(Item* h) {};
+		void setRShoulderWeapon(Item* h) {};
+		void setLShoulderWeapon(Item* h) {};
+		void setRobo(Robo* robo) {};
+
+		void setParam() {};
+
+};
 
 class AsmBody : public Loadable2 {
 	// ファイルを読み込んでアセンブルロボをロードするまで
@@ -36,7 +90,6 @@ private:
 	AsmRank kidou_rank;
 	
 	enum LegType {
-		UNKNOWN  = 0,
 		LEG_K2 = 1,
 		LEG_T2 = 2,
 		LEG_J2 = 3,
@@ -46,7 +99,6 @@ private:
 	};
 
 	enum WeaponType {
-		UNKNOWN = 0,
 		KINSETU = 1,
 		BALANCE = 2,
 		SOGEKI = 3,
@@ -59,9 +111,11 @@ private:
 	string hyouka_name;
 
 	void setHyoukaName();
-	void hyouka();
+	void hyouka() {};
 
 public:
+	AsmBody() {};
+	~AsmBody() {};
 
 	string getHyoukaName() { return hyouka_name; };
 };
@@ -75,8 +129,8 @@ private:
 	bool is_equiped; // 出撃する機体のパーツのときは
 	bool is_part_loaded;
 public:
-	Item(int item_id);
-	~Item();
+	Item(int item_id) {};
+	~Item() {};
 	enum ITEM_SOUBI_KASHO {
 		UNKNOWN = 0,
 		HEAD = 1,
@@ -95,17 +149,29 @@ public:
 
 	ITEM_SOUBI_KASHO kasho;
 
-	void init(RoboParts* parts);
-	void init(int item_id); // userdat ファイルから読み込む
-	void release();
+	void init(RoboParts* parts) {};
+	void init(int item_id) {}; // userdat ファイルから読み込む
+	void release() {};
 
-	void equip(Robo* robo); // robo に装備させる
+	void equip(Robo* robo) {}; // robo に装備させる
+};
+
+
+struct ShopPartsInfo {
+	string parts_name;
+	string category;
+	int price;
 };
 
 class ShopParts : public Loadable2 {
 private:
 	vector<RoboParts*> parts_list;
 public:
+	// roboparts を外部で使用するときは　shopparts->hasloaded を呼んでロードされたのを確認してから関数を呼ぶ
+	// もしまだロードされていなければ　商品の整理中です　みたいなダイアログを出しておく
+
+	RoboParts* getRoboParts(int index) {};
+	void getShopPartsInfo(int index, ShopPartsInfo* info) {};
 
 	enum PartsListCategory {
 		UNKNOWN = 0,
@@ -187,65 +253,14 @@ public:
 	};
 	PartsListCategory category;
 
-
-	void load();
+	ShopParts(PartsListCategory cat) {};
+	~ShopParts() {};
+	void atoload() {}; // meshパーツのロード
+	void load() {};
 
 
 };
 
-// AsmRobo では　Item*　および　Robo*　の　デストラクタは呼ばない
-class AsmRobo{
-private:
-
-	Item* head;
-	Item* body;
-	Item* arm;
-	Item* leg;
-	Item* booster;
-	Item* engine;
-	Item* fcs;
-	Item* rarm_weapon;
-	Item* larm_weapon;
-	Item* rshoulder_weapon;
-	Item* lshoulder_weapon;
-	Item* inside_weapon;
-	Robo* robo;
-
-	int ap;
-	int def;
-	int e_def;
-	int max_weight;
-	int weight;
-	int energy_pool;
-	int energy_supply;
-	int energy_shuturyoku;
-	int jump_power;
-	int booster_power;
-	int booster_useenergy;
-
-	int move_speed;
-	int boost_speed;
-	int on_speed;
-
-
-public:
-	AsmRobo();
-	~AsmRobo();
-	void setHead(Item* h);
-	void setBody(Item* h);
-	void setLeg(Item* h);
-	void setArm(Item* h);
-	void setBooster(Item* h);
-	void setEngine(Item* h);
-	void setFCS(Item* h);
-	void setRArmWeapon(Item* h);
-	void setLArmWeapon(Item* h);
-	void setRShoulderWeapon(Item* h);
-	void setLShoulderWeapon(Item* h);
-
-	void setParam();
-
-};
 
 
 
@@ -259,23 +274,23 @@ public:
 	~UserData();
 
 
-	void saveAsmBodyFile(AsmBody* save_ab); // 最初のデフォルトの機体構成はアセンブルボディがない場合　
+	void saveAsmBodyFile(AsmBody* save_ab) {}; // 最初のデフォルトの機体構成はアセンブルボディがない場合　
 	// アセンブルボディが多すぎるときは例外を投げる　
 	// この関数を呼ぶところで例外をキャッチして　メッセージをダイアログに投げる
 	// ロードした時になってる構成もアセンブルボディで書く
-	void overWriteAsmBodyFile(int file_id, AsmBody* ab);
-	void loadAsmBodyfile(int file_id);
+	void overWriteAsmBodyFile(int file_id, AsmBody* ab) {};
+	void loadAsmBodyfile(int file_id) {};
 
-	void buyItemInShop(RoboParts* parts);
-	void sellItemInShop(int item_id, Item* i); // AsmBodyfileに使っているものであれば警告を出す
+	void buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory category) {};
+	void sellItemInShop(int item_id, Item* i) {}; // AsmBodyfileに使っているものであれば警告を出す
 
 
-	void getUnLoadedItemIds(int item_ids_size, int* item_ids); // ITEM_IDS_SIZE 32まで item_ids に格納する
-	Item* getItem(int item_id);
-	void loadItem(int item_id); // parts の　mesh までロードする
+	void getUnLoadedItemIds(int item_ids_size, int* item_ids) {}; // ITEM_IDS_SIZE 32まで item_ids に格納する
+	Item* getItem(int item_id) {};
+	void loadItem(int item_id) {}; // parts の　mesh までロードする
 
-	bool isThisItemUsedInAllAsmBody(int item_id, Item* i);
-	bool isThisItemUsedInNowAsmBody(int item_id, Item* i);
+	bool isThisItemUsedInAllAsmBody(int item_id, Item* i) {};
+	bool isThisItemUsedInNowAsmBody(int item_id, Item* i) {};
 
 
 };

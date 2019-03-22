@@ -22,10 +22,7 @@ void AsmBody::setHyoukaName() {
 		hy = hy + "çÇê´î\";
 	}
 
-	if (weapon == WeaponType::UNKNOWN) {
-
-
-	} else if (weapon == WeaponType::KINSETU) {
+	if (weapon == WeaponType::KINSETU) {
 		hy = hy + "ãﬂê⁄";
 	}
 	else if (weapon == WeaponType::SOGEKI) {
