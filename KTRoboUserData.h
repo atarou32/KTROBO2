@@ -14,7 +14,7 @@ class AsmRobo;
 class AsmBody : public Loadable2 {
 	// ファイルを読み込んでアセンブルロボをロードするまで
 public:
-	AsmRobo* arobo;
+	AsmRobo arobo;
 private:
 	string filename;
 	int file_id;
@@ -60,10 +60,13 @@ private:
 
 	void setHyoukaName();
 	void hyouka();
+
 public:
+
 	string getHyoukaName() { return hyouka_name; };
 };
-	
+
+
 class Item : public Loadable2 {
 private:
 	int item_id;
@@ -94,13 +97,103 @@ public:
 
 	void init(RoboParts* parts);
 	void init(int item_id); // userdat ファイルから読み込む
-
+	void release();
 
 	void equip(Robo* robo); // robo に装備させる
 };
 
+class ShopParts : public Loadable2 {
+private:
+	vector<RoboParts*> parts_list;
+public:
+
+	enum PartsListCategory {
+		UNKNOWN = 0,
+		HEAD = 1,
+		LEG_START =2,
+		LEG_k2 = 2,
+		LEG_t2 = 3,
+		LEG_j2 = 4,
+		LEG_tank = 5,
+		LEG_4 = 6,
+		LEG_REVERSE = 7,
+		LEG_END = 7,
+		ARM = 8,
+		BODY = 9,
+		BOOSTER = 10,
+		ENGINE = 11,
+		FCS = 12,
+		INSIDE_WEAPON = 13,
+
+		RARMWEAPON_START = 14,
+		RARMWEAPON_BAZOOKA = 14,
+		RARMWEAPON_BLADE = 15,
+		RARMWEAPON_ENERGYBLADE = 16,
+		RARMWEAPON_ENERGYRIFLE = 17,
+		RARMWEAPON_GRENEDE = 18,
+		RARMWEAPON_HANABIGUN = 19,
+		RARMWEAPON_HANDGUN = 20,
+		RARMWEAPON_MACHINEGUN = 21,
+		RARMWEAPON_MISSILE = 22,
+		RARMWEAPON_PILE = 23,
+		RARMWEAPON_PLAZUMAGUN = 24,
+		RARMWEAPON_PULSEGUN = 25,
+		RARMWEAPON_RIFLE = 26,
+		RARMWEAPON_ROCKET = 27,
+		RARMWEAPON_SHOTGUN = 28,
+		RARMWEAPON_SNIPERRIFLE = 29,
+		RARMWEAPON_END = 29,
+
+		LARMWEAPON_START = 30,
+		LARMWEAPON_BAZOOKA = 30,
+		LARMWEAPON_BLADE = 31,
+		LARMWEAPON_ENERGYBLADE = 32,
+		LARMWEAPON_ENERGYRIFLE = 33,
+		LARMWEAPON_GRENEDE = 34,
+		LARMWEAPON_HANABIGUN = 35,
+		LARMWEAPON_HANDGUN = 36,
+		LARMWEAPON_MACHINEGUN = 37,
+		LARMWEAPON_MISSILE = 38,
+		LARMWEAPON_PILE = 39,
+		LARMWEAPON_PLAZUMAGUN = 40,
+		LARMWEAPON_PULSEGUN = 41,
+		LARMWEAPON_RIFLE = 42,
+		LARMWEAPON_ROCKET = 43,
+		LARMWEAPON_SHOTGUN = 44,
+		LARMWEAPON_SNIPERRIFLE = 45,
+		LARMWEAPON_END = 45,
+
+		RKATAWEAPON_START = 46,
+		RKATAWEAPON_CHAINGUN = 46,
+		RKATAWEAPON_GRENEDE = 47,
+		RKATAWEAPON_HANABI = 48,
+		RKATAWEAPON_MISSILE = 49,
+		RKATAWEAPON_PLAZUMA = 50,
+		RKATAWEAPON_PULSE = 51,
+		RKATAWEAPON_RASER = 52,
+		RKATAWEAPON_ROCKET = 53,
+		RKATAWEAPON_END = 53,
+
+		LKATAWEAPON_START = 54,
+		LKATAWEAPON_CHAINGUN = 54,
+		LKATAWEAPON_GRENEDE = 55,
+		LKATAWEAPON_HANABI = 56,
+		LKATAWEAPON_MISSILE = 57,
+		LKATAWEAPON_PLAZUMA = 58,
+		LKATAWEAPON_PULSE = 59,
+		LKATAWEAPON_RASER = 60,
+		LKATAWEAPON_ROCKET = 61,
+		LKATAWEAPON_END = 61,
+	};
+	PartsListCategory category;
 
 
+	void load();
+
+
+};
+
+// AsmRobo では　Item*　および　Robo*　の　デストラクタは呼ばない
 class AsmRobo{
 private:
 
@@ -166,16 +259,23 @@ public:
 	~UserData();
 
 
-	void makeNewAsmBodyFile(); // 最初のデフォルトの機体構成はアセンブルボディがない場合　
+	void saveAsmBodyFile(AsmBody* save_ab); // 最初のデフォルトの機体構成はアセンブルボディがない場合　
+	// アセンブルボディが多すぎるときは例外を投げる　
+	// この関数を呼ぶところで例外をキャッチして　メッセージをダイアログに投げる
 	// ロードした時になってる構成もアセンブルボディで書く
+	void overWriteAsmBodyFile(int file_id, AsmBody* ab);
+	void loadAsmBodyfile(int file_id);
 
-	void overWriteAsmBodyFile();
-	void loadAsmBodyfile();
+	void buyItemInShop(RoboParts* parts);
+	void sellItemInShop(int item_id, Item* i); // AsmBodyfileに使っているものであれば警告を出す
 
-	void buyItemInShop();
-	void sellItemInShop(); // AsmBodyfileに使っているものであれば警告を出す
-	bool isThisItemUsedInAllAsmBody();
-	bool isThisItemUsedInNowAsmBody();
+
+	void getUnLoadedItemIds(int item_ids_size, int* item_ids); // ITEM_IDS_SIZE 32まで item_ids に格納する
+	Item* getItem(int item_id);
+	void loadItem(int item_id); // parts の　mesh までロードする
+
+	bool isThisItemUsedInAllAsmBody(int item_id, Item* i);
+	bool isThisItemUsedInNowAsmBody(int item_id, Item* i);
 
 
 };
