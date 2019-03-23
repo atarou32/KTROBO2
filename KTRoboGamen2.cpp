@@ -35,7 +35,7 @@ void Gamen2_Sonotoki::setGroupGroup(int group_index, int cursor_x) {
 }
 
 
-int Gamen2_Sonotoki::makeKoCursorGroup() {
+void Gamen2_Sonotoki::makeKoCursorGroup() {
 	// cursor_group にvector<int*>* を入れる
 	vector<int>* tte = new vector<int>();
 	cursor_group.push_back(tte);
@@ -171,54 +171,188 @@ void Gamen2_partGroup::cleardayo(Texture* tex, Texture* tex2) {
 
 }
 
+Gamen2_part* Gamen2::getGamen2Part(int all_index) {
 
+
+	if ((all_index >= 0) && (all_index < all_parts.size())) {
+		return all_parts[all_index];
+	}
+}
 
 void Gamen2::pauseWork() {
 	// moveToの動きは実行されるが　クリックやセレクトをしても反応しないようにする 
 					  // selectedされたときに実行される
 					  // pauseから戻るのはgamen_sonotoki::enter で設定しなおされるから
+	CS::instance()->enter(CS_LOAD_CS, "enterpause");
+	// 現在のall_partsのis_workをコピーする
+	all_parts_is_work_mae.clear();
+	vector<Gamen2_part*>::iterator it = all_parts.begin();
+	while (it != all_parts.end()) {
+		Gamen2_part* pp = *it;
+		bool t = pp->getIsWork();
+		all_parts_is_work_mae.push_back(t);
+		pp->setIsWork(false);
+		it++;
+	}
+
+	CS::instance()->leave(CS_LOAD_CS, "enterpause");
+
+
 }
 
 
 void Gamen2::setCPPParts(Gamen2_part* parts, int scene_id, int parts_DEF) {
+	CS::instance()->enter(CS_LOAD_CS, "cpppa");
+	volatile int cppindex = this->cpp_parts.size();
+	cpp_parts.push_back(parts);
+	cpp_parts_map.insert(pair<pair<int, int>, int>(pair<int, int>(scene_id, parts_DEF), cppindex));
 
+	CS::instance()->leave(CS_LOAD_CS, "cpppa");
 }
 
 int Gamen2::getCPPPartsIndex(int scene_id, int parts_DEF) {
+	CS::instance()->enter(CS_LOAD_CS, "cpppa");
+	volatile int tet = 0;
+	if (cpp_parts_map.find(pair<int, int>(scene_id, parts_DEF)) != cpp_parts_map.end()) {
+		tet = cpp_parts_map.find(pair<int, int>(scene_id, parts_DEF))->second;
+	}
+	else {
+		CS::instance()->leave(CS_LOAD_CS, "cpppa");
+		throw new GameError(KTROBO::FATAL_ERROR, "cppppa error");
+	}
 
+	CS::instance()->leave(CS_LOAD_CS, "cpppa");
+	return tet;
 }
 
 void Gamen2::makeSonotoki(int scene_id, int gamen_id, char* lua_filename) {
 	// rock load
+	CS::instance()->enter(CS_LOAD_CS, "makesonotoki");
+	sonotokis.push_back(new Gamen2_Sonotoki(scene_id, gamen_id, lua_filename));
+	CS::instance()->leave(CS_LOAD_CS, "make sonotoki");
+
 }
 
 void Gamen2::setSonotokiMakeKo(int scene_id, int gamen_id) {
 	// rock load
+	CS::instance()->enter(CS_LOAD_CS, "makeko");
 
+	if (sonotokis_map.find(pair<int, int>(scene_id, gamen_id)) != sonotokis_map.end()) {
+		int inde = sonotokis_map.find(pair<int, int>(scene_id, gamen_id))->second;
+		int smap = sonotokis.size();
+		if ((inde < smap) && inde >= 0) {
+			sonotokis[inde]->makeKoCursorGroup();
+		}
+		else {
+			CS::instance()->leave(CS_LOAD_CS, "makeko");
+			throw new GameError(FATAL_ERROR, "makeko vector error");
+		}
+	}
+	else {
+		CS::instance()->leave(CS_LOAD_CS, "makeko");
+		throw new GameError(FATAL_ERROR, "makeko dont find");
+	}
+
+
+
+	CS::instance()->leave(CS_LOAD_CS, "makeko");
 
 }
-void Gamen2::setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int group_index) {
+void Gamen2::setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int all_index) {
 	// rock load
+	// rock load
+	CS::instance()->enter(CS_LOAD_CS, "org");
 
+	if (sonotokis_map.find(pair<int, int>(scene_id, gamen_id)) != sonotokis_map.end()) {
+		int inde = sonotokis_map.find(pair<int, int>(scene_id, gamen_id))->second;
+		int smap = sonotokis.size();
+		if ((inde < smap) && inde >= 0) {
+			sonotokis[inde]->setGroupOnlyRenderGroup(all_index);
+		}
+		else {
+			CS::instance()->leave(CS_LOAD_CS, "org");
+			throw new GameError(FATAL_ERROR, "org vector error");
+		}
+	}
+	else {
+		CS::instance()->leave(CS_LOAD_CS, "org");
+		throw new GameError(FATAL_ERROR, "org dont find");
+	}
+
+
+
+	CS::instance()->leave(CS_LOAD_CS, "org");
 
 }
 
 void Gamen2::setSonotokiSetGroupGroup(int scene_id, int gamen_id, int group_index, int cursor_x) {
 	// rock load
+	CS::instance()->enter(CS_LOAD_CS, "sgg");
 
+	if (sonotokis_map.find(pair<int, int>(scene_id, gamen_id)) != sonotokis_map.end()) {
+		int inde = sonotokis_map.find(pair<int, int>(scene_id, gamen_id))->second;
+		int smap = sonotokis.size();
+		if ((inde < smap) && inde >= 0) {
+			sonotokis[inde]->setGroupGroup(group_index, cursor_x);
+		}
+		else {
+			CS::instance()->leave(CS_LOAD_CS, "sgg");
+			throw new GameError(FATAL_ERROR, "sgg vector error");
+		}
+	}
+	else {
+		CS::instance()->leave(CS_LOAD_CS, "sgg");
+		throw new GameError(FATAL_ERROR, "sgg dont find");
+	}
+
+
+
+	CS::instance()->leave(CS_LOAD_CS, "sgg");
 
 }
 int Gamen2::getSonotokiCursorGroup(int scene_id, int gamen_id) {
 	// rock load
+	CS::instance()->enter(CS_LOAD_CS, "gcg");
+	volatile int ans = 0;
+	if (sonotokis_map.find(pair<int, int>(scene_id, gamen_id)) != sonotokis_map.end()) {
+		int inde = sonotokis_map.find(pair<int, int>(scene_id, gamen_id))->second;
+		int smap = sonotokis.size();
+		if ((inde < smap) && inde >= 0) {
+			ans = sonotokis[inde]->getCursorGroup();
+		}
+		else {
+			CS::instance()->leave(CS_LOAD_CS, "gcg");
+			throw new GameError(FATAL_ERROR, "gcg vector error");
+		}
+	}
+	else {
+		CS::instance()->leave(CS_LOAD_CS, "gcg");
+		throw new GameError(FATAL_ERROR, "gcg dont find");
+	}
 
 
 
+	CS::instance()->leave(CS_LOAD_CS, "gcg");
+
+	return ans;
 }
 	
 	
 	
 	
-	
+int Gamen2::getPartsGroupgetAllIndexFromGroupIndex(int group_index) {
+	// group 内のindexを返す
+	CS::instance()->enter(CS_LOAD_CS, "gamen2 settexs");
+	volatile int ans = 0;
+	volatile int all_index = grouped_parts.size();
+	if ((all_index > group_index) && (group_index >= 0)) {
+		Gamen2_partGroup* pg = grouped_parts[group_index];
+		ans = pg->getAllIndex();
+	}
+	CS::instance()->leave(CS_LOAD_CS, "gamen2 settexs");
+	return ans;
+
+}
 	
 void Gamen2::setSonotokiNowSonotoki(int scene_id, int gamen_id) { // rock load lua_filenameが呼ばれる
 	CS::instance()->enter(CS_LOAD_CS, "nowsonotoki");
@@ -231,7 +365,9 @@ void Gamen2::setSonotokiNowSonotoki(int scene_id, int gamen_id) { // rock load l
 			char now_str[1024];
 			memset(now_str, 0, 1024);
 			strcpy_s(now_str, 512, now_sonotoki->getLuaFilename().c_str());
-			MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(now_str);
+			if (strcmp(KTROBO_GAMEN2_LUA_FILENAME_NO_LUA, now_str) != 0) {
+				MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(now_str);
+			}
 		}
 		else {
 			CS::instance()->leave(CS_LOAD_CS, "now_sonotoki");
@@ -479,3 +615,34 @@ bool Gamen2::getPartsGroupTenmetuFinished(int group_index) {
 
 }
 
+void Gamen2::Del(Texture* tex, Texture* tex2) {
+	CS::instance()->enter(CS_LOAD_CS, "gamen2 del");
+	cpp_parts.clear();
+	all_parts.clear();
+	all_parts_is_work_mae.clear();
+	sonotokis_map.clear();
+	cpp_parts_map.clear();
+	int size = sonotokis.size();
+	for (int i = 0; i < size; i++) {
+		if (sonotokis[i]) {
+			sonotokis[i]->deletedayo();
+			delete sonotokis[i];
+			sonotokis[i] = 0;
+		}
+	}
+	sonotokis.clear();
+
+	int ssize = grouped_parts.size();
+	for (int i = 0; i < ssize; i++) {
+		if (grouped_parts[i]) {
+			grouped_parts[i]->cleardayo(tex,tex2);
+			delete grouped_parts[i];
+			grouped_parts[i] = 0;
+		}
+	}
+	grouped_parts.clear();
+
+	CS::instance()->leave(CS_LOAD_CS, "gamen2 del");
+
+
+}

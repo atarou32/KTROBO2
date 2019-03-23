@@ -7,6 +7,9 @@
 #include <string>
 #include <map>
 #include "KTRoboTexture.h"
+#include "lua.hpp"
+#include "tolua_glue/MyLuaGlueMakeCommon.h"
+
 
 using namespace std;
 
@@ -14,6 +17,43 @@ namespace KTROBO {
 
 
 #define KTROBO_GAMEN2_LUA_FILENAME_NO_LUA "NO_LUA"
+
+
+	interface IGamen2 {
+public:
+		
+		TO_LUA virtual int getCPPPartsIndex(int scene_id, int parts_DEF)=0;
+		TO_LUA virtual void makeSonotoki(int scene_id, int gamen_id, char* lua_filename)=0;
+		TO_LUA virtual void setSonotokiMakeKo(int scene_id, int gamen_id)=0;
+		TO_LUA virtual void setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int all_index)=0;
+		TO_LUA virtual void setSonotokiSetGroupGroup(int scene_id, int gamen_id, int all_index, int cursor_x)=0;
+		TO_LUA virtual int getSonotokiCursorGroup(int scene_id, int gamen_id)=0;
+		TO_LUA virtual void setSonotokiNowSonotoki(int scene_id, int gamen_id)=0;
+		TO_LUA virtual int getNowSonotokiCursorGroup()=0;
+		TO_LUA virtual int makePartsGroup(int scene_id, char* help_text, char* lua_file_when_focused, char* lua_file_when_selected)=0;
+		TO_LUA virtual int getPartsGroupgetAllIndexFromGroupIndex(int group_index)=0;
+		TO_LUA virtual int setPartsGroupSetText(int group_index, bool is_tex2, int text_index, IN_ int* rect)=0;
+		TO_LUA virtual int setPartsGroupSetTex(int group_index, bool is_tex2, int tex_index, IN_ int* rect)=0;
+		TO_LUA virtual bool getPartsGroupIsText(int group_index, int index)=0;
+		TO_LUA virtual bool getPartsGroupIsTex2(int group_index, int index)=0;
+		TO_LUA virtual void setPartsGroupMoveTo(int group_index, int x, int y, int width, int height, float time)=0;
+		TO_LUA virtual bool getPartsGroupMoveFinished(int group_index)=0;
+		TO_LUA virtual void setPartsGroupTenmetu(int group_index, float dt, float tenmetu_kankaku)=0;
+		TO_LUA virtual bool getPartsGroupTenmetuFinished(int group_index)=0;
+
+	};
+
+
+
+
+
+
+
+
+
+
+
+
 
 	class Gamen2_part {
 	private:
@@ -142,8 +182,9 @@ namespace KTROBO {
 		bool getIsUse(){ return is_use; }; // 外部でCS_LOAD_CSをロックすること
 		void setString(char* help_text, char* focused_lua, char* selected_lua);
 		void cleardayo(Texture* tex, Texture* tex2); // texやtextの内容などをlightdeleteする vectorもクリアする
-		int setText(int text_index, bool is_tex2, int* recto);
-		int setTex(int tex_index, bool is_tex2, int* recto);
+		int setText(int text_index, bool is_tex2,IN_ int* recto);
+		int setTex(int tex_index, bool is_tex2, IN_ int* recto);
+		int getAllIndex() { return all_index; };
 	private:
 		bool is_use;
 		int scene_id;
@@ -188,7 +229,7 @@ namespace KTROBO {
 		void setCursorX(int cursor_x);
 		void setCursorY(int cursor_y);
 		int getCursorGroup();
-		int makeKoCursorGroup(); // cursor_group にvector<int*>* を入れる
+		void makeKoCursorGroup(); // cursor_group にvector<int*>* を入れる
 		void deletedayo(); // デストラクタを呼ぶ前にdeletedayoを呼ぶ
 
 		void setGroupOnlyRenderGroup(int group_index);
@@ -196,18 +237,18 @@ namespace KTROBO {
 
 	};
 
-	class Gamen2
+	class Gamen2 : public IGamen2
 	{
 	private:
 		vector<Gamen2_part*> cpp_parts; // 外部から入れ込まれた画面パーツ cpp_parts に関しては　デストラクタなどを呼ばない
 		vector<Gamen2_partGroup*> grouped_parts; // 画面２の関数から作られた　画面パーツ
 		vector<Gamen2_part*> all_parts;
-		vector<bool> all_parts_is_work;
+	
 		vector<bool> all_parts_is_work_mae;
 
 		vector<Gamen2_Sonotoki*> sonotokis; // lua_file から作られる
 		map<pair<int,int>, int> sonotokis_map;
-		map<pair<int, int>, int> cpp_parts_map; // scene_id, parts_DEF kara all_parts noindex
+		map<pair<int, int>, int> cpp_parts_map; // scene_id, parts_DEF kara cpp_parts noindex
 		Gamen2_Sonotoki* now_sonotoki;
 
 		void pauseWork(); // moveToの動きは実行されるが　クリックやセレクトをしても反応しないようにする 
@@ -221,18 +262,19 @@ namespace KTROBO {
 
 		void makeSonotoki(int scene_id, int gamen_id, char* lua_filename); // rock load
 		void setSonotokiMakeKo(int scene_id, int gamen_id); // rock load
-		void setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int group_index); // rock load
-		void setSonotokiSetGroupGroup(int scene_id, int gamen_id, int group_index, int cursor_x); // rock load
+		void setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int all_index); // rock load
+		void setSonotokiSetGroupGroup(int scene_id, int gamen_id, int all_index, int cursor_x); // rock load
 		int getSonotokiCursorGroup(int scene_id, int gamen_id); // rock load
 		void setSonotokiNowSonotoki(int scene_id, int gamen_id); // rock load lua_filenameが呼ばれる
 
 		int getNowSonotokiCursorGroup();
 		Gamen2_Sonotoki* getNowSonotoki(); // cursor_groupを呼ぶために使うので　外部でCS_LOAD_CSをロックする
-
+		Gamen2_part* getGamen2Part(int all_index);
 
 
 		int makePartsGroup(int scene_id, char* help_text, char* lua_file_when_focused, char* lua_file_when_selected); 
 		// grouip_indexを返す has_is_focused_changedのときだけfocusedのルーアファイルが呼ばれる
+		int getPartsGroupgetAllIndexFromGroupIndex(int group_index);
 
 		int setPartsGroupSetText(int group_index, bool is_tex2, int text_index, IN_ int* rect); // group 内のindexを返す left right top bottom の順番
 		int setPartsGroupSetTex(int group_index, bool is_tex2, int tex_index, IN_ int* rect); // group 内のindexを返す
@@ -244,12 +286,59 @@ namespace KTROBO {
 		bool getPartsGroupTenmetuFinished(int group_index);
 
 
-
+		void Del(Texture* tex, Texture* tex2);
 
 		Gamen2();
 		~Gamen2();
 	};
 
+
+	class Gamen2s{
+	private:
+		Texture* tex;
+		Texture* tex2;
+	public:
+		Gamen2s(Texture* tex, Texture* tex2) {
+			inst = 0;
+			this->tex = tex;
+			this->tex2 = tex2;
+		};
+		~Gamen2s() {
+			if (inst) {
+				inst->Del(tex,tex2);
+				delete inst;
+				inst = 0;
+			}
+		};
+
+		
+		Gamen2* inst;
+
+	public:
+		Gamen2* getInstance(int index) {
+			if (inst) {
+				return inst;
+			}
+			inst = new Gamen2();
+
+		};
+		Gamen2* getInterface(int index) {
+			if (inst) {
+				return inst;
+
+			}
+			inst = new Gamen2();
+		};
+		int makeInst() {
+			// 実際のmakeはluaに渡す前にすべてやってしまうこと
+			if (inst) {
+			}
+			else {
+				inst = new Gamen2();
+			}
+		};
+
+	};
 }
 
 
