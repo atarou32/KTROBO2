@@ -25,12 +25,12 @@ public:
 };
 class LuaExec {
 public:
-	static enum LUAEXEC_STATE {
+	enum LUAEXEC_STATE {
 		NO_USE =0,
 		USE = 1,
 	};
 
-	static enum LUAEXEC_EXEC_TYPE {
+	enum LUAEXEC_EXEC_TYPE {
 		DONOW = 0,
 		DO_UNTIL_TIME = 1,
 		DO_UNTIL_KEY = 2,

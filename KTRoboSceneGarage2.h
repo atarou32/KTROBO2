@@ -15,7 +15,6 @@
 namespace KTROBO {
 
 
-#define KTROBO_GARAGE2_IMG_PATH "resrc/img/garage2.png"
 
 class Garage2Tex_Garage2 : public Gamen2_part {
 

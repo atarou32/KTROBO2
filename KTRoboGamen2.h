@@ -17,6 +17,9 @@ namespace KTROBO {
 
 
 #define KTROBO_GAMEN2_LUA_FILENAME_NO_LUA "NO_LUA"
+#define KTROBO_GAMEN2_SCENE_ID_GARAGE 1
+#define KTROBO_GARAGE2_IMG_PATH "resrc/img/garage2.png"
+#define KTROBO_GARAGE2_INIT_LUA_FILEPATH "resrc/script/garage/init_garage.lua"
 
 	class Texture;
 
@@ -374,7 +377,7 @@ public:
 				return inst;
 			}
 			inst = new Gamen2(tex,tex2);
-
+			return inst;
 		};
 		Gamen2* getInterface(int index) {
 			if (inst) {
@@ -382,6 +385,7 @@ public:
 
 			}
 			inst = new Gamen2(tex,tex2);
+			return inst;
 		};
 		int makeInst() {
 			// ÀÛ‚Ìmake‚Ílua‚É“n‚·‘O‚É‚·‚×‚Ä‚â‚Á‚Ä‚µ‚Ü‚¤‚±‚Æ

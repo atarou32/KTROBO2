@@ -135,6 +135,10 @@ void Garage2::render(Graphics* g,Texture* tex,Texture* tex2, MYMATRIX* view, MYM
 
 
 	}
+
+	if (gtex_g) {
+		gtex_g->render(g, tex2, view, proj);
+	}
 	CS::instance()->leave(CS_RENDERDATA_CS, "render");
 }
 
@@ -404,6 +408,9 @@ void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2
 	stex_g = new ShopTex_Garage2();
 	stex_g->load(g, tex, tex2, loader, hantei);
 	*/
+
+	MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(KTROBO_GARAGE2_INIT_LUA_FILEPATH);
+
 	CS::instance()->enter(CS_LOAD_CS, "garage2part");
 	/*
 	select_parts.push_back(robog);
@@ -599,6 +606,11 @@ void Garage2Tex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMA
 
 	}
 	*/
+	static float x = 0;
+	static float y = 0;
+	x += 0.01;
+	y += 0.01;
+	tex2->setRenderTexPos(texe, x, y);
 }
 
 void Garage2Tex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei) {

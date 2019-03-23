@@ -179,6 +179,11 @@ Gamen2_part* Gamen2::getGamen2Part(int all_index) {
 	if ((all_index >= 0) && (all_index < all_parts.size())) {
 		return all_parts[all_index];
 	}
+	else {
+		throw new GameError(KTROBO::FATAL_ERROR, "out of boundallindex");
+	}
+
+
 }
 
 void Gamen2::pauseWork() {
@@ -532,7 +537,7 @@ int Gamen2::setPartsGroupSetTex(int group_index, bool is_tex2, int tex_index, IN
 	volatile int all_index = grouped_parts.size();
 	if ((all_index > group_index) && (group_index >= 0)) {
 		Gamen2_partGroup* pg = grouped_parts[group_index];
-		ans = pg->setText(tex_index, is_tex2, recto);
+		ans = pg->setTex(tex_index, is_tex2, recto);
 	}
 	CS::instance()->leave(CS_LOAD_CS, "gamen2 settexs");
 	return ans;
@@ -813,13 +818,14 @@ void Gamen2_partGroup::moveTo(MYRECT* dest_re, float time) {
 	destRect = *dest_re;
 	rect = nowRect;
 	this->dt = 0;
-	int lefri = destRect.left - rect.left;
-	int topri = destRect.top - rect.top;
+	float lefri = destRect.left - rect.left;
+	float topri = destRect.top - rect.top;
 	if (time < 0.000001) {
 		throw new GameError(KTROBO::WARNING, "notime\n");
 	}
 	speedx = lefri / time;
 	speedy = topri / time;
+	this->time = time; 
 }
 bool Gamen2_partGroup::moveLoop(float dt) {
 	if (dt < 0.000001) {
