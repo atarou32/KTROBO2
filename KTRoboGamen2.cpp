@@ -6,9 +6,11 @@
 
 using namespace KTROBO;
 
-Gamen2::Gamen2()
+Gamen2::Gamen2(Texture* tex, Texture* tex2)
 {
 	now_sonotoki = 0;
+	this->tex = tex;
+	this->tex2 = tex2;
 }
 
 
@@ -450,15 +452,18 @@ void Gamen2_partGroup::setString(char* help_text, char* focused_lua, char* selec
 	this->selected_lua = selected_lua;
 }
 
-int Gamen2::makePartsGroup(int scene_id, char* help_text, char* lua_file_when_focused, char* lua_file_when_selected) {
+int Gamen2::makePartsGroup(int scene_id, char* help_text, char* lua_file_when_focused, char* lua_file_when_selected, IN_ int* rect) {
 	CS::instance()->enter(CS_LOAD_CS, "gamen2 makeparts");
 
 	volatile int all_index = all_parts.size();
 	volatile int group_index = grouped_parts.size();
-	Gamen2_partGroup* pg = new Gamen2_partGroup(scene_id, all_index, group_index);
+	Gamen2_partGroup* pg = new Gamen2_partGroup(scene_id, all_index, group_index,tex,tex2);
 	pg->setString(help_text, lua_file_when_focused, lua_file_when_selected);
 	all_parts.push_back(pg);
 	grouped_parts.push_back(pg);
+	MYRECT re;
+	re.left = rect[0]; re.right = rect[1]; re.top = rect[2]; re.bottom = rect[3];
+	pg->setRect(&re);
 	CS::instance()->leave(CS_LOAD_CS, "gamen2 makeparts");
 	return group_index;
 }
@@ -613,7 +618,7 @@ bool Gamen2::getPartsGroupMoveFinished(int group_index) {
 	MYRECT rec;
 	Gamen2_partGroup* pg = 0;
 	CS::instance()->enter(CS_LOAD_CS, "gamen2 movefinished");
-	volatile bool ans = true;
+	
 	volatile int all_index = grouped_parts.size();
 	if ((all_index > group_index) && (group_index >= 0)) {
 		pg = grouped_parts[group_index];
@@ -646,7 +651,7 @@ bool Gamen2::getPartsGroupTenmetuFinished(int group_index) {
 	MYRECT rec;
 	Gamen2_partGroup* pg = 0;
 	CS::instance()->enter(CS_LOAD_CS, "gamen2 tenfinished");
-	volatile bool ans = true;
+	
 	volatile int all_index = grouped_parts.size();
 	if ((all_index > group_index) && (group_index >= 0)) {
 		pg = grouped_parts[group_index];
@@ -658,7 +663,7 @@ bool Gamen2::getPartsGroupTenmetuFinished(int group_index) {
 
 }
 
-void Gamen2::Del(Texture* tex, Texture* tex2) {
+void Gamen2::Del() {
 	CS::instance()->enter(CS_LOAD_CS, "gamen2 del");
 	cpp_parts.clear();
 	all_parts.clear();
@@ -689,3 +694,262 @@ void Gamen2::Del(Texture* tex, Texture* tex2) {
 
 
 }
+
+
+void Gamen2_partGroup::setIsWorkAndRender(bool t) {
+	int size = this->tex_or_textindexs.size();
+	Gamen2_part::setIsWorkAndRender(t);
+	// ‚à‚µ“_–Å’†‚¾‚Á‚½‚ç‚â‚ß‚³‚¹‚é
+	this->tenmetu_dt = 21;
+	this->tenmetu_time = 20;
+	this->tenmetu_kankaku = 20;
+	this->tenmetuLoop(0);
+
+	for (int i = 0; i < size; i++) {
+		int inde = tex_or_textindexs[i].index;
+		if (tex_or_textindexs[i].is_text) {
+			if (tex_or_textindexs[i].is_tex2) {
+				tex2->setRenderTextIsRender(inde, t);
+			}
+			else {
+				tex->setRenderTextIsRender(inde, t);
+			}
+		}
+		else {
+			if (tex_or_textindexs[i].is_tex2) {
+				tex2->setRenderTexIsRender(inde, t);
+			}
+			else {
+				tex->setRenderTexIsRender(inde, t);
+			}
+		}
+	}
+
+
+}
+
+
+void Gamen2::loopForMoveToAndTenmetu(float dt) {
+	CS::instance()->enter(CS_LOAD_CS, "test");
+	CS::instance()->enter(CS_DEVICECON_CS, "test");
+	volatile int size = all_parts.size();
+	for (int i = 0; i < size; i++) {
+		all_parts[i]->moveLoop(dt);
+		all_parts[i]->tenmetuLoop(dt);
+	}
+
+	CS::instance()->leave(CS_DEVICECON_CS, "test");
+	CS::instance()->leave(CS_LOAD_CS, "test");
+}
+void Gamen2_partGroup::setIsWork(bool t) {
+	Gamen2_part::setIsWork(t);
+}
+bool Gamen2_partGroup::selected(int x, int y) {
+	if (!is_work) return false;
+	if (is_focused) {
+		int size = tex_or_textindexs.size();
+		for (int i = 0; i < size; i++) {
+			MYRECT nowre = now_rects[i];
+			unsigned int bu = getButukariStatusPoint(x, y, &nowre);
+			if (bu & BUTUKARIPOINT_IN) {
+				selectExe();
+				return true;
+			}
+		}
+	}
+	return false;
+
+}
+bool Gamen2_partGroup::focused(int x, int y) {
+	if (!is_work) return false;
+	int size = tex_or_textindexs.size();
+	for (int i = 0; i < size; i++) {
+		MYRECT nowre = now_rects[i];
+		unsigned int bu = getButukariStatusPoint(x, y, &nowre);
+		if (bu & BUTUKARIPOINT_IN) {
+			if (is_focused) {
+				
+				return true;
+			}
+			else {
+				has_is_focused_changed = true;
+				is_focused = true;
+				focusExe();
+				return true;
+			}
+
+		}
+	}
+
+	if (is_focused) {
+		has_is_focused_changed = true;
+		is_focused = false;
+	}
+	
+	return false;
+}
+void Gamen2_partGroup::unfocused(int x, int y) {
+	if (!is_work) return;
+	if (is_focused) {
+
+		int size = tex_or_textindexs.size();
+		bool t = true;
+		for (int i = 0; i < size; i++) {
+			MYRECT nowre = now_rects[i];
+			unsigned int bu = getButukariStatusPoint(x, y, &nowre);
+			if (bu & BUTUKARIPOINT_IN) {
+				t = false;
+			}
+			else {
+			}
+		}
+		if (t) {
+			is_focused = false;
+			has_is_focused_changed = true;
+		}
+	}
+}
+void Gamen2_partGroup::moveTo(MYRECT* dest_re, float time) {
+	destRect = *dest_re;
+	rect = nowRect;
+	this->dt = 0;
+	int lefri = destRect.left - rect.left;
+	int topri = destRect.top - rect.top;
+	if (time < 0.000001) {
+		throw new GameError(KTROBO::WARNING, "notime\n");
+	}
+	speedx = lefri / time;
+	speedy = topri / time;
+}
+bool Gamen2_partGroup::moveLoop(float dt) {
+	if (dt < 0.000001) {
+		if (this->dt > time) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	if (this->dt >= time) return true;
+
+	float dx = speedx * dt;
+	float dy = speedy * dt;
+	nowRect.left += dx;
+	nowRect.right += dx;
+	nowRect.top += dy;
+	nowRect.bottom += dy;
+
+	int size = tex_or_textindexs.size();
+	for (int i = 0; i < size; i++) {
+		if (tex_or_textindexs[i].is_tex2) {
+			if (tex_or_textindexs[i].is_text) {
+				tex2->setRenderTextPos(tex_or_textindexs[i].index, now_rects[i].left + dx, now_rects[i].top + dy);
+			}
+			else {
+				tex2->setRenderTexPos(tex_or_textindexs[i].index, now_rects[i].left + dx, now_rects[i].top + dy);
+
+			}
+		}
+		else {
+			if (tex_or_textindexs[i].is_text) {
+				tex->setRenderTextPos(tex_or_textindexs[i].index, now_rects[i].left + dx, now_rects[i].top + dy);
+			}
+			else {
+				tex->setRenderTexPos(tex_or_textindexs[i].index, now_rects[i].left + dx, now_rects[i].top + dy);
+
+			}
+		}
+		now_rects[i].left += dx;
+		now_rects[i].right += dx;
+		now_rects[i].top += dy;
+		now_rects[i].bottom += dy;
+	}
+
+
+	this->dt += dt;
+	// “®‚«I‚í‚Á‚½‚çtrue‚ð•Ô‚·
+	if (this->dt > time) return true;
+	return false;
+}
+void Gamen2_partGroup::tenmetu(float time, float tenmetu_kankaku) {
+	if (is_render == false) return; // ‚È‚É‚à‚µ‚È‚¢
+
+	this->tenmetu_dt = 0;
+	this->tenmetu_kankaku = tenmetu_kankaku;
+	this->tenmetu_time = time;
+}
+bool Gamen2_partGroup::tenmetuLoop(float dt) {
+	if (dt < 0.0001) {
+		if (tenmetu_dt >= tenmetu_time) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	if (tenmetu_dt >= tenmetu_time) {
+		is_render = true;
+		int size = tex_or_textindexs.size();
+		for (int i = 0; i < size; i++) {
+			if (tex_or_textindexs[i].is_tex2) {
+				if (tex_or_textindexs[i].is_text) {
+					tex2->setRenderTextIsRender(tex_or_textindexs[i].index,true);
+				}
+				else {
+					tex2->setRenderTexIsRender(tex_or_textindexs[i].index, true);
+
+				}
+			}
+			else {
+				if (tex_or_textindexs[i].is_text) {
+					tex->setRenderTextIsRender(tex_or_textindexs[i].index, true);
+				}
+				else {
+					tex->setRenderTexIsRender(tex_or_textindexs[i].index, true);
+
+				}
+			}
+
+		}
+
+
+		return true;
+	}
+
+
+	tenmetu_dt += dt;
+
+	float unk = tenmetu_dt / tenmetu_kankaku;
+	int un = floor(unk);
+	bool is_render = false;
+	if (un % 2 == 0) {
+		is_render = true;
+	}
+	int size = tex_or_textindexs.size();
+	for (int i = 0; i < size; i++) {
+		if (tex_or_textindexs[i].is_tex2) {
+			if (tex_or_textindexs[i].is_text) {
+				tex2->setRenderTextIsRender(tex_or_textindexs[i].index, is_render);
+			}
+			else {
+				tex2->setRenderTexIsRender(tex_or_textindexs[i].index, is_render);
+
+			}
+		}
+		else {
+			if (tex_or_textindexs[i].is_text) {
+				tex->setRenderTextIsRender(tex_or_textindexs[i].index,is_render);
+			}
+			else {
+				tex->setRenderTexIsRender(tex_or_textindexs[i].index, is_render);
+
+			}
+		}
+
+	}
+
+
+	return false;
+}
+
+

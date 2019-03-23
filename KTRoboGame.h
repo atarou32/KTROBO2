@@ -39,6 +39,7 @@
 #include "KTRoboMap.h"
 #include "KTRoboWeaponEffect.h"
 #include "KTRoboLuaExector.h"
+#include "KTRoboGamen2.h"
 
 namespace KTROBO {
 
@@ -132,7 +133,9 @@ public:
 	MYVECTOR3 lookfromtoat;
 public:
 	RMap * rmap;
+
 private:
+	Gamen2s* g2s;
 	/*
 	Mesh* mesh;
 	Mesh* mesh2;

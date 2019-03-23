@@ -32,7 +32,7 @@ public:
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
 
 	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
-	char* getHelpString() {
+	const char* getHelpString() {
 		return "ガレージ画面です。ここでアセンブルやショップなどの出撃の準備ができます。";
 	};
 };
@@ -64,7 +64,7 @@ public:
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
 
 	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
-	char* getHelpString() {
+	const char* getHelpString() {
 		return "アセンブルします。購入済みのパーツを使って自分独自の機体構成を作ります。";
 	};
 
@@ -141,7 +141,7 @@ private:
 	Gamen2_part* selected_categorypart;
 	Gamen2_part* focused_part;
 
-	char* getHelpStringWhenNoneFocused();
+	const char* getHelpStringWhenNoneFocused();
 
 public:
 	Garage2();

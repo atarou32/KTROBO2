@@ -6,7 +6,7 @@
 #include "MyButukari.h"
 #include <string>
 #include <map>
-#include "KTRoboTexture.h"
+#include "MyDefine.h"
 #include "lua.hpp"
 #include "tolua_glue/MyLuaGlueMakeCommon.h"
 
@@ -18,6 +18,7 @@ namespace KTROBO {
 
 #define KTROBO_GAMEN2_LUA_FILENAME_NO_LUA "NO_LUA"
 
+	class Texture;
 
 	interface IGamen2 {
 public:
@@ -30,7 +31,7 @@ public:
 		TO_LUA virtual int getSonotokiCursorGroup(int scene_id, int gamen_id)=0;
 		TO_LUA virtual void setSonotokiNowSonotoki(int scene_id, int gamen_id)=0;
 		TO_LUA virtual int getNowSonotokiCursorGroup()=0;
-		TO_LUA virtual int makePartsGroup(int scene_id, char* help_text, char* lua_file_when_focused, char* lua_file_when_selected)=0;
+		TO_LUA virtual int makePartsGroup(int scene_id, char* help_text, char* lua_file_when_focused, char* lua_file_when_selected, IN_ int* rect)=0;
 		TO_LUA virtual int getPartsGroupgetAllIndexFromGroupIndex(int group_index)=0;
 		TO_LUA virtual int setPartsGroupSetText(int group_index, bool is_tex2, int text_index, IN_ int* rect)=0;
 		TO_LUA virtual int setPartsGroupSetTex(int group_index, bool is_tex2, int tex_index, IN_ int* rect)=0;
@@ -60,12 +61,14 @@ public:
 		int pid;
 		static unsigned int part_id;
 		bool has_touroku;
-
+	protected:
 		MYRECT rect;
 		MYRECT nowRect;
 		MYRECT destRect;
-		float speed;
+		float speedx;
+		float speedy;
 		float dt;
+		float time;
 		float tenmetu_dt;
 		float tenmetu_time;
 		float tenmetu_kankaku;
@@ -148,12 +151,35 @@ public:
 		void touroku() { has_touroku = true; };
 		bool getTouroku() { return has_touroku; };
 		Gamen2_part() {
-			pid = part_id; part_id++; has_touroku = false; is_focused = false; has_is_focused_changed = false;/* color = 0xFFFFFFFF;*/
+			pid = part_id; part_id++; has_touroku = false; is_focused = false; has_is_focused_changed = false;
+			time = 0;
+			speedx=0;
+			speedy=0;
+			dt=0;
+			tenmetu_dt=0;
+			tenmetu_time=0;
+			tenmetu_kankaku=0;
+	
+			is_work=true;
+			is_render=true;
+			
+			
+			
+			/* color = 0xFFFFFFFF;*/
 		};
 		~Gamen2_part() {};
-		virtual char* getHelpString() {
+		virtual const char* getHelpString() {
 			return "default help string";
 		}
+
+		virtual const char* getFocusedLua() {
+			return KTROBO_GAMEN2_LUA_FILENAME_NO_LUA;
+		};
+		virtual const char* getSelectedLua() {
+			return KTROBO_GAMEN2_LUA_FILENAME_NO_LUA;
+		};
+
+		
 
 		virtual void focusExe() {};
 		virtual void selectExe() {};
@@ -168,7 +194,7 @@ public:
 
 	class Gamen2_partGroup : public Gamen2_part {
 	public:
-		Gamen2_partGroup(int scene_id,int all_index, int group_index) : Gamen2_part() {
+		Gamen2_partGroup(int scene_id,int all_index, int group_index, Texture* tex, Texture* tex2) : Gamen2_part() {
 			this->scene_id = scene_id;
 			this->group_index = group_index;
 			this->all_index = all_index;
@@ -176,6 +202,8 @@ public:
 			help_text = KTROBO_GAMEN2_LUA_FILENAME_NO_LUA;
 			selected_lua = KTROBO_GAMEN2_LUA_FILENAME_NO_LUA;
 			focused_lua = KTROBO_GAMEN2_LUA_FILENAME_NO_LUA;
+			this->tex = tex;
+			this->tex2 = tex2;
 
 		};
 		~Gamen2_partGroup() {};
@@ -186,6 +214,8 @@ public:
 		int setTex(int tex_index, bool is_tex2, IN_ int* recto);
 		int getAllIndex() { return all_index; };
 	private:
+		Texture* tex;
+		Texture* tex2;
 		bool is_use;
 		int scene_id;
 		int all_index;
@@ -201,6 +231,25 @@ public:
 		string focused_lua;
 		string selected_lua;
 	public:
+		const char* getHelpString() {
+			return help_text.c_str();
+		};
+		const char* getFocusedLua() {
+			return focused_lua.c_str();
+		};
+		const char* getSelectedLua() {
+			return selected_lua.c_str();
+		};
+		virtual void setIsWorkAndRender(bool t);
+		virtual void setIsWork(bool t);
+		virtual bool selected(int x, int y);
+		virtual bool focused(int x, int y);
+		virtual void unfocused(int x, int y);
+		virtual void moveTo(MYRECT* dest_re, float time);
+		virtual bool moveLoop(float dt); // 動き終わったらtrueを返す
+		virtual void tenmetu(float time, float tenmetu_kankaku);
+		virtual bool tenmetuLoop(float dt);
+
 		vector<GAMEN2_PARTGROUPSTRUCT>* getTexOrTextIndexs() { return &tex_or_textindexs; };
 	};
 
@@ -225,7 +274,7 @@ public:
 		string getLuaFilename() { return lua_filename; };
 
 		int getCursorX() { return cursor_x; };
-		int getCursorY() { return cursor_ys[cursor_x]; };
+		int getCursorY();// { return cursor_ys[cursor_x]; };
 		void setCursorX(int cursor_x);
 		void setCursorY(int cursor_y);
 		int getCursorGroup();
@@ -272,7 +321,7 @@ public:
 		Gamen2_part* getGamen2Part(int all_index);
 
 
-		int makePartsGroup(int scene_id, char* help_text, char* lua_file_when_focused, char* lua_file_when_selected); 
+		int makePartsGroup(int scene_id, char* help_text, char* lua_file_when_focused, char* lua_file_when_selected, IN_ int* rect); 
 		// grouip_indexを返す has_is_focused_changedのときだけfocusedのルーアファイルが呼ばれる
 		int getPartsGroupgetAllIndexFromGroupIndex(int group_index);
 
@@ -284,12 +333,17 @@ public:
 		bool getPartsGroupMoveFinished(int group_index); // load lock
 		void setPartsGroupTenmetu(int group_index, float dt, float tenmetu_kankaku);
 		bool getPartsGroupTenmetuFinished(int group_index);
+	//	void setPartsGroupSetRect(int group_index, int index, IN_ int* rect);
+
+		void Del();
+		void loopForMoveToAndTenmetu(float dt);
 
 
-		void Del(Texture* tex, Texture* tex2);
-
-		Gamen2();
+		Gamen2(Texture* tex, Texture* tex2);
 		~Gamen2();
+	private:
+		Texture* tex;
+		Texture* tex2;
 	};
 
 
@@ -305,7 +359,7 @@ public:
 		};
 		~Gamen2s() {
 			if (inst) {
-				inst->Del(tex,tex2);
+				inst->Del();
 				delete inst;
 				inst = 0;
 			}
@@ -319,7 +373,7 @@ public:
 			if (inst) {
 				return inst;
 			}
-			inst = new Gamen2();
+			inst = new Gamen2(tex,tex2);
 
 		};
 		Gamen2* getInterface(int index) {
@@ -327,15 +381,16 @@ public:
 				return inst;
 
 			}
-			inst = new Gamen2();
+			inst = new Gamen2(tex,tex2);
 		};
 		int makeInst() {
 			// 実際のmakeはluaに渡す前にすべてやってしまうこと
 			if (inst) {
 			}
 			else {
-				inst = new Gamen2();
+				inst = new Gamen2(tex,tex2);
 			}
+			return 0;
 		};
 
 	};

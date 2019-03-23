@@ -219,7 +219,7 @@ bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
 	return false;
 }
 
-char* Garage2::getHelpStringWhenNoneFocused() {
+const char* Garage2::getHelpStringWhenNoneFocused() {
 	if (!selected_categorypart) {
 		return gtex_g->getHelpString();
 	}
@@ -415,8 +415,10 @@ void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2
 	*/
 	CS::instance()->leave(CS_LOAD_CS, "garage2part");
 
-
-	help_text = tex2->getRenderText(gtex_g->getHelpString(), 50, g->getScreenHeight() - 55+11, 18, g->getScreenWidth(),20);
+	char str[1024];
+	memset(str, 0, 1024);
+	strcpy_s(str, 512, gtex_g->getHelpString());
+	help_text = tex2->getRenderText(str, 50, g->getScreenHeight() - 55+11, 18, g->getScreenWidth(),20);
 	tex2->setRenderTextIsRender(help_text, true);
 
 

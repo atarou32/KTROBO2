@@ -10,6 +10,7 @@
 #include "KTROBOMission.h"
 #include "KTRoboSceneGarage2.h"
 
+
 using namespace KTROBO;
 
 
@@ -98,6 +99,7 @@ Game::Game(void)
 	effect_suuji = 0;
 	lua_ets = 0;
 	rmap = 0;
+	g2s = 0;
 }
 
 
@@ -467,6 +469,9 @@ bool Game::Init(HWND hwnd) {
 	MyLuaGlueSingleton::getInstance()->setColMeshInstanceds(mesh_instanceds);
 //	MyLuaGlueSingleton::getInstance()->setColAnimationBuilders(abs);
 	MyLuaGlueSingleton::getInstance()->setColLuaExectors(lua_ets);
+	
+	
+
 	MyLuaGlueSingleton::getInstance()->registerdayo(L);
 
 	for (int i=0;i<TASKTHREAD_NUM;i++) {
@@ -481,6 +486,10 @@ bool Game::Init(HWND hwnd) {
 	Scene::Init(g_for_task_threads,this); // scene init から　Lをなくす　luaが必要なときはluaexector を呼ぶ.
 	
 	texdayo = new Textures(demo->tex_loader);
+
+	g2s = new Gamen2s(texdayo->getInstance(0), texdayo->getInstance(1));
+	MyLuaGlueSingleton::getInstance()->setColGamen2s(g2s);
+
 	MyLuaGlueSingleton::getInstance()->setColTextures(texdayo);	
 	texdayo->getInstance(0)->getTexture(KTROBO_GUI_PNG,4096);
 	int pp = texdayo->getInstance(1)->getTexture(KTROBO_GUI_PNG, 4096);
@@ -758,6 +767,11 @@ void Game::Del() {
 		lua_ets->Del();
 		delete lua_ets;
 		lua_ets = 0;
+	}
+
+	if (g2s) {
+		delete g2s;
+		g2s = 0;
 	}
 
 	if (L) {
@@ -1296,12 +1310,14 @@ void Game::Run() {
 	
 	CS::instance()->leave(CS_DEVICECON_CS, "device game");
 	//lua_ets->getInstance(0)->doLoop(this->c->getTimeStamp());
+	g2s->getInstance(0)->loopForMoveToAndTenmetu(dt);
 	CS::instance()->enter(CS_DEVICECON_CS, "device game");
 
 	mesh_instanceds->render(g);
 
 	CS::instance()->enter(CS_RENDERDATA_CS, "ee");
 
+	
 
 	demo->Render(g, mesh_instanceds->anime_matrix_basis_texture);
 	//	demo->Render(g, mesh_instanceds->matrix_local_texture);
