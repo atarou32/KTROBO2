@@ -353,7 +353,46 @@ int Gamen2::getPartsGroupgetAllIndexFromGroupIndex(int group_index) {
 	return ans;
 
 }
-	
+void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* all_parts) {
+	int asize = all_parts->size();
+
+	for (int i = 0; i < asize; i++) {
+		(*all_parts)[i]->setIsWorkAndRender(false);
+	}
+
+	int xsize = cursor_group.size();
+	for (int i = 0; i < xsize; i++) {
+		vector<int>* gg = cursor_group[i];
+		int gsize = gg->size();
+		for (int k = 0; k < gsize; k++) {
+			int group_index = (*gg)[k];
+			if ((asize > group_index) && group_index >= 0) {
+				Gamen2_part* pg = (*all_parts)[group_index];
+				pg->setIsWorkAndRender(true);
+			}
+			else {
+				mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
+			}
+		}
+
+
+	}
+
+	int nsize = not_cursor_but_render_group.size();
+	for (int i = 0; i < nsize; i++) {
+		int inde = not_cursor_but_render_group[i];
+		if ((asize > inde) && (inde >= 0)) {
+			Gamen2_part* pg = (*all_parts)[inde];
+			pg->setIsWorkAndRender(true);
+			pg->setIsWork(false);
+		}
+		else {
+			mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
+		}
+	}
+
+
+}
 void Gamen2::setSonotokiNowSonotoki(int scene_id, int gamen_id) { // rock load lua_filename‚ªŒÄ‚Î‚ê‚é
 	CS::instance()->enter(CS_LOAD_CS, "nowsonotoki");
 	if (sonotokis_map.find(pair<int, int>(scene_id, gamen_id)) != sonotokis_map.end()) {
@@ -361,7 +400,11 @@ void Gamen2::setSonotokiNowSonotoki(int scene_id, int gamen_id) { // rock load l
 		int inde = (sonotokis_map.find(pair<int, int>(scene_id, gamen_id))->second);
 		int sonosize = sonotokis.size();
 		if ((inde < sonosize) && inde >= 0) {
+
+			// is_render ‚Æ is_work ‚Ì˜b‚à‚ ‚é only render ‚É‚ ‚é‚à‚Ì‚Í@setis_workandrender ‚Ì‚ ‚Æ‚É@iswork‚ðfalse‚É‚·‚é
 			now_sonotoki = sonotokis[inde];
+			
+
 			char now_str[1024];
 			memset(now_str, 0, 1024);
 			strcpy_s(now_str, 512, now_sonotoki->getLuaFilename().c_str());

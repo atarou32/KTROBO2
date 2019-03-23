@@ -234,7 +234,7 @@ public:
 
 		void setGroupOnlyRenderGroup(int group_index);
 		void setGroupGroup(int group_index, int cursor_x);
-
+		void setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* all_parts);
 	};
 
 	class Gamen2 : public IGamen2
