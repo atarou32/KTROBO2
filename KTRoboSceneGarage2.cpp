@@ -121,6 +121,7 @@ void SceneGarage2::leave() {
 }
 
 void Garage2::render(Graphics* g,Texture* tex,Texture* tex2, MYMATRIX* view, MYMATRIX* proj) {
+	CS::instance()->enter(CS_RENDERDATA_CS, "render");
 	if (robog) {
 		robog->render(g, tex2,view, proj);
 
@@ -134,7 +135,7 @@ void Garage2::render(Graphics* g,Texture* tex,Texture* tex2, MYMATRIX* view, MYM
 
 
 	}
-
+	CS::instance()->leave(CS_RENDERDATA_CS, "render");
 }
 
 bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
@@ -554,11 +555,12 @@ void MyRobo_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLo
 	re.right = 50 + 400;
 	re.top = 350;
 	re.bottom = 350 + 400;
+	setRect(&re);
 	setLoaded();
 }
 
 void Garage2Tex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj) {
-
+	/*
 	static unsigned char colorr = 0;
 	static unsigned char colorg = 0;
 	static unsigned char colorb = 0;
@@ -594,7 +596,7 @@ void Garage2Tex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMA
 		
 
 	}
-
+	*/
 }
 
 void Garage2Tex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei) {
