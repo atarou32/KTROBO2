@@ -12,6 +12,9 @@ using namespace std;
 
 namespace KTROBO {
 
+
+#define KTROBO_GAMEN2_LUA_FILENAME_NO_LUA "NO_LUA"
+
 	class Gamen2_part {
 	private:
 		int pid;
@@ -130,11 +133,17 @@ namespace KTROBO {
 			this->group_index = group_index;
 			this->all_index = all_index;
 			is_use = true;
+			help_text = KTROBO_GAMEN2_LUA_FILENAME_NO_LUA;
+			selected_lua = KTROBO_GAMEN2_LUA_FILENAME_NO_LUA;
+			focused_lua = KTROBO_GAMEN2_LUA_FILENAME_NO_LUA;
+
 		};
 		~Gamen2_partGroup() {};
 		bool getIsUse(){ return is_use; }; // 外部でCS_LOAD_CSをロックすること
-
+		void setString(char* help_text, char* focused_lua, char* selected_lua);
 		void cleardayo(Texture* tex, Texture* tex2); // texやtextの内容などをlightdeleteする vectorもクリアする
+		int setText(int text_index, bool is_tex2, int* recto);
+		int setTex(int tex_index, bool is_tex2, int* recto);
 	private:
 		bool is_use;
 		int scene_id;
@@ -148,9 +157,10 @@ namespace KTROBO {
 		// rects および　textindexs help_text に関しては　外部からロードされる可能性があるので使うときは CS_LOAD_CS のロックをかける
 
 		string help_text;
-
-
-
+		string focused_lua;
+		string selected_lua;
+	public:
+		vector<GAMEN2_PARTGROUPSTRUCT>* getTexOrTextIndexs() { return &tex_or_textindexs; };
 	};
 
 	class Gamen2_Sonotoki {
@@ -166,12 +176,12 @@ namespace KTROBO {
 		int scene_id;
 		int gamen_id;
 		vector<int> not_cursor_but_render_group;
-		vector<vector<int>*> cursor_group;
+		vector<vector<int>*> cursor_group; // sonotokiで保管しているint は　group_indexではなくて　all_indexであることに注意
 		int cursor_x;
 		vector<int> cursor_ys;
 		string lua_filename;
 	public:
-		const char* getLuaFilename() { return lua_filename.c_str(); };
+		string getLuaFilename() { return lua_filename; };
 
 		int getCursorX() { return cursor_x; };
 		int getCursorY() { return cursor_ys[cursor_x]; };
@@ -198,6 +208,7 @@ namespace KTROBO {
 		vector<Gamen2_Sonotoki*> sonotokis; // lua_file から作られる
 		map<pair<int,int>, int> sonotokis_map;
 		map<pair<int, int>, int> cpp_parts_map; // scene_id, parts_DEF kara all_parts noindex
+		Gamen2_Sonotoki* now_sonotoki;
 
 		void pauseWork(); // moveToの動きは実行されるが　クリックやセレクトをしても反応しないようにする 
 						  // selectedされたときに実行される
@@ -223,10 +234,10 @@ namespace KTROBO {
 		int makePartsGroup(int scene_id, char* help_text, char* lua_file_when_focused, char* lua_file_when_selected); 
 		// grouip_indexを返す has_is_focused_changedのときだけfocusedのルーアファイルが呼ばれる
 
-		int setPartsGroupSetText(int group_index, bool is_tex2, int text_index); // group 内のindexを返す
-		int setPartsGroupSetTex(int group_index, bool is_tex2, int tex_index); // group 内のindexを返す
-		int getPartsGroupIsText(int group_index, int index); // 該当のindexの要素がtextであるか
-		int getPartsGroupIsTex2(int group_index, int index); // 該当のindexの要素がtex２を使っているか
+		int setPartsGroupSetText(int group_index, bool is_tex2, int text_index, IN_ int* rect); // group 内のindexを返す left right top bottom の順番
+		int setPartsGroupSetTex(int group_index, bool is_tex2, int tex_index, IN_ int* rect); // group 内のindexを返す
+		bool getPartsGroupIsText(int group_index, int index); // 該当のindexの要素がtextであるか
+		bool getPartsGroupIsTex2(int group_index, int index); // 該当のindexの要素がtex２を使っているか
 		void setPartsGroupMoveTo(int group_index,int x, int y, int width, int height, float time); // load lock
 		bool getPartsGroupMoveFinished(int group_index); // load lock
 		void setPartsGroupTenmetu(int group_index, float dt, float tenmetu_kankaku);
