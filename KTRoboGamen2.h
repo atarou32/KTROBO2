@@ -44,6 +44,7 @@ public:
 		TO_LUA virtual bool getPartsGroupMoveFinished(int group_index)=0;
 		TO_LUA virtual void setPartsGroupTenmetu(int group_index, float dt, float tenmetu_kankaku)=0;
 		TO_LUA virtual bool getPartsGroupTenmetuFinished(int group_index)=0;
+		TO_LUA virtual void setPartsGroupIsWorkRender(int group_index, bool t)=0;
 
 	};
 
@@ -75,6 +76,7 @@ public:
 		float tenmetu_dt;
 		float tenmetu_time;
 		float tenmetu_kankaku;
+		bool is_tenmetu;
 	protected:
 		bool is_focused;
 		bool has_is_focused_changed;
@@ -82,10 +84,7 @@ public:
 		bool is_render;
 	public:
 
-		virtual void setIsWorkAndRender(bool t) {
-			is_work = t;
-			is_render = t;
-		}
+		virtual void setIsWorkAndRender(bool t);
 
 		virtual void setIsWork(bool t) {
 			is_work = t;
@@ -93,7 +92,9 @@ public:
 		bool getIsRender() { return is_render; };
 		bool getIsWork() { return is_work; };
 
-		const MYRECT const * getRect() { return &nowRect; }
+		const MYRECT * getRect() { return &nowRect; }
+		virtual int getGroupIndex() { return 0; };
+		virtual int getAllIndex() { return 0; };
 		virtual void setRect(MYRECT* re) {
 			rect = *re;
 			nowRect = *re;
@@ -165,7 +166,7 @@ public:
 	
 			is_work=true;
 			is_render=true;
-			
+			is_tenmetu = false;
 			
 			
 			/* color = 0xFFFFFFFF;*/
@@ -243,16 +244,17 @@ public:
 		const char* getSelectedLua() {
 			return selected_lua.c_str();
 		};
-		virtual void setIsWorkAndRender(bool t);
-		virtual void setIsWork(bool t);
-		virtual bool selected(int x, int y);
-		virtual bool focused(int x, int y);
-		virtual void unfocused(int x, int y);
-		virtual void moveTo(MYRECT* dest_re, float time);
-		virtual bool moveLoop(float dt); // 動き終わったらtrueを返す
-		virtual void tenmetu(float time, float tenmetu_kankaku);
-		virtual bool tenmetuLoop(float dt);
 
+		void setIsWorkAndRender(bool t);
+		void setIsWork(bool t);
+		bool selected(int x, int y);
+		bool focused(int x, int y);
+		void unfocused(int x, int y);
+		void moveTo(MYRECT* dest_re, float time);
+		bool moveLoop(float dt); // 動き終わったらtrueを返す
+		void tenmetu(float time, float tenmetu_kankaku);
+		bool tenmetuLoop(float dt);
+		int getGroupIndex() { return group_index; };
 		vector<GAMEN2_PARTGROUPSTRUCT>* getTexOrTextIndexs() { return &tex_or_textindexs; };
 	};
 
@@ -280,6 +282,8 @@ public:
 		int getCursorY();// { return cursor_ys[cursor_x]; };
 		void setCursorX(int cursor_x);
 		void setCursorY(int cursor_y);
+		void setCursorXY(int all_index);
+		const vector<vector<int>*>* getCG() { return &cursor_group; };
 		int getCursorGroup();
 		void makeKoCursorGroup(); // cursor_group にvector<int*>* を入れる
 		void deletedayo(); // デストラクタを呼ぶ前にdeletedayoを呼ぶ
@@ -337,7 +341,7 @@ public:
 		void setPartsGroupTenmetu(int group_index, float dt, float tenmetu_kankaku);
 		bool getPartsGroupTenmetuFinished(int group_index);
 	//	void setPartsGroupSetRect(int group_index, int index, IN_ int* rect);
-
+		void setPartsGroupIsWorkRender(int group_index, bool t);
 		void Del();
 		void loopForMoveToAndTenmetu(float dt);
 

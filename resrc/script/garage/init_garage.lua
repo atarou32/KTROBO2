@@ -119,26 +119,27 @@ function setButton(tex,tex2, gpx, gp_map, button_str, button_id_str, help_text, 
   select_lua_str, rect)
 
   tex_index = tex:getTexture(KTROBO_GARAGE2_IMG_PATH,4096);
-  tex_index2 = tex2:getTexture(KTROBO_GARAGE2_IMG_PATH, 4096)
+  tex_index2 = tex:getTexture(KTROBO_GARAGE2_IMG_PATH, 4096)
   
   offdayo = (54 - text_height)/2
-  texe2 = tex2:getRenderText(button_str, x + offdayo , y +offdayo, text_height, width- 2*offdayo ,54)
-  tex2:setRenderTextColor(texe2,0xFF000000)
+  texe2 = tex:getRenderText(button_str, x + offdayo , y +offdayo, text_height, width- 2*offdayo ,54)
+  tex:setRenderTextColor(texe2,0xFF000000)
   left = x+offdayo
   right = left + width-2*offdayo
   top = y +offdayo
   bottom = top + 54 -2*offdayo
   rect ={left,right,top,bottom}
-  p_index = gamen2:setPartsGroupSetText(group_index, true, texe2, rect)
+  p_index = gamen2:setPartsGroupSetText(group_index, false, texe2, rect)
+ -- tex:setRenderTextIsRender(texe2,false)
   setGpPartToGp(gp, texe2,rect,p_index)
   
-  texe = tex2:getRenderTex(tex_index2, 0xFFFFFFFF, x, y, width, 54, 68, 376, 238-68, 54)
+  texe = tex:getRenderTex(tex_index2, 0xFFFFFFFF, x, y, width, 54, 68, 376, 238-68, 54)
   left = x
   right = left + 238-68
   top = y
   bottom = top + 54
   rect ={left,right,top,bottom}
-  p_index = gamen2:setPartsGroupSetTex(group_index, true, texe, rect)
+  p_index = gamen2:setPartsGroupSetTex(group_index, false, texe, rect)
 
   setGpPartToGp(gp,texe,rect,p_index)
   setGpToGps(gpx,gp_map, gp, group_index, button_id_str, rect)
@@ -166,25 +167,57 @@ tank_leg_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "タンク",
 k4_leg_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "四脚", "k4_leg_part",  "testdayo","NO_LUA", "NO_LUA", 50,340,28)
 reverse_leg_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "逆関節", "reverse_leg_part",  "testdayo","NO_LUA", "NO_LUA", 50,400,28)
 
-handgun_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ハンドガン", "handgun_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,100,28)
-machinegun_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "マシンガン", "machinegun_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,160,28)
-shotgun_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ショットガン", "shotgun_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,220,28)
-rifle_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ライフル", "rifle_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,280,28)
-bazooka_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "バズーカ", "bazooka_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,340,28)
-sniperrifle_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "スナイパーライフル", "sniperrifle_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,400,28)
-grenede_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "グレネード", "grenede_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,460,28)
-missle_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ミサイル", "missile_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,520,28)
-rocket_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ロケット", "rocket_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,580,28)
-hanabigun_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ハナビガン", "hanabigun_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,640,28)
-pulsegun_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "パルスガン", "pulsegun_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 450,700,28)
-plazumagun_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "プラズマガン", "plazumagun_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 600,100,28)
-energyrifle_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "エネルギーライフル", "energyrifle_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 600,160,28)
-blade_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ブレード", "blade_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 600,220,28)
-energyblade_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "エネルギーブレード", "energybladea_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 600,280,28)
-pile_rarm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "パイル", "pile_rarm_part",  "testdayo","NO_LUA", "NO_LUA", 600,340,28)
+handgun_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ハンドガン", "handgun_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,100,28)
+machinegun_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "マシンガン", "machinegun_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,160,28)
+shotgun_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ショットガン", "shotgun_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,220,28)
+rifle_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ライフル", "rifle_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,280,28)
+bazooka_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "バズーカ", "bazooka_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,340,28)
+sniperrifle_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "スナイパーライフル", "sniperrifle_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,400,28)
+grenede_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "グレネード", "grenede_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,460,28)
+missle_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ミサイル", "missile_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,520,28)
+rocket_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ロケット", "rocket_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,580,28)
+hanabigun_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ハナビガン", "hanabigun_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,640,28)
+pulsegun_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "パルスガン", "pulsegun_arm_part",  "testdayo","NO_LUA", "NO_LUA", 450,700,28)
+plazumagun_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "プラズマガン", "plazumagun_arm_part",  "testdayo","NO_LUA", "NO_LUA", 800,100,28)
+energyrifle_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "エネルギーライフル", "energyrifle_arm_part",  "testdayo","NO_LUA", "NO_LUA", 800,160,28)
+blade_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ブレード", "blade_arm_part",  "testdayo","NO_LUA", "NO_LUA", 800,220,28)
+energyblade_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "エネルギーブレード", "energybladea_arm_part",  "testdayo","NO_LUA", "NO_LUA", 800,280,28)
+pile_arm_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "パイル", "pile_arm_part",  "testdayo","NO_LUA", "NO_LUA", 800,340,28)
+
+chaingun_shoul_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "チェインガン", "chaingun_shoul_part",  "testdayo","NO_LUA", "NO_LUA", 800,400,28)
+grenede_shoul_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "グレネード", "grenede_shoul_part",  "testdayo","NO_LUA", "NO_LUA", 800,460,28)
+hanabi_shoul_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ハナビ", "hanabi_shoul_part",  "testdayo","NO_LUA", "NO_LUA", 800,520,28)
+missile_shoul_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ミサイル", "missile_shoul_part",  "testdayo","NO_LUA", "NO_LUA", 800,580,28)
+plazuma_shoul_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "プラズマ", "plazuma_shoul_part",  "testdayo","NO_LUA", "NO_LUA", 800,640,28)
+pulse_shoul_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "パルス", "pulse_shoul_part",  "testdayo","NO_LUA", "NO_LUA", 800,700,28)
+raser_shoul_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "レーザー", "raser_shoul_part",  "testdayo","NO_LUA", "NO_LUA", 800,760,28)
+rocket_shoul_g_index =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ロケット", "rocket_shoul_part",  "testdayo","NO_LUA", "NO_LUA", 800,840,28)
+--]]
 
 
 
+gamen2:setPartsGroupIsWorkRender(head_gindex,false)
+
+
+--TO_LUA virtual void makeSonotoki(int scene_id, int gamen_id, char* lua_filename)=0;
+--TO_LUA virtual void setSonotokiMakeKo(int scene_id, int gamen_id)=0;
+--TO_LUA virtual void setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int all_index)=0;
+--TO_LUA virtual void setSonotokiSetGroupGroup(int scene_id, int gamen_id, int all_index, int cursor_x)=0;
+--TO_LUA virtual int getSonotokiCursorGroup(int scene_id, int gamen_id)=0;
+--TO_LUA virtual void setSonotokiNowSonotoki(int scene_id, int gamen_id)=0;
+--TO_LUA virtual int getNowSonotokiCursorGroup()=0;
+gamen_id_garage_start = 0
+
+gamen2:makeSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE,gamen_id_garage_start,"resrc/script/garage/start_garage.lua")
+gamen2:setSonotokiMakeKo(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_start)
+--gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_start,shop_gindex)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_start,assemble_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_start,asmsave_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_start,asmload_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_start,shop_gindex,0)
+gamen2:setSonotokiNowSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_start)
+
+--texe = tex2:getRenderTex(tex_index2, 0xFFFFFFFF, 0, 50, 236, 51, 0, 48, 136, 51);
 --gamen2:setPartsGroupMoveTo(group_index, 0,10,236,55,"6000.0")
 
---LuaExector:getIS(0,0):setExecCoDoUntilTime("resrc/script/garage/moveto.lua", 2)
+LuaExector:getIS(0,0):setExecCoDoUntilTime("resrc/script/garage/moveto.lua", 2)

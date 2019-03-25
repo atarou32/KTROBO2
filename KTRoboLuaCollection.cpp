@@ -1,5 +1,6 @@
 #include "KTRoboLuaCollection.h"
 #include "KTRoboLog.h"
+#include "MyTokenAnalyzer.h"
 
 using namespace KTROBO;
 
@@ -42,8 +43,11 @@ void TCB_luaExec(TCB* thisTCB) {
 	}
 	
 	if (error) {
-		mylog::writelog("errtxt.txt", "%s", lua_tostring(L, -1));
-		OutputDebugStringA(lua_tostring(L,-1));
+		char strda[1024];
+		memset(strda, 0, 1024);
+		hmystrcpy(strda, 1024, 0, lua_tostring(L, -1));
+		mylog::writelog("errtxt.txt", "%s", strda);
+		OutputDebugStringA(strda);
 		lua_settop(L,tee);
 		
     } else {

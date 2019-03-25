@@ -101,8 +101,11 @@ void LuaExector::dodayo(LuaExec* task) {
 	}
 
 	if (error) {
-		mylog::writelog(KTROBO::WARNING, "%s", lua_tostring(L, lua_gettop(L)));
-		OutputDebugStringA(lua_tostring(L, lua_gettop(L)));
+		char test[1024];
+		memset(test, 0, 1024);
+		mystrcpy(test, 1024, 0, lua_tostring(L, -1));
+		mylog::writelog(KTROBO::WARNING, "lua_error:%s", test);
+		OutputDebugStringA(test);
 		lua_settop(L, tee);
 
 	}
@@ -196,8 +199,12 @@ void LuaExector::cododayo(LuaExec* task) {
 			int err = luaL_loadfile(co, lua_filename);
 			if (err) {
 				mylog::writelog(KTROBO::DEBUG, "file“o˜^Ž¸”s");
-				mylog::writelog(KTROBO::WARNING, "%s", lua_tostring(co, lua_gettop(co)));
-				OutputDebugStringA(lua_tostring(co, lua_gettop(co)));
+				char strda[1024];
+				memset(strda, 0, 1024);
+				mystrcpy(strda, 1024, 0, lua_tostring(co, lua_gettop(co)));
+				
+				mylog::writelog(KTROBO::WARNING, "%s", strda);
+				OutputDebugStringA(strda);
 				lua_settop(co, teec);
 				// Ž¸”s‚·‚é‚Ì‚Í‚í‚©‚Á‚Ä‚¢‚é‚¯‚ÇŽŸ‚ÌƒtƒF[ƒY‚Å‚Ü‚½ŽÀs‚³‚¹‚æ‚¤‚Æ‚·‚é
 				// Ž¸”s‚µ‚½‚Ì‚Åƒ^ƒXƒN‚ðŽ~‚ß‚é
@@ -243,8 +250,11 @@ void LuaExector::cododayo(LuaExec* task) {
 
 	if ((error != LUA_OK) && (error != LUA_YIELD)) {
 		mylog::writelog(KTROBO::DEBUG, "resume Ž¸”s Ä“o˜^‚³‚¹‚Ü‚·");
-		mylog::writelog(KTROBO::WARNING, "%s", lua_tostring(task->co, lua_gettop(task->co)));
-		OutputDebugStringA(lua_tostring(task->co, -1));
+		char strda[1024];
+		memset(strda, 0, 1024);
+		mystrcpy(strda, 1024, 0, lua_tostring(task->co, lua_gettop(task->co)));
+		mylog::writelog(KTROBO::WARNING, "%s", strda);
+		OutputDebugStringA(strda);
 		OutputDebugStringA("\n");
 		lua_settop(L, tee);
 		task->co = 0;

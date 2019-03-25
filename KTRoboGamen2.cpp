@@ -110,13 +110,31 @@ void Gamen2_Sonotoki::setCursorX(int cursor_x) {
 	}
 
 }
+
+void Gamen2_Sonotoki::setCursorXY(int all_index) {
+	// ‚à‚µŒ©‚Â‚©‚ç‚È‚©‚Á‚½‚ç‚»‚Ì‚Ü‚Ü
+	int cgsize = cursor_group.size();
+	for (int i = 0; i < cgsize; i++) {
+		vector<int>* gro = (cursor_group)[i];
+		int grosize = gro->size();
+
+		for (int k = 0; k < grosize; k++) {
+			int ginde = (*gro)[k];
+			if (all_index == ginde) {
+				cursor_x = i;
+				cursor_ys[i] = k;
+			}
+
+		}
+	}
+}
 int Gamen2_Sonotoki::getCursorGroup() {
 
 	int cg_size = cursor_group.size();
 	if (cg_size <= 0) {
 		throw new GameError(KTROBO::FATAL_ERROR, "no cursor group");
 	}
-	if ((cursor_x <= 0) || (cursor_x >= cg_size)) {
+	if ((cursor_x < 0) || (cursor_x >= cg_size)) {
 		throw new GameError(KTROBO::FATAL_ERROR, "bad cursor_x");
 	}
 	vector<int>* gg = cursor_group[cursor_x];
@@ -235,7 +253,9 @@ int Gamen2::getCPPPartsIndex(int scene_id, int parts_DEF) {
 void Gamen2::makeSonotoki(int scene_id, int gamen_id, char* lua_filename) {
 	// rock load
 	CS::instance()->enter(CS_LOAD_CS, "makesonotoki");
+	volatile int inde = sonotokis.size();
 	sonotokis.push_back(new Gamen2_Sonotoki(scene_id, gamen_id, lua_filename));
+	sonotokis_map.insert(pair<pair<int, int>, int>(pair<int, int>(scene_id, gamen_id), inde));
 	CS::instance()->leave(CS_LOAD_CS, "make sonotoki");
 
 }
@@ -360,6 +380,13 @@ int Gamen2::getPartsGroupgetAllIndexFromGroupIndex(int group_index) {
 	return ans;
 
 }
+
+void Gamen2_part::setIsWorkAndRender(bool t)
+{
+	is_work = t;
+	is_render = t;
+}
+
 void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* all_parts) {
 	int asize = all_parts->size();
 
@@ -410,7 +437,7 @@ void Gamen2::setSonotokiNowSonotoki(int scene_id, int gamen_id) { // rock load l
 
 			// is_render ‚Æ is_work ‚Ì˜b‚à‚ ‚é only render ‚É‚ ‚é‚à‚Ì‚Í@setis_workandrender ‚Ì‚ ‚Æ‚É@iswork‚ðfalse‚É‚·‚é
 			now_sonotoki = sonotokis[inde];
-			
+			now_sonotoki->setIsWorkAndRenderWhenNowSonotoki(&all_parts);
 
 			char now_str[1024];
 			memset(now_str, 0, 1024);
@@ -487,7 +514,17 @@ int Gamen2::setPartsGroupSetText(int group_index, bool is_tex2, int text_index, 
 	return ans;
 }
 	
-
+void Gamen2::setPartsGroupIsWorkRender(int group_index, bool t) {
+	// group “à‚Ìindex‚ð•Ô‚·
+	CS::instance()->enter(CS_LOAD_CS, "gamen2 settexts");
+	volatile int ans = 0;
+	volatile int all_index = grouped_parts.size();
+	if ((all_index > group_index) && (group_index >= 0)) {
+		Gamen2_partGroup* pg = grouped_parts[group_index];
+		pg->setIsWorkAndRender(t);
+	}
+	CS::instance()->leave(CS_LOAD_CS, "gamen2 settexts");
+}
 int Gamen2_partGroup::setText(int text_index, bool is_tex2, IN_ int* recto) {
 	GAMEN2_PARTGROUPSTRUCT st;
 	st.index = text_index;
@@ -708,7 +745,7 @@ void Gamen2_partGroup::setIsWorkAndRender(bool t) {
 	this->tenmetu_dt = 21;
 	this->tenmetu_time = 20;
 	this->tenmetu_kankaku = 20;
-	this->tenmetuLoop(0);
+	this->tenmetuLoop(10);
 
 	for (int i = 0; i < size; i++) {
 		int inde = tex_or_textindexs[i].index;
@@ -879,12 +916,13 @@ bool Gamen2_partGroup::moveLoop(float dt) {
 }
 void Gamen2_partGroup::tenmetu(float time, float tenmetu_kankaku) {
 	if (is_render == false) return; // ‚È‚É‚à‚µ‚È‚¢
-
+	is_tenmetu = true;
 	this->tenmetu_dt = 0;
 	this->tenmetu_kankaku = tenmetu_kankaku;
 	this->tenmetu_time = time;
 }
 bool Gamen2_partGroup::tenmetuLoop(float dt) {
+	if (!is_tenmetu) return true;
 	if (dt < 0.0001) {
 		if (tenmetu_dt >= tenmetu_time) {
 			return true;
@@ -893,7 +931,7 @@ bool Gamen2_partGroup::tenmetuLoop(float dt) {
 			return false;
 		}
 	}
-	if (tenmetu_dt >= tenmetu_time) {
+	if (is_tenmetu &&(tenmetu_dt >= tenmetu_time)) {
 		is_render = true;
 		int size = tex_or_textindexs.size();
 		for (int i = 0; i < size; i++) {
@@ -917,7 +955,7 @@ bool Gamen2_partGroup::tenmetuLoop(float dt) {
 			}
 
 		}
-
+		is_tenmetu = false;
 
 		return true;
 	}

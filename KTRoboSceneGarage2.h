@@ -173,6 +173,7 @@ public:
 	void mouse_move(Texture* tex1, Texture* tex2, Game* game,int x, int y);
 	void mouse_clicked_down(Texture* tex1, Texture* tex2, Game* game, int x, int y);
 	void mouse_clicked_up(Texture* tex1, Texture* tex2, Game* game, int x, int y);
+	void setCursorTexPosToCursorPos(Texture* tex1, Texture* tex2, Game* game);
 };
 class SceneGarage2 : public Scene, public INPUTSHORICLASS {
 
