@@ -93,7 +93,7 @@ public:
 		bool getIsRender() { return is_render; };
 		bool getIsWork() { return is_work; };
 
-
+		const MYRECT const * getRect() { return &nowRect; }
 		virtual void setRect(MYRECT* re) {
 			rect = *re;
 			nowRect = *re;

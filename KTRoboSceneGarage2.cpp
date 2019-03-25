@@ -243,6 +243,7 @@ Garage2::Garage2() :  Loadable2(), Gamen2_part() {
 	help_text_waku = 0;
 	selected_categorypart = 0;
 	focused_part = 0;
+	cursor_tex = 0;
 };
 Garage2::~Garage2() {
 	if (robog) {
@@ -429,12 +430,15 @@ void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2
 	tex2->setRenderTextIsRender(help_text, true);
 
 
+	
 
 
 
 
 	setLoaded();
 	int tex_index2 = tex->getTexture(KTROBO_GARAGE2_IMG_PATH);
+	cursor_tex = tex->getRenderTex(tex_index2, 0xFFFFFFFF, 100, 100, 67, 490 - 437, 0, 437, 67, 490 - 437);
+	
 	help_text_waku = tex->getRenderTex(tex_index2,0x000000FF,10,g->getScreenHeight()-55+11,g->getScreenWidth()-20,20, 18, 390, 1, 1);
 }
 
@@ -606,11 +610,6 @@ void Garage2Tex_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMA
 
 	}
 	*/
-	static float x = 0;
-	static float y = 0;
-	x += 0.01;
-	y += 0.01;
-	tex2->setRenderTexPos(texe, x, y);
 }
 
 void Garage2Tex_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei) {

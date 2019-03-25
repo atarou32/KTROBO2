@@ -135,6 +135,7 @@ private:
 	int help_text;
 	int help_text_waku;
 
+	int cursor_tex;
 	
 
 	Gamen2_part* selected_categorypart;
