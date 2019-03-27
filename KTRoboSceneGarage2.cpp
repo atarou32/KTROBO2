@@ -402,6 +402,14 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 						tex2->setRenderTextChangeText(help_text, test);
 						focused_part = pp;
 						sono->setCursorXY(pp->getAllIndex());
+
+						memset(test, 0, 1024);
+						mystrcpy(test, 1024, 0, pp->getFocusedLua());
+						if (strcmp(test, KTROBO_GAMEN2_LUA_FILENAME_NO_LUA) != 0) {
+							MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(test);
+						}
+
+
 					}
 					CS::instance()->leave(CS_MESSAGE_CS, "e");
 					CS::instance()->leave(CS_LOAD_CS, "ee");
@@ -501,6 +509,14 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 						tex2->setRenderTextChangeText(help_text, test);
 						focused_part = pp;
 						sono->setCursorXY(pp->getAllIndex());
+
+						memset(test, 0, 1024);
+						mystrcpy(test, 1024, 0, pp->getFocusedLua());
+						if (strcmp(test, KTROBO_GAMEN2_LUA_FILENAME_NO_LUA) != 0) {
+							MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(test);
+						}
+
+
 					}
 					CS::instance()->leave(CS_MESSAGE_CS, "e");
 					CS::instance()->leave(CS_LOAD_CS, "ee");
@@ -550,6 +566,8 @@ void Garage2::mouse_clicked_up(Texture* tex, Texture* tex2, Game* game, int x, i
 		Gamen2_part* focused_part = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(focused_group_all_index);
 		if (focused_part->selected(x, y)) {
 			// lua ƒtƒ@ƒCƒ‹‚ðŒÄ‚Ô
+			MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->pauseWork();
+			selected_categorypart = focused_part;
 			char strdayo[1024];
 			memset(strdayo, 0, 1024);
 			mystrcpy(strdayo, 1024, 0, focused_part->getSelectedLua());

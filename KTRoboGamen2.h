@@ -45,6 +45,8 @@ public:
 		TO_LUA virtual void setPartsGroupTenmetu(int group_index, float dt, float tenmetu_kankaku)=0;
 		TO_LUA virtual bool getPartsGroupTenmetuFinished(int group_index)=0;
 		TO_LUA virtual void setPartsGroupIsWorkRender(int group_index, bool t)=0;
+		TO_LUA virtual void setHensuuRule(int scene_id, int hensuu_id, int hensuu, int group_index)=0;
+		TO_LUA virtual void makeHensuu(int scene_id, int hensuu_id, int default_hensuu)=0;
 
 	};
 
@@ -277,7 +279,7 @@ public:
 		string lua_filename;
 	public:
 		string getLuaFilename() { return lua_filename; };
-
+		int getSceneID() { return scene_id; };
 		int getCursorX() { return cursor_x; };
 		int getCursorY();// { return cursor_ys[cursor_x]; };
 		void setCursorX(int cursor_x);
@@ -293,6 +295,28 @@ public:
 		void setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* all_parts);
 	};
 
+#define KTROBO_GAMEN2_EVENT_MAX 128
+
+	class Gamen2_event {
+	private:
+		int scene_id;
+		int hensuu[KTROBO_GAMEN2_EVENT_MAX];
+		map<int, pair<int, int>> gi_to_hiandh;
+
+	public:
+		Gamen2_event(int scene_id);
+		~Gamen2_event();
+
+		void makeHensuu(int hensuu_id, int default_hensuu); // 外でCS_LOAD_CSを呼ぶ
+		int getHensuu(int hensuu_id); // 外でCS_LOAD_CS を呼ぶ
+	private:
+		void setHensuu(int hensuu_id, int hensuu);
+	public:
+		void setHensuuRule(int hensuu_id, int hensuu, int group_index); // 外でCS_LOAD_CSを呼ぶ
+		void selected(int group_index); // 外でCS_LOAD_CSを呼ぶ
+
+	};
+
 	class Gamen2 : public IGamen2
 	{
 	private:
@@ -306,7 +330,9 @@ public:
 		map<pair<int,int>, int> sonotokis_map;
 		map<pair<int, int>, int> cpp_parts_map; // scene_id, parts_DEF kara cpp_parts noindex
 		Gamen2_Sonotoki* now_sonotoki;
-
+		vector<Gamen2_event*> events;
+		map<int, int> events_map; // scene_id とindex
+	public:
 		void pauseWork(); // moveToの動きは実行されるが　クリックやセレクトをしても反応しないようにする 
 						  // selectedされたときに実行される
 						  // pauseから戻るのはgamen_sonotoki::enter で設定しなおされるから
@@ -345,7 +371,9 @@ public:
 		void Del();
 		void loopForMoveToAndTenmetu(float dt);
 
-
+		void setHensuuRule(int scene_id, int hensuu_id, int hensuu, int group_index);
+		void makeHensuu(int scene_id,int hensuu_id, int default_hensuu);
+		Gamen2_event* getEvent(int scene_id);
 		Gamen2(Texture* tex, Texture* tex2);
 		~Gamen2();
 	private:

@@ -57,6 +57,8 @@ void Gamen2_Sonotoki::deletedayo() {
 		}
 	}
 	cursor_group.clear();
+	cursor_ys.clear();
+	not_cursor_but_render_group.clear();
 	CS::instance()->leave(CS_MESSAGE_CS, "gamen2sonotoki");
 	CS::instance()->leave(CS_LOAD_CS, "gamen2sonotoki");
 
@@ -254,8 +256,15 @@ void Gamen2::makeSonotoki(int scene_id, int gamen_id, char* lua_filename) {
 	// rock load
 	CS::instance()->enter(CS_LOAD_CS, "makesonotoki");
 	volatile int inde = sonotokis.size();
-	sonotokis.push_back(new Gamen2_Sonotoki(scene_id, gamen_id, lua_filename));
-	sonotokis_map.insert(pair<pair<int, int>, int>(pair<int, int>(scene_id, gamen_id), inde));
+	if ((inde <=0) || (sonotokis_map.find(pair<int, int>(scene_id, gamen_id)) == sonotokis_map.end())) {
+		sonotokis.push_back(new Gamen2_Sonotoki(scene_id, gamen_id, lua_filename));
+		sonotokis_map.insert(pair<pair<int, int>, int>(pair<int, int>(scene_id, gamen_id), inde));
+	}
+	else {
+		// ‚·‚Å‚É‚ ‚é
+		sonotokis[sonotokis_map.find(pair<int, int>(scene_id, gamen_id))->second]->deletedayo(); // ‰Šú‰»‚·‚é
+
+	}
 	CS::instance()->leave(CS_LOAD_CS, "make sonotoki");
 
 }
@@ -732,6 +741,17 @@ void Gamen2::Del() {
 	}
 	grouped_parts.clear();
 
+	events_map.clear();
+	int hsize = events.size();
+	for (int i = 0; i < hsize; i++) {
+		if (events[i]) {
+			delete events[i];
+			events[i] = 0;
+		}
+	}
+
+	events.clear();
+
 	CS::instance()->leave(CS_LOAD_CS, "gamen2 del");
 
 
@@ -997,3 +1017,102 @@ bool Gamen2_partGroup::tenmetuLoop(float dt) {
 }
 
 
+Gamen2_event::Gamen2_event(int scene_id) {
+	this->scene_id = scene_id;
+	for (int i = 0; i < KTROBO_GAMEN2_EVENT_MAX; i++) {
+		hensuu[i] = 0;
+	}
+}
+Gamen2_event::~Gamen2_event() {
+
+	gi_to_hiandh.clear();
+
+}
+
+void Gamen2_event::makeHensuu(int hensuu_id, int default_hensuu) {
+	if ((hensuu_id >= 0) && (hensuu_id < KTROBO_GAMEN2_EVENT_MAX)) {
+		hensuu[hensuu_id] = default_hensuu;
+	}
+	else {
+		mylog::writelog(KTROBO::WARNING, "there is out of hensuu_id\n");
+	}
+
+}
+int Gamen2_event::getHensuu(int hensuu_id) {
+	if ((hensuu_id >= 0) && (hensuu_id < KTROBO_GAMEN2_EVENT_MAX)) {
+		return hensuu[hensuu_id];
+	}
+	else {
+		mylog::writelog(KTROBO::WARNING, "there is out of hensuu_id\n");
+		return 0;
+	}
+
+}
+
+
+void Gamen2_event::setHensuu(int hensuu_id, int hensusu) {
+	if ((hensuu_id >= 0) && (hensuu_id < KTROBO_GAMEN2_EVENT_MAX)) {
+		hensuu[hensuu_id] = hensusu;
+	}
+	else {
+		mylog::writelog(KTROBO::WARNING, "there is out of hensuu_id\n");
+		
+	}
+
+}
+
+void Gamen2_event::setHensuuRule(int hensuu_id, int hensuu, int group_index) {
+	if (gi_to_hiandh.find(group_index) == gi_to_hiandh.end()) {
+		gi_to_hiandh.insert(pair<int, pair<int, int>>(group_index, pair<int, int>(hensuu_id, hensuu)));
+	}
+}
+
+void Gamen2_event::selected(int group_index) {
+	if (gi_to_hiandh.find(group_index) != gi_to_hiandh.end()) {
+		pair<int, int> pp = gi_to_hiandh.find(group_index)->second;
+		int hi = pp.first;
+		int h = pp.second;
+		setHensuu(hi, h);
+	}
+}
+
+void Gamen2::setHensuuRule(int scene_id, int hensuu_id, int hensuu, int group_index) {
+	CS::instance()->enter(CS_LOAD_CS, "gamen2 sethensuurule");
+	Gamen2_event* e=0;
+	if (events_map.find(scene_id) != events_map.end()) {
+		e = events[events_map.find(scene_id)->second];
+	}
+	else {
+		int esize = events.size();
+		events_map.insert(pair<int, int>(scene_id, esize));
+		e = new Gamen2_event(scene_id);
+		events.push_back(e);
+	}
+	e->setHensuuRule(hensuu_id, hensuu, group_index);
+
+	CS::instance()->leave(CS_LOAD_CS, "gamen2 sethensuurule");
+}
+void Gamen2::makeHensuu(int scene_id, int hensuu_id, int default_hensuu) {
+	CS::instance()->enter(CS_LOAD_CS, "gamen2 makehensuu");
+	Gamen2_event* e = 0;
+	if (events_map.find(scene_id) != events_map.end()) {
+		e = events[events_map.find(scene_id)->second];
+	}
+	else {
+		int esize = events.size();
+		events_map.insert(pair<int, int>(scene_id, esize));
+		e = new Gamen2_event(scene_id);
+		events.push_back(e);
+	}
+	e->makeHensuu(hensuu_id, default_hensuu);
+
+	CS::instance()->leave(CS_LOAD_CS, "gamen2 makehensuu");
+}
+
+Gamen2_event* Gamen2::getEvent(int scene_id) {
+	Gamen2_event* e = 0;
+	if (events_map.find(scene_id) != events_map.end()) {
+		e = events[events_map.find(scene_id)->second];
+	}
+	return e;
+}
