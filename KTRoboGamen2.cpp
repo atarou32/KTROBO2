@@ -134,14 +134,17 @@ int Gamen2_Sonotoki::getCursorGroup() {
 
 	int cg_size = cursor_group.size();
 	if (cg_size <= 0) {
+		return 0;
 		throw new GameError(KTROBO::FATAL_ERROR, "no cursor group");
 	}
 	if ((cursor_x < 0) || (cursor_x >= cg_size)) {
+		return 0;
 		throw new GameError(KTROBO::FATAL_ERROR, "bad cursor_x");
 	}
 	vector<int>* gg = cursor_group[cursor_x];
 	int gg_size = gg->size();
 	if (gg_size <= 0) {
+		return 0;
 		throw new GameError(KTROBO::FATAL_ERROR, "no cursor group");
 	}
 	// cursor_y に関してはエラーをはかずにゲットする
@@ -263,7 +266,7 @@ void Gamen2::makeSonotoki(int scene_id, int gamen_id, char* lua_filename) {
 	else {
 		// すでにある
 		sonotokis[sonotokis_map.find(pair<int, int>(scene_id, gamen_id))->second]->deletedayo(); // 初期化する
-
+		sonotokis[sonotokis_map.find(pair<int, int>(scene_id, gamen_id))->second]->setLuaStr(lua_filename);
 	}
 	CS::instance()->leave(CS_LOAD_CS, "make sonotoki");
 
@@ -1025,7 +1028,7 @@ Gamen2_event::Gamen2_event(int scene_id) {
 }
 Gamen2_event::~Gamen2_event() {
 
-	gi_to_hiandh.clear();
+	gihiandh.clear();
 
 }
 
@@ -1062,17 +1065,18 @@ void Gamen2_event::setHensuu(int hensuu_id, int hensusu) {
 }
 
 void Gamen2_event::setHensuuRule(int hensuu_id, int hensuu, int group_index) {
-	if (gi_to_hiandh.find(group_index) == gi_to_hiandh.end()) {
-		gi_to_hiandh.insert(pair<int, pair<int, int>>(group_index, pair<int, int>(hensuu_id, hensuu)));
-	}
+	gihiandh.push_back(pair<int, pair<int, int>>(group_index, pair<int, int>(hensuu_id, hensuu)));
 }
 
 void Gamen2_event::selected(int group_index) {
-	if (gi_to_hiandh.find(group_index) != gi_to_hiandh.end()) {
-		pair<int, int> pp = gi_to_hiandh.find(group_index)->second;
-		int hi = pp.first;
-		int h = pp.second;
-		setHensuu(hi, h);
+	int size = gihiandh.size();
+	for (int i = 0; i < size; i++) {
+		if (group_index == gihiandh[i].first) {
+			pair<int, int> pp = gihiandh[i].second;
+			int hi = pp.first;
+			int h = pp.second;
+			setHensuu(hi, h);
+		}
 	}
 }
 
