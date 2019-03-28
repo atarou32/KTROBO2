@@ -394,6 +394,7 @@ public:
 
 		void setCPPParts(Gamen2_part* parts, int scene_id, int parts_DEF);
 		int getCPPPartsIndex(int scene_id, int parts_DEF);
+		void clearCPPParts() { cpp_parts.clear(); cpp_parts_map.clear(); }
 
 		void makeSonotoki(int scene_id, int gamen_id, char* lua_filename); // rock load
 		void setSonotokiMakeKo(int scene_id, int gamen_id); // rock load

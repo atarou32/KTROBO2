@@ -1,4 +1,5 @@
 #include "KTRoboUserData.h"
+#include "MyTextureLoader.h"
 
 using namespace KTROBO;
 
@@ -93,21 +94,170 @@ void AsmBody::setHyoukaName() {
 
 
 
-void ShopParts::atoload() {
+void ShopParts::atoload(Graphics* g) {
 	// meshパーツのロード
+	int sz = parts_list.size();
 
-
-
-
+	for (int i = 0; i < sz; i++) {
+		if (!parts_list[i]->hasMeshLoaded()) {
+			parts_list[i]->loadMesh(g, tex_loader);
+		}
+	}
+	setLoaded();
 
 }
-
-void ShopParts::load() {
-
+void ShopParts::loadInside(Graphics* g) {
 	
 
+	char* mdfile[] = {
+		"resrc/ktrobo/info/metadata/inside/ktroboinsidedecoymetadata.txt",
+		"resrc/ktrobo/info/metadata/inside/ktroboinsideenergyzoufukumetadata.txt",
+		"resrc/ktrobo/info/metadata/inside/ktroboinsidejyamarocketmetadata.txt",
+		"resrc/ktrobo/info/metadata/inside/ktroboinsidekiraimetadata.txt",
+		"resrc/ktrobo/info/metadata/inside/ktroboinsidepartsaddmissilemetadata.txt",
+		"resrc/ktrobo/info/metadata/inside/ktroboinsidepartsapkaifukumetadata.txt",
+		"resrc/ktrobo/info/metadata/inside/ktroboinsidepartsbitmetadata.txt",
+		"resrc/ktrobo/info/metadata/inside/ktroboinsiderocketmetadata.txt",
+		"resrc/ktrobo/info/metadata/inside/ktroboinsidestealthmetadata.txt",
+		"resrc/ktrobo/info/metadata/inside/ktroboinsidesubcomputermetadata.txt" };
+	char* dfile[] = {
+		"resrc/ktrobo/info/inside/ktroboinsidedecoy.txt",
+		"resrc/ktrobo/info/inside/ktroboinsideenergyzoufuku,txt",
+		"resrc/ktrobo/info/inside/ktroboinsidejyamarocket.txt",
+		"resrc/ktrobo/info/inside/ktroboinsidekirai.txt",
+		"resrc/ktrobo/info/inside/ktroboinsideaddmissile.txt",
+		"resrc/ktrobo/info/inside/ktroboinsideapkaifuku,txt",
+		"resrc/ktrobo/info/inside/ktroboinsidebit.txt",
+		"resrc/ktrobo/info/inside/ktroboinsiderocket.txt",
+		"resrc/ktrobo/info/inside/ktroboinsidestealth.txt",
+		"resrc/ktrobo/info/inside/ktroboinsidesubcomputer.txt" };
+	for (int i = 0; i < 10; i++) {
+		MyTokenAnalyzer ma;
+		{
+			ma.load(mdfile[i]);
+			RoboDataMetaData* head_md = new RoboDataMetaData();
+			RoboMetaDataPart rmdp;
+			rmdp.clear();
+			int dnum = ma.GetIntToken();
+			for (int i = 0; i < dnum; i++) {
+				rmdp.clear();
+				rmdp.readline(&ma);
+				head_md->setData(rmdp.data_name, rmdp.data_name2, rmdp.data_type, rmdp.data_sentence, rmdp.data_compare);
+			}
+
+			ma.deletedayo();
+
+			ma.load(dfile[i]);
+			while (!ma.enddayo()) {
+				RoboParts* head = constructParts();
+				try {
+					head->init(&ma, head_md, g, tex_loader);
+				}
+				catch (GameError* err) {
+
+					//	MessageBoxA(g->getHWND(), err->getMessage(), err->getErrorCodeString(err->getErrorCode()), MB_OK);
+					delete head_md;
+					ma.deletedayo();
+					throw err;
+				}
+				delete head_md;
+				this->parts_list.push_back(head);
+			}
+			ma.deletedayo();
+		}
+	}
+
+}
+RoboParts* ShopParts::constructParts() {
+	if (category == ShopParts::PartsListCategory::HEAD) {
+		return new RoboHead();
+	}
+
+	if (category == ShopParts::PartsListCategory::BODY) {
+		return new RoboBody();
+	}
+
+	if (category == ShopParts::PartsListCategory::ARM) {
+		return new RoboArm();
+	}
+
+	if ((category >= ShopParts::PartsListCategory::LEG_START) && (category <= ShopParts::PartsListCategory::LEG_END)) {
+		return new RoboLeg();
+	}
+
+	if ((category >= ShopParts::PartsListCategory::LARMWEAPON_START) && (category <= ShopParts::PartsListCategory::LARMWEAPON_END)) {
+		return new LArmWeapon();
+	}
+
+	if ((category >= ShopParts::PartsListCategory::RARMWEAPON_START) && (category <= ShopParts::PartsListCategory::RARMWEAPON_END)) {
+		return new RArmWeapon();
+	}
+	if ((category >= ShopParts::PartsListCategory::RKATAWEAPON_START) && (category <= ShopParts::PartsListCategory::RKATAWEAPON_END)) {		
+		return new RShoulderWeapon();
+	}
+	if ((category >= ShopParts::PartsListCategory::LKATAWEAPON_START) && (category <= ShopParts::PartsListCategory::LKATAWEAPON_END)) {		
+		return new LShoulderWeapon();
+	}
+
+	if (category == ShopParts::PartsListCategory::BOOSTER) {
+		return new RoboBooster();
+	}
+	if (category == ShopParts::PartsListCategory::FCS) {
+		return new RoboFCS();
+	}
+	if (category == ShopParts::PartsListCategory::ENGINE) {
+		return new RoboEngine();
+	}
+
+	mylog::writelog(KTROBO::WARNING, "threre is no metadata");
+	return new RoboHead();
+
+}
+void ShopParts::load(Graphics* g) {
+	// inside の場合は複数のファイルを呼ぶ
+	if (category == ShopParts::PartsListCategory::INSIDE_WEAPON) {
+		loadInside(g);
+		return;
+	}
+	char* mdfile = getMetaDataName();
+	char* dfile = getDataName();
+
+	MyTokenAnalyzer ma;
+	{
+		ma.load(mdfile);
+		RoboDataMetaData* head_md = new RoboDataMetaData();
+		RoboMetaDataPart rmdp;
+		rmdp.clear();
+		int dnum = ma.GetIntToken();
+		for (int i = 0; i < dnum; i++) {
+			rmdp.clear();
+			rmdp.readline(&ma);
+			head_md->setData(rmdp.data_name, rmdp.data_name2, rmdp.data_type, rmdp.data_sentence, rmdp.data_compare);
+		}
+
+		ma.deletedayo();
+
+		ma.load(dfile);
+		while (!ma.enddayo()) {
+			RoboParts* head = constructParts();
+			try {
+				head->init(&ma, head_md, g, tex_loader);
+			}
+			catch (GameError* err) {
+
+				//	MessageBoxA(g->getHWND(), err->getMessage(), err->getErrorCodeString(err->getErrorCode()), MB_OK);
+				delete head_md;
+				ma.deletedayo();
+				throw err;
+			}
+			delete head_md;
+			this->parts_list.push_back(head);
+		}
+		ma.deletedayo();
+	}
 
 
+	
 
 
 
@@ -133,9 +283,9 @@ char* ShopParts::getMetaDataName() {
 	if ((category >= ShopParts::PartsListCategory::LEG_START) && (category <= ShopParts::PartsListCategory::LEG_END)) {
 		return "resrc/ktrobo/info/metadata/ktrobolegpartsmetadata.txt";
 	}
-	
+
 	if ((category >= ShopParts::PartsListCategory::LARMWEAPON_START) && (category <= ShopParts::PartsListCategory::LARMWEAPON_END)) {
-		
+
 		if (category == ShopParts::PartsListCategory::LARMWEAPON_BLADE) {
 			return "resrc/ktrobo/info/metadata/weapon/ktrobopartsweaponblademetadata.txt";
 		}
@@ -176,7 +326,7 @@ char* ShopParts::getMetaDataName() {
 		return "resrc/ktrobo/info/metadata/weapon/ktrobopartsweaponmetadata.txt";
 	}
 	if ((category >= ShopParts::PartsListCategory::RKATAWEAPON_START) && (category <= ShopParts::PartsListCategory::RKATAWEAPON_END)) {
-		
+
 		if (category == ShopParts::PartsListCategory::RKATAWEAPON_GRENEDE) {
 			return "resrc/ktrobo/info/metadata/kata/ktrobopartskatabakuhatumetadata.txt";
 		}
@@ -191,7 +341,7 @@ char* ShopParts::getMetaDataName() {
 		}
 		if (category == ShopParts::PartsListCategory::RKATAWEAPON_MISSILE) {
 			return "resrc/ktrobo/info/metadata/kata/ktrobopartskatamissilemetadata.txt";
-		}	
+		}
 		return "resrc/ktrobo/info/metadata/kata/ktrobopartskatametadata.txt";
 	}
 	if ((category >= ShopParts::PartsListCategory::LKATAWEAPON_START) && (category <= ShopParts::PartsListCategory::LKATAWEAPON_END)) {
@@ -224,7 +374,7 @@ char* ShopParts::getMetaDataName() {
 		return "resrc/ktrobo/info/metadata/ktroboenginepartsmetadata.txt";
 	}
 
-	
+
 
 	mylog::writelog(KTROBO::WARNING, "threre is no metadata");
 	return "test";
@@ -397,27 +547,27 @@ char* ShopParts::getDataName() {
 	}
 	if (category == ShopParts::PartsListCategory::LARMWEAPON_PILE) {
 		return "resrc/ktrobo/info/lweapon/ktrobolarmweaponpile.txt";
+	}
+		if (category == ShopParts::PartsListCategory::LARMWEAPON_PLAZUMAGUN) {
+			return "resrc/ktrobo/info/lweapon/ktrobolarmweaponplazumagun.txt";
+		}
+		if (category == ShopParts::PartsListCategory::LARMWEAPON_PULSEGUN) {
+			return "resrc/ktrobo/info/lweapon/ktrobolarmweaponpulsegun.txt";
+		}
+		if (category == ShopParts::PartsListCategory::LARMWEAPON_RIFLE) {
+			return "resrc/ktrobo/info/lweapon/ktrobolarmweaponrifle.txt";
+		}
+		if (category == ShopParts::PartsListCategory::LARMWEAPON_ROCKET) {
+			return "resrc/ktrobo/info/lweapon/ktrobolarmweaponrocket.txt";
+		}
+		if (category == ShopParts::PartsListCategory::LARMWEAPON_SHOTGUN) {
+			return "resrc/ktrobo/info/lweapon/ktrobolarmweaponshotgun.txt";
+		}
+		if (category == ShopParts::PartsListCategory::LARMWEAPON_SNIPERRIFLE) {
+			return "resrc/ktrobo/info/lweapon/ktrobolarmweaponsniperrifle.txt";
+		}
+
 	
-	if (category == ShopParts::PartsListCategory::LARMWEAPON_PLAZUMAGUN) {
-		return "resrc/ktrobo/info/lweapon/ktrobolarmweaponplazumagun.txt";
-	}
-	if (category == ShopParts::PartsListCategory::LARMWEAPON_PULSEGUN) {
-		return "resrc/ktrobo/info/lweapon/ktrobolarmweaponpulsegun.txt";
-	}
-	if (category == ShopParts::PartsListCategory::LARMWEAPON_RIFLE) {
-		return "resrc/ktrobo/info/lweapon/ktrobolarmweaponrifle.txt";
-	}
-	if (category == ShopParts::PartsListCategory::LARMWEAPON_ROCKET) {
-		return "resrc/ktrobo/info/lweapon/ktrobolarmweaponrocket.txt";
-	}
-	if (category == ShopParts::PartsListCategory::LARMWEAPON_SHOTGUN) {
-		return "resrc/ktrobo/info/lweapon/ktrobolarmweaponshotgun.txt";
-	}
-	if (category == ShopParts::PartsListCategory::LARMWEAPON_SNIPERRIFLE) {
-		return "resrc/ktrobo/info/lweapon/ktrobolarmweaponsniperrifle.txt";
-	}
-
-
 	mylog::writelog(KTROBO::WARNING, "there is no parts datafile");
 	return "test";
 }

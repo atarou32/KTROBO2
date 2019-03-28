@@ -57,17 +57,22 @@ public:
 class ShopParts_Garage2 : public Loadable2{
 private:
 	ShopParts* sp;
-
+	MyTextureLoader* loader;
+	vector<Gamen2_partGroup*> pgs;
 public:
 	int parts_category;
 	int parts_category2;
-	ShopParts_Garage2(int p, int p2) {
+	ShopParts_Garage2(int p, int p2, MyTextureLoader* loaer) {
 		parts_category = p;
 		parts_category2 = p2;
+		loader = loaer;
 	}
-	
-	void load();
-	void atoload();
+	~ShopParts_Garage2();
+
+	void load(Graphics* g);
+	void atoload(Graphics* g);
+	void makeTexDayo(Graphics* g, Texture* tex, Texture* tex2);
+	void Del(Texture* tex, Texture* tex2);
 };
 
 /*
@@ -191,7 +196,7 @@ public:
 	void render(Graphics* g, Texture* tex, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
 	void mouse_move(Texture* tex1, Texture* tex2, Game* game,int x, int y);
 	void mouse_clicked_down(Texture* tex1, Texture* tex2, Game* game, int x, int y);
-	void mouse_clicked_up(Texture* tex1, Texture* tex2, Game* game, int x, int y);
+	void mouse_clicked_up(MyTextureLoader* loader, Texture* tex1, Texture* tex2, Game* game, int x, int y);
 	void setCursorTexPosToCursorPos(Texture* tex1, Texture* tex2, Game* game);
 };
 class SceneGarage2 : public Scene, public INPUTSHORICLASS {

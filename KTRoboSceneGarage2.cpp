@@ -196,7 +196,7 @@ bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
 		}
 		if (input->getMOUSESTATE()->mouse_button & KTROBO_MOUSESTATE_L_UP) {
 			CS::instance()->leave(CS_MESSAGE_CS, "enter");
-			garage_impl->mouse_clicked_up(tex,tex2,game, x, y);
+			garage_impl->mouse_clicked_up(loader, tex,tex2,game, x, y);
 			CS::instance()->enter(CS_MESSAGE_CS, "enter");
 		}
 	}
@@ -342,9 +342,14 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 		// tempがこの時点でほかのスレッドからデストラクトされる予定に入ってしまっていたとしても
 		// デストラクタが実際に呼ばれるのは次のこの関数が呼ばれるときなので大丈夫.
 		if (!temp->hasLoaded()) {
-			temp->load();
+			temp->load(g);
+
+			if (temp->hasLoaded()) {
+				// makeTexdayo
+			}
+
 		} else {
-			temp->atoload();
+			temp->atoload(g);
 		}
 
 	}
@@ -458,6 +463,24 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 
 
 }
+
+ShopParts_Garage2::~ShopParts_Garage2() {
+	
+}
+void ShopParts_Garage2::Del(Texture* tex, Texture* tex2) {
+	CS::instance()->enter(CS_LOAD_CS, "test");
+	int siz = pgs.size();
+	for (int i = 0; i < siz; i++) {
+		if (pgs[i]) {
+			pgs[i]->cleardayo(tex,tex2);
+			delete pgs[i];
+			pgs[i] = 0;
+		}
+	}
+
+	CS::instance()->leave(CS_LOAD_CS, "test");
+}
+
 void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x, int y) {
 	if (!selected_categorypart) {
 		/*
@@ -569,7 +592,7 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 
 }
 
-void Garage2::mouse_clicked_up(Texture* tex, Texture* tex2, Game* game, int x, int y) {
+void Garage2::mouse_clicked_up(MyTextureLoader* loader, Texture* tex, Texture* tex2, Game* game, int x, int y) {
 	if (!selected_categorypart) {
 /*		vector<Gamen2_part*>::iterator it = this->select_parts.begin();
 		while (it != select_parts.end()) {
@@ -599,8 +622,11 @@ void Garage2::mouse_clicked_up(Texture* tex, Texture* tex2, Game* game, int x, i
 				eve->selected(focused_group_all_index);
 				if (eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS) == KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_YES) {
 					// 
-
-
+					if (this->shopparts_g) {
+						this->destruct_shopparts.push_back(shopparts_g);
+						shopparts_g = new ShopParts_Garage2(eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY),
+							eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2), loader);
+					}
 
 					eve->setHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO);
 				}
@@ -1149,21 +1175,21 @@ ShopParts::PartsListCategory getPLC(int fc, int fc2) {
 	return ShopParts::PartsListCategory::UNKNOWN;
 }
 
-void ShopParts_Garage2::load() {
+void ShopParts_Garage2::load(Graphics* g) {
 
 	// ロードでは パーツのメタデータとgarage_partsgroupの登録などまでを行う
 	if (!sp) {
-		sp = new ShopParts(getPLC(this->parts_category, this->parts_category2));
-		sp->load();
+		sp = new ShopParts(getPLC(this->parts_category, this->parts_category2),loader);
+		sp->load(g);
 	}
 	setLoaded();
 }
 
-void ShopParts_Garage2::atoload() {
+void ShopParts_Garage2::atoload(Graphics* g) {
 	// atoloadでは　robopartsのデータのメッシュロードを行う
 	if (sp) {
 		if (!sp->hasLoaded()) {
-			sp->atoload();
+			sp->atoload(g);
 		}
 	}
 

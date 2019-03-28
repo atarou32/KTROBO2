@@ -239,7 +239,11 @@ void Gamen2::setCPPParts(Gamen2_part* parts, int scene_id, int parts_DEF) {
 
 	CS::instance()->leave(CS_LOAD_CS, "cpppa");
 }
-
+void Gamen2::clearCPPParts() {
+	CS::instance()->enter(CS_LOAD_CS, "cpppa");
+	cpp_parts.clear(); cpp_parts_map.clear(); 
+	CS::instance()->leave(CS_LOAD_CS, "cpppa");
+}
 int Gamen2::getCPPPartsIndex(int scene_id, int parts_DEF) {
 	CS::instance()->enter(CS_LOAD_CS, "cpppa");
 	volatile int tet = 0;

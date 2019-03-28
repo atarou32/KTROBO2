@@ -4,6 +4,7 @@
 #include "KTRoboRobo.h"
 #include "KTRoboLoadable.h"
 
+
 namespace KTROBO {
 
 #define KTROBO_USERDATA_ASMBODY_MAX 16
@@ -163,13 +164,17 @@ struct ShopPartsInfo {
 	int price;
 };
 
+
 class ShopParts : public Loadable2 {
 private:
 	vector<RoboParts*> parts_list;
+
+	MyTextureLoader* tex_loader;
+
 public:
 	// roboparts を外部で使用するときは　shopparts->hasloaded を呼んでロードされたのを確認してから関数を呼ぶ
 	// もしまだロードされていなければ　商品の整理中です　みたいなダイアログを出しておく
-
+	int getPartsSize() { return parts_list.size(); }
 	RoboParts* getRoboParts(int index) {};
 	void getShopPartsInfo(int index, ShopPartsInfo* info) {};
 
@@ -253,15 +258,18 @@ public:
 	};
 	PartsListCategory category;
 
-	ShopParts(PartsListCategory cat) {
+	ShopParts(PartsListCategory cat, MyTextureLoader* loader) {
 		category = cat;
+		tex_loader = loader;
 	};
 	~ShopParts() {};
-	void atoload(); // meshパーツのロード
-	void load();
+	void atoload(Graphics* g); // meshパーツのロード
+	void load(Graphics* g);
+private:
+	RoboParts* constructParts();
 	char* getMetaDataName();
 	char* getDataName();
-
+	void loadInside(Graphics* g);
 };
 
 

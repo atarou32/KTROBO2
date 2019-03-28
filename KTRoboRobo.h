@@ -191,7 +191,7 @@ public:
 	bool hasMeshLoaded() {return mesh_loaded;}
 	virtual void equipRobo(Robo* robo, Graphics* g, MyTextureLoader* tex_loader){ return;}; // clone ‚ð‘•”õ‚³‚¹‚é
 	virtual bool isEmpty() {return false;}
-
+	virtual void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader) = 0;
 };
 
 class RoboPartsEmpty: public RoboParts {
@@ -226,6 +226,7 @@ public:
 		// ‚È‚É‚à‚µ‚È‚¢
 		return;
 	}
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader) {};
 };
 	
 class RoboHead : public RoboParts {
