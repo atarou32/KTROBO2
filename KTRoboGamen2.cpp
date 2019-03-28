@@ -1120,3 +1120,19 @@ Gamen2_event* Gamen2::getEvent(int scene_id) {
 	}
 	return e;
 }
+
+int Gamen2::getHensuu(int scene_id, int hensuu_id) {
+	CS::instance()->enter(CS_LOAD_CS, "gamen2 makehensuu");
+	volatile int ans = 0;
+	Gamen2_event* e = 0;
+	if (events_map.find(scene_id) != events_map.end()) {
+		e = events[events_map.find(scene_id)->second];
+		ans = e->getHensuu(hensuu_id);
+	}
+
+	CS::instance()->leave(CS_LOAD_CS, "gamen2 makehensuu");
+
+
+	return ans;
+
+}

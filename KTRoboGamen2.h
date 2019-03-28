@@ -24,8 +24,8 @@ namespace KTROBO {
 #define KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY 1
 #define KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2 2
 #define KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS 3
-#define KTROBO_GARAGE2_HENSUU_LOAD_PARTS_YES 1
-#define KTROBO_GARAGE2_HENSUU_LOAD_PARTS_NO 0
+#define KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_YES 1
+#define KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO 0
 #define KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_HEAD 0
 #define KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_BODY 1
 #define KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_LEG 2
@@ -100,7 +100,7 @@ public:
 		TO_LUA virtual void setPartsGroupIsWorkRender(int group_index, bool t)=0;
 		TO_LUA virtual void setHensuuRule(int scene_id, int hensuu_id, int hensuu, int group_index)=0;
 		TO_LUA virtual void makeHensuu(int scene_id, int hensuu_id, int default_hensuu)=0;
-
+		TO_LUA virtual int getHensuu(int scene_id, int hensuu_id)=0;
 	};
 
 
@@ -423,7 +423,8 @@ public:
 		void setPartsGroupIsWorkRender(int group_index, bool t);
 		void Del();
 		void loopForMoveToAndTenmetu(float dt);
-
+		
+		int getHensuu(int scene_id, int hensuu_id);
 		void setHensuuRule(int scene_id, int hensuu_id, int hensuu, int group_index);
 		void makeHensuu(int scene_id,int hensuu_id, int default_hensuu);
 		Gamen2_event* getEvent(int scene_id);

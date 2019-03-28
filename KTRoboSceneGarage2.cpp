@@ -1,5 +1,6 @@
 #include "KTRoboSceneGarage2.h"
 #include "KTRoboGame.h"
+#include "KTRoboUserData.h"
 #include "tolua_glue/tolua_glue.h"
 
 using namespace KTROBO;
@@ -283,6 +284,7 @@ Garage2::Garage2() :  Loadable2(), Gamen2_part() {
 	selected_categorypart = 0;
 	focused_part = 0;
 	cursor_tex = 0;
+	shopparts_g = 0;
 };
 Garage2::~Garage2() {
 	if (robog) {
@@ -314,6 +316,7 @@ Garage2::~Garage2() {
 };
 
 void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* tex2, MyTextureLoader* loader) {
+	ShopParts_Garage2* temp = 0;
 	if (!robog->getTouroku()) {
 		robog->load(g, tex1,tex2, loader, hantei);
 		robog->robo->atarihan->setXYZ(0, 0, 0);
@@ -321,7 +324,30 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 		return;
 	}
 
+	CS::instance()->enter(CS_LOAD_CS, "destruct_parts");
+	volatile int size = destruct_shopparts.size();
+	for (int i = 0; i < size; i++) {
+		ShopParts_Garage2* ga = destruct_shopparts[i];
+		
+		if (ga) {
+			delete ga;
+			ga = 0;
+		}
+	}
+	destruct_shopparts.clear();
+	temp = shopparts_g;
+	CS::instance()->leave(CS_LOAD_CS, "destruct_parts");
 	
+	if (temp) {
+		// tempがこの時点でほかのスレッドからデストラクトされる予定に入ってしまっていたとしても
+		// デストラクタが実際に呼ばれるのは次のこの関数が呼ばれるときなので大丈夫.
+		if (!temp->hasLoaded()) {
+			temp->load();
+		} else {
+			temp->atoload();
+		}
+
+	}
 
 
 
@@ -567,6 +593,20 @@ void Garage2::mouse_clicked_up(Texture* tex, Texture* tex2, Game* game, int x, i
 		if (focused_part->selected(x, y)) {
 			// lua ファイルを呼ぶ
 			MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->pauseWork();
+
+			Gamen2_event* eve = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getEvent(KTROBO_GAMEN2_SCENE_ID_GARAGE);
+			if (eve) {
+				eve->selected(focused_group_all_index);
+				if (eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS) == KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_YES) {
+					// 
+
+
+
+					eve->setHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO);
+				}
+				// 変数をセットする
+				// bool is_load_parts
+			}
 			selected_categorypart = focused_part;
 			char strdayo[1024];
 			memset(strdayo, 0, 1024);
@@ -902,3 +942,229 @@ bool AssembleTex_Garage2::selected(int x, int y) {
 };
 */
 unsigned int Gamen2_part::part_id = 0;
+
+
+
+ShopParts::PartsListCategory getPLC(int fc, int fc2) {
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_ARM) {
+		return ShopParts::PartsListCategory::ARM;
+	}
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_BODY) {
+		return ShopParts::PartsListCategory::BODY;
+	}
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_HEAD) {
+		return ShopParts::PartsListCategory::HEAD;
+	}
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_BOOSTER) {
+		return ShopParts::PartsListCategory::BOOSTER;
+	}
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_FCS) {
+		return ShopParts::PartsListCategory::FCS;
+	}
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_ENGINE) {
+		return ShopParts::PartsListCategory::ENGINE;
+	}
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_INSIDE) {
+		return ShopParts::PartsListCategory::INSIDE_WEAPON;
+	}
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_LEG) {
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_LEG_4) {
+			return ShopParts::PartsListCategory::LEG_4;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_LEG_K2) {
+			return ShopParts::PartsListCategory::LEG_k2;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_LEG_T2) {
+			return ShopParts::PartsListCategory::LEG_t2;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_LEG_J2) {
+			return ShopParts::PartsListCategory::LEG_j2;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_LEG_REVERSE) {
+			return ShopParts::PartsListCategory::LEG_REVERSE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_LEG_TANK) {
+			return ShopParts::PartsListCategory::LEG_tank;
+		}
+		return ShopParts::PartsListCategory::UNKNOWN;
+	}
+
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_RARM) {
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_BAZOOKA) {
+			return ShopParts::PartsListCategory::RARMWEAPON_BAZOOKA;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_BLADE) {
+			return ShopParts::PartsListCategory::RARMWEAPON_BLADE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_ENERGYBLADE) {
+			return ShopParts::PartsListCategory::RARMWEAPON_ENERGYBLADE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_ENERGYRIFLE) {
+			return ShopParts::PartsListCategory::RARMWEAPON_ENERGYRIFLE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_GRENEDE) {
+			return ShopParts::PartsListCategory::RARMWEAPON_GRENEDE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_HANABIGUN) {
+			return ShopParts::PartsListCategory::RARMWEAPON_HANABIGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_HANDGUN) {
+			return ShopParts::PartsListCategory::RARMWEAPON_HANDGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_MACHINEGUN) {
+			return ShopParts::PartsListCategory::RARMWEAPON_MACHINEGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_MISSILE) {
+			return ShopParts::PartsListCategory::RARMWEAPON_MISSILE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_PILE) {
+			return ShopParts::PartsListCategory::RARMWEAPON_PILE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_PLAZUMAGUN) {
+			return ShopParts::PartsListCategory::RARMWEAPON_PLAZUMAGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_PULSEGUN) {
+			return ShopParts::PartsListCategory::RARMWEAPON_PULSEGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_RIFLE) {
+			return ShopParts::PartsListCategory::RARMWEAPON_RIFLE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_ROCKET) {
+			return ShopParts::PartsListCategory::RARMWEAPON_ROCKET;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_SHOTGUN) {
+			return ShopParts::PartsListCategory::RARMWEAPON_SHOTGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_SNIPERRIFLE) {
+			return ShopParts::PartsListCategory::RARMWEAPON_SNIPERRIFLE;
+		}
+
+		return ShopParts::PartsListCategory::UNKNOWN;
+	}
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_LARM) {
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_BAZOOKA) {
+			return ShopParts::PartsListCategory::LARMWEAPON_BAZOOKA;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_BLADE) {
+			return ShopParts::PartsListCategory::LARMWEAPON_BLADE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_ENERGYBLADE) {
+			return ShopParts::PartsListCategory::LARMWEAPON_ENERGYBLADE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_ENERGYRIFLE) {
+			return ShopParts::PartsListCategory::LARMWEAPON_ENERGYRIFLE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_GRENEDE) {
+			return ShopParts::PartsListCategory::LARMWEAPON_GRENEDE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_HANABIGUN) {
+			return ShopParts::PartsListCategory::LARMWEAPON_HANABIGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_HANDGUN) {
+			return ShopParts::PartsListCategory::LARMWEAPON_HANDGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_MACHINEGUN) {
+			return ShopParts::PartsListCategory::LARMWEAPON_MACHINEGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_MISSILE) {
+			return ShopParts::PartsListCategory::LARMWEAPON_MISSILE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_PILE) {
+			return ShopParts::PartsListCategory::LARMWEAPON_PILE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_PLAZUMAGUN) {
+			return ShopParts::PartsListCategory::LARMWEAPON_PLAZUMAGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_PULSEGUN) {
+			return ShopParts::PartsListCategory::LARMWEAPON_PULSEGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_RIFLE) {
+			return ShopParts::PartsListCategory::LARMWEAPON_RIFLE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_ROCKET) {
+			return ShopParts::PartsListCategory::LARMWEAPON_ROCKET;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_SHOTGUN) {
+			return ShopParts::PartsListCategory::LARMWEAPON_SHOTGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_ARM_SNIPERRIFLE) {
+			return ShopParts::PartsListCategory::LARMWEAPON_SNIPERRIFLE;
+		}
+		return ShopParts::PartsListCategory::UNKNOWN;
+	}
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_RKATA) {
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_CHAINGUN) {
+			return ShopParts::PartsListCategory::RKATAWEAPON_CHAINGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_GRENEDE) {
+			return ShopParts::PartsListCategory::RKATAWEAPON_GRENEDE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_HANABI) {
+			return ShopParts::PartsListCategory::RKATAWEAPON_HANABI;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_MISSILE) {
+			return ShopParts::PartsListCategory::RKATAWEAPON_MISSILE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_PLAZUMA) {
+			return ShopParts::PartsListCategory::RKATAWEAPON_PLAZUMA;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_PULSE) {
+			return ShopParts::PartsListCategory::RKATAWEAPON_PULSE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_RASER) {
+			return ShopParts::PartsListCategory::RKATAWEAPON_RASER;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_ROCKET) {
+			return ShopParts::PartsListCategory::RKATAWEAPON_ROCKET;
+		}
+		return ShopParts::PartsListCategory::UNKNOWN;
+	}
+	if (fc == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_LKATA) {
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_CHAINGUN) {
+			return ShopParts::PartsListCategory::LKATAWEAPON_CHAINGUN;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_GRENEDE) {
+			return ShopParts::PartsListCategory::LKATAWEAPON_GRENEDE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_HANABI) {
+			return ShopParts::PartsListCategory::LKATAWEAPON_HANABI;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_MISSILE) {
+			return ShopParts::PartsListCategory::LKATAWEAPON_MISSILE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_PLAZUMA) {
+			return ShopParts::PartsListCategory::LKATAWEAPON_PLAZUMA;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_PULSE) {
+			return ShopParts::PartsListCategory::LKATAWEAPON_PULSE;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_RASER) {
+			return ShopParts::PartsListCategory::LKATAWEAPON_RASER;
+		}
+		if (fc2 == KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_ROCKET) {
+			return ShopParts::PartsListCategory::LKATAWEAPON_ROCKET;
+		}
+		return ShopParts::PartsListCategory::UNKNOWN;
+	}
+	return ShopParts::PartsListCategory::UNKNOWN;
+}
+
+void ShopParts_Garage2::load() {
+
+	// ロードでは パーツのメタデータとgarage_partsgroupの登録などまでを行う
+	if (!sp) {
+		sp = new ShopParts(getPLC(this->parts_category, this->parts_category2));
+		sp->load();
+	}
+	setLoaded();
+}
+
+void ShopParts_Garage2::atoload() {
+	// atoloadでは　robopartsのデータのメッシュロードを行う
+	if (sp) {
+		if (!sp->hasLoaded()) {
+			sp->atoload();
+		}
+	}
+
+}

@@ -15,6 +15,7 @@
 namespace KTROBO {
 
 
+class ShopParts;
 
 class Garage2Tex_Garage2 : public Gamen2_part {
 
@@ -53,6 +54,23 @@ public:
 	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
 };
 
+class ShopParts_Garage2 : public Loadable2{
+private:
+	ShopParts* sp;
+
+public:
+	int parts_category;
+	int parts_category2;
+	ShopParts_Garage2(int p, int p2) {
+		parts_category = p;
+		parts_category2 = p2;
+	}
+	
+	void load();
+	void atoload();
+};
+
+/*
 class AssembleTex_Garage2 :  public Gamen2_part {
 private:
 	int texe;
@@ -70,7 +88,7 @@ public:
 	bool selected(int x, int y);
 	
 
-};
+};*/
 /*
 class AsmBodySaveTex_Garage2 : public Gamen2_part {
 private:
@@ -142,7 +160,8 @@ private:
 	Gamen2_part* focused_part;
 
 	const char* getHelpStringWhenNoneFocused();
-
+	vector<ShopParts_Garage2*> destruct_shopparts; // 廃棄予定のパーツ
+	ShopParts_Garage2* shopparts_g;
 public:
 	Garage2();
 	~Garage2();

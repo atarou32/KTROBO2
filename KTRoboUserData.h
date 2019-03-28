@@ -253,11 +253,14 @@ public:
 	};
 	PartsListCategory category;
 
-	ShopParts(PartsListCategory cat) {};
+	ShopParts(PartsListCategory cat) {
+		category = cat;
+	};
 	~ShopParts() {};
-	void atoload() {}; // meshパーツのロード
-	void load() {};
-
+	void atoload(); // meshパーツのロード
+	void load();
+	char* getMetaDataName();
+	char* getDataName();
 
 };
 
