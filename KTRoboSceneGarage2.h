@@ -66,6 +66,7 @@ public:
 		parts_category = p;
 		parts_category2 = p2;
 		loader = loaer;
+		sp = 0;
 	}
 	~ShopParts_Garage2();
 

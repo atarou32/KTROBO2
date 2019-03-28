@@ -175,7 +175,12 @@ public:
 	// roboparts を外部で使用するときは　shopparts->hasloaded を呼んでロードされたのを確認してから関数を呼ぶ
 	// もしまだロードされていなければ　商品の整理中です　みたいなダイアログを出しておく
 	int getPartsSize() { return parts_list.size(); }
-	RoboParts* getRoboParts(int index) {};
+	RoboParts* getRoboParts(int index) {
+		if ((index >= 0) && index < parts_list.size()) {
+			return parts_list[index];
+		}
+		return 0;
+	};
 	void getShopPartsInfo(int index, ShopPartsInfo* info) {};
 
 	enum PartsListCategory {
@@ -262,7 +267,18 @@ public:
 		category = cat;
 		tex_loader = loader;
 	};
-	~ShopParts() {};
+	~ShopParts() {
+		int size = parts_list.size();
+		for (int i = 0; i < size; i++) {
+			if (parts_list[i]) {
+				parts_list[i]->Release();
+				delete parts_list[i];
+				parts_list[i] = 0;
+			}
+		}
+		parts_list.clear();
+
+	};
 	void atoload(Graphics* g); // meshパーツのロード
 	void load(Graphics* g);
 private:

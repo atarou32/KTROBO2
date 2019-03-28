@@ -96,6 +96,7 @@ void AsmBody::setHyoukaName() {
 
 void ShopParts::atoload(Graphics* g) {
 	// meshパーツのロード
+
 	int sz = parts_list.size();
 
 	for (int i = 0; i < sz; i++) {
@@ -122,11 +123,11 @@ void ShopParts::loadInside(Graphics* g) {
 		"resrc/ktrobo/info/metadata/inside/ktroboinsidesubcomputermetadata.txt" };
 	char* dfile[] = {
 		"resrc/ktrobo/info/inside/ktroboinsidedecoy.txt",
-		"resrc/ktrobo/info/inside/ktroboinsideenergyzoufuku,txt",
+		"resrc/ktrobo/info/inside/ktroboinsideenergyzoufuku.txt",
 		"resrc/ktrobo/info/inside/ktroboinsidejyamarocket.txt",
 		"resrc/ktrobo/info/inside/ktroboinsidekirai.txt",
 		"resrc/ktrobo/info/inside/ktroboinsideaddmissile.txt",
-		"resrc/ktrobo/info/inside/ktroboinsideapkaifuku,txt",
+		"resrc/ktrobo/info/inside/ktroboinsideapkaifuku.txt",
 		"resrc/ktrobo/info/inside/ktroboinsidebit.txt",
 		"resrc/ktrobo/info/inside/ktroboinsiderocket.txt",
 		"resrc/ktrobo/info/inside/ktroboinsidestealth.txt",
@@ -151,20 +152,28 @@ void ShopParts::loadInside(Graphics* g) {
 			while (!ma.enddayo()) {
 				RoboParts* head = constructParts();
 				try {
-					head->init(&ma, head_md, g, tex_loader);
+					head->init(&ma, head_md, g, tex_loader,false);
 				}
 				catch (GameError* err) {
-
+					if (err->getErrorCode() == KTROBO::WARNING) {
+						delete err;
+						head->Release();
+						delete head;
+						continue;
+					}
 					//	MessageBoxA(g->getHWND(), err->getMessage(), err->getErrorCodeString(err->getErrorCode()), MB_OK);
 					delete head_md;
 					ma.deletedayo();
 					throw err;
 				}
-				delete head_md;
+				
 				this->parts_list.push_back(head);
+			//	ma.SkipNode();
 			}
 			ma.deletedayo();
+			delete head_md;
 		}
+		
 	}
 
 }
@@ -208,12 +217,16 @@ RoboParts* ShopParts::constructParts() {
 	if (category == ShopParts::PartsListCategory::ENGINE) {
 		return new RoboEngine();
 	}
+	if (category == ShopParts::PartsListCategory::INSIDE_WEAPON) {
+		return new InsideWeapon();
+	}
 
 	mylog::writelog(KTROBO::WARNING, "threre is no metadata");
 	return new RoboHead();
 
 }
 void ShopParts::load(Graphics* g) {
+
 	// inside の場合は複数のファイルを呼ぶ
 	if (category == ShopParts::PartsListCategory::INSIDE_WEAPON) {
 		loadInside(g);
@@ -241,20 +254,28 @@ void ShopParts::load(Graphics* g) {
 		while (!ma.enddayo()) {
 			RoboParts* head = constructParts();
 			try {
-				head->init(&ma, head_md, g, tex_loader);
+				head->init(&ma, head_md, g, tex_loader,false);
 			}
 			catch (GameError* err) {
-
+				if (err->getErrorCode() == KTROBO::WARNING) {
+					delete err;
+					head->Release();
+					delete head;
+					continue;
+				}
 				//	MessageBoxA(g->getHWND(), err->getMessage(), err->getErrorCodeString(err->getErrorCode()), MB_OK);
 				delete head_md;
 				ma.deletedayo();
 				throw err;
 			}
-			delete head_md;
+		
 			this->parts_list.push_back(head);
+			//ma.SkipNode();
 		}
 		ma.deletedayo();
+		delete head_md;
 	}
+	
 
 
 	

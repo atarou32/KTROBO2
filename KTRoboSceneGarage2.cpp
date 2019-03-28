@@ -313,6 +313,20 @@ Garage2::~Garage2() {
 		stex_g = 0;
 	}
 	*/
+	if (this->shopparts_g) {
+		delete shopparts_g;
+		shopparts_g = 0;
+	}
+	if (destruct_shopparts.size()) {
+		int s = destruct_shopparts.size();
+		for (int i = 0; i < s; i++) {
+			if (destruct_shopparts[i]) {
+				delete destruct_shopparts[i];
+				destruct_shopparts[i] = 0;
+			}
+		}
+		destruct_shopparts.clear();
+	}
 };
 
 void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* tex2, MyTextureLoader* loader) {
@@ -346,6 +360,7 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 
 			if (temp->hasLoaded()) {
 				// makeTexdayo
+				temp->makeTexDayo(g, tex1, tex2);
 			}
 
 		} else {
@@ -465,8 +480,36 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 }
 
 ShopParts_Garage2::~ShopParts_Garage2() {
-	
+
+	if (sp) {
+		delete sp;
+		sp = 0;
+	}
+	int siz = pgs.size();
+	for (int i = 0; i < siz; i++) {
+		if (pgs[i]) {
+			delete pgs[i];
+			pgs[i] = 0;
+		}
+	}
+	pgs.clear();
 }
+
+void ShopParts_Garage2::makeTexDayo(Graphics* g, Texture* tex, Texture* tex2) {
+
+	//shop_parts はパーツだけ
+
+	int siz = sp->getPartsSize();
+	for (int i = 0; i < siz; i++) {
+		RoboParts* pp = sp->getRoboParts(i);
+		if (pp) {
+			int unko = tex2->getRenderText(pp->data->getData("name")->string_data, 400, 100 * i, 30, 400, 40);
+			tex2->setRenderTextIsRender(unko, true);
+		}
+	}
+}
+
+
 void ShopParts_Garage2::Del(Texture* tex, Texture* tex2) {
 	CS::instance()->enter(CS_LOAD_CS, "test");
 	int siz = pgs.size();
@@ -477,6 +520,7 @@ void ShopParts_Garage2::Del(Texture* tex, Texture* tex2) {
 			pgs[i] = 0;
 		}
 	}
+	pgs.clear();
 
 	CS::instance()->leave(CS_LOAD_CS, "test");
 }
@@ -624,9 +668,10 @@ void Garage2::mouse_clicked_up(MyTextureLoader* loader, Texture* tex, Texture* t
 					// 
 					if (this->shopparts_g) {
 						this->destruct_shopparts.push_back(shopparts_g);
-						shopparts_g = new ShopParts_Garage2(eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY),
-							eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2), loader);
 					}
+					shopparts_g = new ShopParts_Garage2(eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY),
+					eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2), loader);
+					
 
 					eve->setHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO);
 				}
@@ -1188,9 +1233,9 @@ void ShopParts_Garage2::load(Graphics* g) {
 void ShopParts_Garage2::atoload(Graphics* g) {
 	// atoloadでは　robopartsのデータのメッシュロードを行う
 	if (sp) {
-		if (!sp->hasLoaded()) {
+		//if (!sp->hasLoaded()) {
 			sp->atoload(g);
-		}
+		//}
 	}
 
 }

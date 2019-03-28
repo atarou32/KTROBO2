@@ -191,7 +191,7 @@ public:
 	bool hasMeshLoaded() {return mesh_loaded;}
 	virtual void equipRobo(Robo* robo, Graphics* g, MyTextureLoader* tex_loader){ return;}; // clone ‚ð‘•”õ‚³‚¹‚é
 	virtual bool isEmpty() {return false;}
-	virtual void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader) = 0;
+	virtual void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh=true) = 0;
 };
 
 class RoboPartsEmpty: public RoboParts {
@@ -226,7 +226,7 @@ public:
 		// ‚È‚É‚à‚µ‚È‚¢
 		return;
 	}
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader) {};
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true) {};
 };
 	
 class RoboHead : public RoboParts {
@@ -271,7 +271,7 @@ public:
 		return R;
 	}
 
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(RoboHead* shead) {
 		if (shead->head) {
 			head = shead->head->clone();
@@ -350,7 +350,7 @@ public:
 		return R;
 	}
 
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(RoboArm* sarm) {
 		if (sarm->rarm) {
 		rarm = sarm->rarm->clone();
@@ -420,7 +420,7 @@ public:
 		return leg->houkatuobb.c;
 	}
 
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(RoboLeg* sleg) {
 		if (sleg->leg) {
 			leg = sleg->leg->clone();
@@ -475,7 +475,7 @@ public:
 
 		return R;
 	}
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(RoboBody* sbody) {
 		if (sbody->body) {
 		body = sbody->body->clone();
@@ -537,7 +537,7 @@ public:
 
 		return R;
 	}
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(RArmWeapon* sweapon) {
 		if (sweapon->weapon) {
 		weapon = sweapon->weapon->clone();
@@ -594,7 +594,7 @@ public:
 
 		return R;
 	}
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(LArmWeapon* sweapon) {
 		if (sweapon->weapon) {
 			weapon = sweapon->weapon->clone();
@@ -653,7 +653,7 @@ public:
 
 		return R;
 	}
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader); 
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(RShoulderWeapon* sweapon) {
 		if (sweapon->weapon) {
 		weapon = sweapon->weapon->clone();
@@ -700,7 +700,7 @@ public:
 		data = 0;
 	}
 
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(LShoulderWeapon* sweapon) {
 		if (sweapon->weapon) {
 		weapon = sweapon->weapon->clone();
@@ -760,7 +760,7 @@ public:
 		data = 0;
 	}
 
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(InsideWeapon* sweapon) {
 		if (sweapon->weapon) {
 		weapon = sweapon->weapon->clone();
@@ -823,7 +823,7 @@ public:
 		data = 0;
 	}
 
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(RoboEngine* sengine) {
 		if (sengine->mesh) {
 		mesh = sengine->mesh->clone();
@@ -888,7 +888,7 @@ public:
 		data = 0;
 	}
 
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(RoboBooster* sengine) {
 		if (sengine->mesh) {
 		mesh = sengine->mesh->clone();
@@ -954,7 +954,7 @@ public:
 		data = 0;
 	}
 
-	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader);
+	void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh = true);
 	void init(RoboFCS* sengine) {
 		if (sengine->mesh) {
 		mesh = sengine->mesh->clone();
