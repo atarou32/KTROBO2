@@ -3696,6 +3696,7 @@ void RoboFCS::init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g
 		if (ma->enddayo()) { throw new GameError(KTROBO::WARNING, "enddayo"); }
 		throw new GameError(KTROBO::FATAL_ERROR,"there is no { in init robo");
 	}
+	/*
 	int testindex = 0;
 	while (testindex < 5) {
 		ma->GetToken();
@@ -3710,7 +3711,7 @@ void RoboFCS::init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g
 	if (strcmp(ma->Toke(), "{") != 0) {
 		throw new GameError(KTROBO::FATAL_ERROR, "threre is no { in init robo");
 	}
-
+	*/
 
 
 	while(!ma->enddayo()) {

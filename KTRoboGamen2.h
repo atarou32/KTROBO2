@@ -72,7 +72,10 @@ namespace KTROBO {
 #define KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_RASER 28
 #define KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_ROCKET 29
 
-
+#define KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET 1000000
+#define KTROBO_GARAGE2_GAMEN_ID_CPP_OFFSET 1000
+#define KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START 5000
+#define KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END 5500
 
 	class Texture;
 
@@ -346,7 +349,7 @@ public:
 
 		void setGroupOnlyRenderGroup(int group_index);
 		void setGroupGroup(int group_index, int cursor_x);
-		void setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* all_parts);
+		void setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* all_parts, vector<Gamen2_part*>* cpp_parts);
 	};
 
 #define KTROBO_GAMEN2_EVENT_MAX 128
@@ -356,6 +359,7 @@ public:
 		int scene_id;
 		int hensuu[KTROBO_GAMEN2_EVENT_MAX];
 		vector<pair<int, pair<int, int>>> gihiandh;
+		vector<pair<int, pair<int, int>>> gihiandh_forcpp;
 	public:
 		Gamen2_event(int scene_id);
 		~Gamen2_event();
@@ -367,7 +371,7 @@ public:
 	public:
 		void setHensuuRule(int hensuu_id, int hensuu, int group_index); // 外でCS_LOAD_CSを呼ぶ
 		void selected(int group_index); // 外でCS_LOAD_CSを呼ぶ
-
+		void clear_cpp() { gihiandh_forcpp.clear(); };
 	};
 
 	class Gamen2 : public IGamen2
@@ -380,11 +384,13 @@ public:
 		vector<bool> all_parts_is_work_mae;
 
 		vector<Gamen2_Sonotoki*> sonotokis; // lua_file から作られる
-		map<pair<int,int>, int> sonotokis_map;
+		map<pair<int,int>, int> sonotokis_map;//scene_id gamen_id
 		map<pair<int, int>, int> cpp_parts_map; // scene_id, parts_DEF kara cpp_parts noindex
 		Gamen2_Sonotoki* now_sonotoki;
 		vector<Gamen2_event*> events;
 		map<int, int> events_map; // scene_id とindex
+
+		
 	public:
 		void pauseWork(); // moveToの動きは実行されるが　クリックやセレクトをしても反応しないようにする 
 						  // selectedされたときに実行される
@@ -393,8 +399,8 @@ public:
 		//void backFromPauseWork(); // pauseを呼んだ時のis_workに戻るlua_file_when_selected の最後に呼ぶ
 
 		void setCPPParts(Gamen2_part* parts, int scene_id, int parts_DEF);
-		int getCPPPartsIndex(int scene_id, int parts_DEF);
-		void clearCPPParts();// { cpp_parts.clear(); cpp_parts_map.clear(); }
+		int getCPPPartsIndex(int scene_id, int parts_DEF);// all_indexとしても　group_indexとしても使える？
+		void clearCPPParts(int scene_id);// { cpp_parts.clear(); cpp_parts_map.clear(); }
 
 		void makeSonotoki(int scene_id, int gamen_id, char* lua_filename); // rock load
 		void setSonotokiMakeKo(int scene_id, int gamen_id); // rock load

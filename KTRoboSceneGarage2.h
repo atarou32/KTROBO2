@@ -59,6 +59,8 @@ private:
 	ShopParts* sp;
 	MyTextureLoader* loader;
 	vector<Gamen2_partGroup*> pgs;
+	int tex_waku;
+	int tex_haikei;
 public:
 	int parts_category;
 	int parts_category2;
@@ -67,94 +69,24 @@ public:
 		parts_category2 = p2;
 		loader = loaer;
 		sp = 0;
+		tex_waku = 0;
+		tex_haikei = 0;
 	}
 	~ShopParts_Garage2();
-
+	void render(Graphics* g, MYMATRIX* view, MYMATRIX* proj, float dt);
 	void load(Graphics* g);
 	void atoload(Graphics* g);
 	void makeTexDayo(Graphics* g, Texture* tex, Texture* tex2);
 	void Del(Texture* tex, Texture* tex2);
 };
 
-/*
-class AssembleTex_Garage2 :  public Gamen2_part {
-private:
-	int texe;
-public:
-	AssembleTex_Garage2() :  Gamen2_part() { texe = 0; };
-	~AssembleTex_Garage2() {};
-
-	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
-
-	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
-	const char* getHelpString() {
-		return "アセンブルします。購入済みのパーツを使って自分独自の機体構成を作ります。";
-	};
-
-	bool selected(int x, int y);
-	
-
-};*/
-/*
-class AsmBodySaveTex_Garage2 : public Gamen2_part {
-private:
-	int texe;
-public:
-	AsmBodySaveTex_Garage2() :  Gamen2_part() { texe = 0; };
-	~AsmBodySaveTex_Garage2() {};
-
-	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
-	 // load manpai ファイル
-	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
-	char* getHelpString() {
-		return "現在の機体構成をファイルに保存します。16個まで保存できます。";
-	};
-};
-
-class AsmBodyLoadTex_Garage2 : public Loadable2, public Gamen2_part {
-private:
-	int texe;
-public:
-	AsmBodyLoadTex_Garage2() : Loadable2(), Gamen2_part() { texe = 0; };
-	~AsmBodyLoadTex_Garage2() {};
-
-	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
-	void atoload(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
-	// 押された後に呼ぶロード 保存済みの機体構成をロードする
-	
-	
-	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
-	char* getHelpString() {
-		return "保存済みの機体構成をロードします。ロード完了すると現在の機体構成は失われます。";
-	};
-};
-
-class ShopTex_Garage2 : public Loadable2, public Gamen2_part {
-private:
-	int texe;
-public:
-	ShopTex_Garage2() : Loadable2(), Gamen2_part() { texe = 0; };
-	~ShopTex_Garage2() {};
-
-	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
-
-	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei);
-	char* getHelpString() {
-		return "貴重なGを払ってパーツを購入します。ご利用は戦略的に。";
-	};
-};
-*/
 
 class Garage2 : public Loadable2, Gamen2_part{
 private:
 	MyRobo_Garage2* robog;
 	
 	Garage2Tex_Garage2* gtex_g;
-/*	AssembleTex_Garage2* atex_g;
-	AsmBodySaveTex_Garage2* abstex_g;
-	AsmBodyLoadTex_Garage2* abltex_g;
-	ShopTex_Garage2* stex_g;
-	*/
+
 
 	int help_text;
 	int help_text_waku;

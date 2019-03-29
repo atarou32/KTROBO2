@@ -5,6 +5,10 @@
 
 using namespace KTROBO;
 
+#define KTROBO_GARAGE2_SHOP_PART_TEX_FOCUSED_LUA "resrc/script/garage/part_tex_focused.lua"
+#define KTROBO_GARAGE2_SHOP_PART_TEX_SELECTED_LUA "resrc/script/garage/part_tex_selected.lua"
+#define KTROBO_GARAGE2_SHOP_PART_TEX_SONOTOKI_LUA "resrc/script/garage/part_tex_sonotoki.lua"
+
 SceneGarage2::SceneGarage2(AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader) : Scene("garage", 6)
 {
 	garage_impl = 0;
@@ -170,6 +174,12 @@ void Garage2::render(Graphics* g,Texture* tex,Texture* tex2, MYMATRIX* view, MYM
 
 	if (gtex_g) {
 		gtex_g->render(g, tex2, view, proj);
+	}
+
+	if (shopparts_g) {
+		CS::instance()->leave(CS_RENDERDATA_CS, "render");
+		shopparts_g->render(g, view, proj, 30);
+		CS::instance()->enter(CS_RENDERDATA_CS, "render");
 	}
 	CS::instance()->leave(CS_RENDERDATA_CS, "render");
 }
@@ -447,7 +457,7 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 						mystrcpy(test, 1024, 0, pp->getHelpString());
 						tex2->setRenderTextChangeText(help_text, test);
 						focused_part = pp;
-						sono->setCursorXY(pp->getAllIndex());
+						sono->setCursorXY(ginde);// pp->getAllIndex());
 
 						memset(test, 0, 1024);
 						mystrcpy(test, 1024, 0, pp->getFocusedLua());
@@ -479,6 +489,73 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 
 }
 
+void ShopParts_Garage2::render(Graphics* g,MYMATRIX* view, MYMATRIX* proj, float dt) {
+	CS::instance()->enter(CS_LOAD_CS, "test");
+	CS::instance()->enter(CS_DEVICECON_CS, "test");
+	CS::instance()->enter(CS_RENDERDATA_CS, "test");
+	if (sp) {
+		int siz = sp->getPartsSize();
+		for (int i = 0; i < siz; i++) {
+
+
+			RoboParts* pp = sp->getRoboParts(i);
+			if (pp->hasMeshLoaded()) {
+				pp->drawMesh(g, view, proj);
+			}
+		}
+
+		RoboParts* pp = sp->getRoboParts(0);
+		if (pp && pp->hasMeshLoaded()) {
+			const D3D11_VIEWPORT* ggg = g->getViewPort();
+			D3D11_VIEWPORT ggg2;
+			D3D11_VIEWPORT ggg3;
+			ggg2 = *ggg;
+			ggg3.TopLeftX = 600;
+			ggg3.TopLeftY = 450;
+			ggg3.Width = 250;
+			ggg3.Height = 250;
+			ggg3.MaxDepth = 1;
+			ggg3.MinDepth = 0;
+			g->getDeviceContext()->RSSetViewports(1, &ggg3);
+			static float unko = 0;
+			unko += 100 / 3333.0;
+
+
+			//g->getDeviceContext()->ClearRenderTargetView(g->getRenderTargetView(), clearColor);
+			MYMATRIX view;
+
+			float r = pp->getR();
+			MYVECTOR3 c = pp->getC();
+			MYVECTOR3 lookat(c.float3.x, c.float3.y, c.float3.z + r);
+			MYVECTOR3 lookfrom(0, 3 * r, r * 2);
+			MYVECTOR3 up(0, 0, 1);
+			MYMATRIX tes;
+			MyMatrixRotationZ(tes, unko);
+			MyVec3TransformNormal(lookfrom, lookfrom, tes);
+			MyMatrixLookAtRH(view, lookfrom, lookat, up);
+			float clearColor[4] = {
+				0.6f,0.6f,0.8f,1.0f };
+
+			if (pp) {
+				if (pp->hasMeshLoaded()) {
+					pp->drawMesh(g, &view, g->getProj());
+				}
+			}
+
+
+			g->getDeviceContext()->RSSetViewports(1, ggg);
+
+		}
+		
+
+
+
+	}
+	CS::instance()->leave(CS_RENDERDATA_CS, "test");
+	CS::instance()->leave(CS_DEVICECON_CS, "test");
+	CS::instance()->leave(CS_LOAD_CS, "test");
+}
+
 ShopParts_Garage2::~ShopParts_Garage2() {
 
 	if (sp) {
@@ -500,13 +577,69 @@ void ShopParts_Garage2::makeTexDayo(Graphics* g, Texture* tex, Texture* tex2) {
 	//shop_parts ‚Íƒp[ƒc‚¾‚¯
 
 	int siz = sp->getPartsSize();
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->clearCPPParts(KTROBO_GAMEN2_SCENE_ID_GARAGE);
 	for (int i = 0; i < siz; i++) {
 		RoboParts* pp = sp->getRoboParts(i);
 		if (pp) {
-			int unko = tex2->getRenderText(pp->data->getData("name")->string_data, 400, 100 * i, 30, 400, 40);
+			Gamen2_partGroup* gg = new Gamen2_partGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET+i,
+				KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET+i, tex, tex2);
+			int unko = tex2->getRenderText(pp->data->getData("name")->string_data, 400, 25+50 * i, 20, 400, 40);
+			gg->setString(pp->data->getData("COMMENT")->string_data, KTROBO_GARAGE2_SHOP_PART_TEX_FOCUSED_LUA,
+				KTROBO_GARAGE2_SHOP_PART_TEX_SELECTED_LUA);
+			MYRECT re;
+			re.left = 400 - 13;
+			re.right = re.left + (238 - 68) * 2 + 100;
+			re.top = 25 + 50 * i - 5;
+			re.bottom = re.top + 27;
+
+			gg->setRect(&re);
+
 			tex2->setRenderTextIsRender(unko, true);
+			tex2->setRenderTextColor(unko, 0xFF000000);
+			int tex_index2 = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH,4096);
+			int unko2 = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, 400-13, 25+50 * i-5, (238 - 68)*2+40+60, 27, 68, 376, 238 - 68, 54);
+			int ret[4];
+			ret[0] = 400;
+			ret[1] = 400 + 400;
+			ret[2] = 25 + 50 * i;
+			ret[3] = ret[2] + 40;
+			gg->setText(unko, true, ret);
+			ret[0] = 400 - 13;
+			ret[1] = ret[0] + (238 - 68) * 2 + 100;
+			ret[2] = 25 + 50 * i - 5;
+			ret[3] = ret[2] + 27;
+			gg->setTex(unko2, true, ret);
+			this->pgs.push_back(gg);
+
+			if (siz == 1) {
+				// END ‚Æ START ‚ª“¯‚¶‚Å‚à@“ñ‚Â“o˜^‚·‚é
+				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GAMEN2_SCENE_ID_GARAGE
+					, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
+			
+				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GAMEN2_SCENE_ID_GARAGE
+					, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START);
+
+			} else {
+				if (i == siz - 1) {
+					MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GAMEN2_SCENE_ID_GARAGE
+						, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
+				}
+				else {
+					MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GAMEN2_SCENE_ID_GARAGE
+						, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START + i);
+				}
+			}
 		}
 	}
+
+	int tex_index = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
+	//	tex_waku = tex2->getRenderTex(tex_index, 0xFFFFFFFF, 0, 0, 238, 46, 0, 0, 238, 46);
+	tex_waku = tex2->getRenderTex(tex_index, 0xFFFFFFFF, 600, 450, 250, 250, 245, 0, 200, 200);
+	int tex_index2 = tex->getTexture(KTROBO_GARAGE2_IMG_PATH);
+	tex_haikei = tex->getRenderTex(tex_index2, 0xFFFFFFFF, 600, 450, 250, 250, 18, 390, 1, 1);
+	tex->setRenderTexColor(tex_haikei, 0xFFBBBBBDD);
+
+	MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(KTROBO_GARAGE2_SHOP_PART_TEX_SONOTOKI_LUA);
 }
 
 
@@ -601,7 +734,7 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 						mystrcpy(test, 1024, 0, pp->getHelpString());
 						tex2->setRenderTextChangeText(help_text, test);
 						focused_part = pp;
-						sono->setCursorXY(pp->getAllIndex());
+						sono->setCursorXY(ginde);// pp->getAllIndex());
 
 						memset(test, 0, 1024);
 						mystrcpy(test, 1024, 0, pp->getFocusedLua());
