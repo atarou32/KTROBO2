@@ -167,22 +167,26 @@ tank_leg_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "タンク",
 k4_leg_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "四脚", "k4_leg_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 50,340,28)
 reverse_leg_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "逆関節", "reverse_leg_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 50,400,28)
 
-handgun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ハンドガン", "handgun_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,100,28)
-machinegun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "マシンガン", "machinegun_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,160,28)
-shotgun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ショットガン", "shotgun_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,220,28)
-rifle_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ライフル", "rifle_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,280,28)
-bazooka_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "バズーカ", "bazooka_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,340,28)
-sniperrifle_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "スナイパーライフル", "sniperrifle_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,400,28)
-grenede_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "グレネード", "grenede_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,460,28)
-missle_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ミサイル", "missile_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,520,28)
-rocket_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ロケット", "rocket_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,580,28)
-hanabigun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ハナビガン", "hanabigun_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,640,28)
-pulsegun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "パルスガン", "pulsegun_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 450,700,28)
-plazumagun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "プラズマガン", "plazumagun_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 800,100,28)
-energyrifle_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "エネルギーライフル", "energyrifle_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 800,160,28)
-blade_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ブレード", "blade_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 800,220,28)
-energyblade_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "エネルギーブレード", "energybladea_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 800,280,28)
+handgun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ハンドガン", "handgun_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,100,28)
+machinegun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "マシンガン", "machinegun_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,160,28)
+shotgun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ショットガン", "shotgun_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,220,28)
+rifle_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ライフル", "rifle_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,280,28)
+bazooka_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "バズーカ", "bazooka_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,340,28)
+sniperrifle_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "スナイパーライフル", "sniperrifle_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,400,28)
+grenede_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "グレネード", "grenede_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,460,28)
+missle_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ミサイル", "missile_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,520,28)
+rocket_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ロケット", "rocket_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,580,28)
+hanabigun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ハナビガン", "hanabigun_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,640,28)
+pulsegun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "パルスガン", "pulsegun_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 450,700,28)
+plazumagun_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "プラズマガン", "plazumagun_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 800,100,28)
+energyrifle_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "エネルギーライフル", "energyrifle_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 800,160,28)
+blade_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "ブレード", "blade_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 800,220,28)
+energyblade_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "エネルギーブレード", "energybladea_arm_part",  "testdayo","resrc/script/garage/partscategory2_garage_focused.lua", "resrc/script/garage/partscategory2_garage_selected.lua", 800,280,28)
 pile_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "パイル", "pile_arm_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 800,340,28)
+
+arm_gindex_start = handgun_arm_gindex
+arm_gindex_end = pile_arm_gindex
+
 
 chaingun_shoul_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "チェインガン", "chaingun_shoul_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 800,400,28)
 grenede_shoul_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "グレネード", "grenede_shoul_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 800,460,28)
@@ -216,7 +220,7 @@ gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_s
 gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_start,asmload_gindex,0)
 gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_start,shop_gindex,0)
 gamen2:setSonotokiNowSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_start)
-
+gamen_id_now = gamen_id_garage_start
 --texe = tex2:getRenderTex(tex_index2, 0xFFFFFFFF, 0, 50, 236, 51, 0, 48, 136, 51);
 --gamen2:setPartsGroupMoveTo(group_index, 0,10,236,55,"6000.0")
 

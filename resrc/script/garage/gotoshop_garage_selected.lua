@@ -1,5 +1,5 @@
 gamen2:setSonotokiNowSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_shop_start)
-
+gamen_id_now = gamen_id_garage_shop_start
 gamen2:setPartsGroupMoveTo(shop_gindex,20,80,236,55,"2000.0")
 
 gamen2:setPartsGroupMoveTo(assemble_gindex,1200,80,236,55,"2000.0")

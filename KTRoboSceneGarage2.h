@@ -126,6 +126,7 @@ private:
 	// atoniyobareru
 	void atoload(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
 public:	
+	void modoru(Texture* tex, Texture* tex2, Game* game);
 	void render(Graphics* g, Texture* tex, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
 	void mouse_move(Texture* tex1, Texture* tex2, Game* game,int x, int y);
 	void mouse_clicked_down(Texture* tex1, Texture* tex2, Game* game, int x, int y);

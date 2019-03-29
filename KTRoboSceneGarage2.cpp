@@ -210,10 +210,16 @@ bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
 			CS::instance()->enter(CS_MESSAGE_CS, "enter");
 		}
 	}
-	/*
+	
 	if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
+		if (input->getKEYSTATE()[VK_ESCAPE] & KTROBO_INPUT_BUTTON_DOWN) {
+			CS::instance()->leave(CS_MESSAGE_CS, "enter");
+			garage_impl->modoru(tex, tex2, game);
+			CS::instance()->enter(CS_MESSAGE_CS, "enter");
+		}
 
-
+	}
+	/*
 		if (input->getKEYSTATE()[VK_DOWN] & KTROBO_INPUT_BUTTON_DOWN) {
 			pressed_down_count = 1;
 			temp_focused_list->clickedDown();
@@ -354,6 +360,7 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 		ShopParts_Garage2* ga = destruct_shopparts[i];
 		
 		if (ga) {
+			ga->Del(tex1, tex2);
 			delete ga;
 			ga = 0;
 		}
@@ -1371,4 +1378,15 @@ void ShopParts_Garage2::atoload(Graphics* g) {
 		//}
 	}
 
+}
+
+void Garage2::modoru(Texture* tex, Texture* tex2, Game* game) {
+	CS::instance()->enter(CS_LOAD_CS, "enter");
+	if (shopparts_g) {
+		this->destruct_shopparts.push_back(shopparts_g);
+		shopparts_g = 0;
+	}
+	CS::instance()->leave(CS_LOAD_CS, "enter");
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->clearCPPParts(KTROBO_GAMEN2_SCENE_ID_GARAGE);
+	MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/garage/modoru.lua");
 }
