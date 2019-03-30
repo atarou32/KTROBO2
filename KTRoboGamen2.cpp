@@ -1241,6 +1241,45 @@ void Gamen2_event::setHensuu(int hensuu_id, int hensusu) {
 
 }
 
+void Gamen2::setTempHensuuRule(int scene_id, int hensuu_id, int hensuu, int group_index) {
+	CS::instance()->enter(CS_LOAD_CS, "gamen2 sethensuurule");
+	Gamen2_event* e = 0;
+
+	if (events_map.find(scene_id) != events_map.end()) {
+		e = events[events_map.find(scene_id)->second];
+	}
+	else {
+		int esize = events.size();
+		events_map.insert(pair<int, int>(scene_id, esize));
+		e = new Gamen2_event(scene_id);
+		events.push_back(e);
+	}
+	e->setTempHensuuRule(hensuu_id, hensuu, group_index);
+
+	CS::instance()->leave(CS_LOAD_CS, "gamen2 sethensuurule");
+}
+void Gamen2::deleteTempHensuuRule(int scene_id) {
+	CS::instance()->enter(CS_LOAD_CS, "gamen2 sethensuurule");
+	Gamen2_event* e = 0;
+
+	if (events_map.find(scene_id) != events_map.end()) {
+		e = events[events_map.find(scene_id)->second];
+	}
+	else {
+		int esize = events.size();
+		events_map.insert(pair<int, int>(scene_id, esize));
+		e = new Gamen2_event(scene_id);
+		events.push_back(e);
+	}
+	e->clear_temp();
+
+	CS::instance()->leave(CS_LOAD_CS, "gamen2 sethensuurule");
+}
+
+void Gamen2_event::setTempHensuuRule(int hensuu_id, int hensuu, int group_index) {
+	temp_gihiandh.push_back(pair<int, pair<int, int>>(group_index, pair<int, int>(hensuu_id, hensuu)));
+}
+
 void Gamen2_event::setHensuuRule(int hensuu_id, int hensuu, int group_index) {
 	if (group_index >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET) {
 		gihiandh_forcpp.push_back(pair<int, pair<int, int>>(group_index, pair<int, int>(hensuu_id, hensuu)));
@@ -1264,6 +1303,16 @@ void Gamen2_event::selected(int group_index) {
 	for (int i = 0; i < cppsize; i++) {
 		if (group_index == gihiandh_forcpp[i].first) {
 			pair<int, int> pp = gihiandh_forcpp[i].second;
+			int hi = pp.first;
+			int h = pp.second;
+			setHensuu(hi, h);
+		}
+	}
+
+	int temp_size = temp_gihiandh.size();
+	for (int i = 0; i < temp_size; i++) {
+		if (group_index == temp_gihiandh[i].first) {
+			pair<int, int> pp = temp_gihiandh[i].second;
 			int hi = pp.first;
 			int h = pp.second;
 			setHensuu(hi, h);

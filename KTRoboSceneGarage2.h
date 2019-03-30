@@ -82,6 +82,7 @@ public:
 	void atoload(Graphics* g);
 	void makeTexDayo(MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2);
 	void Del(Texture* tex, Texture* tex2);
+	bool buyParts(int all_index);
 };
 
 
@@ -96,7 +97,6 @@ private:
 	int help_text_waku;
 
 	int cursor_tex;
-	
 
 	Gamen2_part* selected_categorypart;
 	Gamen2_part* focused_part;
@@ -141,6 +141,7 @@ public:
 	void pressed_button_left(Texture* tex1, Texture* tex2, Game* game);
 	void pressed_button_right(Texture* tex1, Texture* tex2, Game* game);
 	void setCursorTexPosToCursorPos(Texture* tex1, Texture* tex2, Game* game);
+	void getMessageFromLua(Texture* tex1, Texture* tex2, Game* game);
 };
 class SceneGarage2 : public Scene, public INPUTSHORICLASS {
 

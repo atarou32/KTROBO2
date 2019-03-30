@@ -119,27 +119,27 @@ function setButton(tex,tex2, gpx, gp_map, button_str, button_id_str, help_text, 
   select_lua_str, rect)
 
   tex_index = tex:getTexture(KTROBO_GARAGE2_IMG_PATH,4096);
-  tex_index2 = tex:getTexture(KTROBO_GARAGE2_IMG_PATH, 4096)
+  tex_index2 = tex2:getTexture(KTROBO_GARAGE2_IMG_PATH, 4096)
   
   offdayo = (54 - text_height)/2
-  texe2 = tex:getRenderText(button_str, x + offdayo , y +offdayo, text_height, width- 2*offdayo ,54)
-  tex:setRenderTextColor(texe2,0xFF000000)
+  texe2 = tex2:getRenderText(button_str, x + offdayo , y +offdayo, text_height, width- 2*offdayo ,54)
+  tex2:setRenderTextColor(texe2,0xFF000000)
   left = x+offdayo
   right = left + width-2*offdayo
   top = y +offdayo
   bottom = top + 54 -2*offdayo
   rect ={left,right,top,bottom}
-  p_index = gamen2:setPartsGroupSetText(group_index, false, texe2, rect)
+  p_index = gamen2:setPartsGroupSetText(group_index, true, texe2, rect)
  -- tex:setRenderTextIsRender(texe2,false)
   setGpPartToGp(gp, texe2,rect,p_index)
   
-  texe = tex:getRenderTex(tex_index2, 0xFFFFFFFF, x, y, width, 54, 68, 376, 238-68, 54)
+  texe = tex2:getRenderTex(tex_index2, 0xFFFFFFFF, x, y, width, 54, 68, 376, 238-68, 54)
   left = x
   right = left + 238-68
   top = y
   bottom = top + 54
   rect ={left,right,top,bottom}
-  p_index = gamen2:setPartsGroupSetTex(group_index, false, texe, rect)
+  p_index = gamen2:setPartsGroupSetTex(group_index, true, texe, rect)
 
   setGpPartToGp(gp,texe,rect,p_index)
   setGpToGps(gpx,gp_map, gp, group_index, button_id_str, rect)
@@ -186,6 +186,13 @@ pile_arm_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "パイル",
 
 arm_gindex_start = handgun_arm_gindex
 arm_gindex_end = pile_arm_gindex
+
+hai_gindex = setButton(tex,tex2, gps, gp_map_name_to_group_index, "ハイ", "hai", "提案に承諾します。", "NO_LUA", "NO_LUA",100,150,28)
+iie_gindex = setButton(tex,tex2, gps, gp_map_name_to_group_index, "イイエ", "iie", "提案を却下します。", "NO_LUA", "NO_LUA",100,150,28)
+
+
+
+
 
 
 chaingun_shoul_gindex =  setButton(tex,tex2, gps,gp_map_name_to_group_index, "チェインガン", "chaingun_shoul_part",  "testdayo","NO_LUA", "resrc/script/garage/partscategory2_garage_selected.lua", 800,400,28)
@@ -254,6 +261,8 @@ gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_s
 gamen2:makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO)
 gamen2:makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY, KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_HEAD)
 gamen2:makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2, KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_LEG_K2)
+gamen2:makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_LUA_KEY_CALL, KTROBO_GARAGE2_HENSUU_LUA_KEY_CALL_NOKEY)
+
 
 gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_YES, head_gindex)
 gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_YES, body_gindex)
@@ -339,3 +348,9 @@ gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_PAR
 gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2, KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_PULSE, pulse_shoul_gindex)
 gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2, KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_RASER, raser_shoul_gindex)
 gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2, KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_ROCKET, rocket_shoul_gindex)
+
+
+
+
+--gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2, KTROBO_GARAGE2_HENSUU_IS_, hai_gindex)
+--gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_, KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_KATA_ROCKET, iie_gindex)

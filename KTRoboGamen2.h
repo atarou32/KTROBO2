@@ -27,6 +27,14 @@ namespace KTROBO {
 #define KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS 3
 #define KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_YES 1
 #define KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO 0
+#define KTROBO_GARAGE2_HENSUU_ID_SHOP_BUY_PARTS 4
+#define KTROBO_GARAGE2_HENSUU_IS_SHOP_BUY_PARTS_MADA 2
+#define KTROBO_GARAGE2_HENSUU_IS_SHOP_BUY_PARTS_YES 1
+#define KTROBO_GARAGE2_HENSUU_IS_SHOP_BUY_PARTS_NO 0
+#define KTROBO_GARAGE2_HENSUU_ID_LUA_KEY_CALL 5
+#define KTROBO_GARAGE2_HENSUU_LUA_KEY_CALL_NOKEY 0
+
+
 #define KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_HEAD 0
 #define KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_BODY 1
 #define KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_LEG 2
@@ -107,6 +115,8 @@ public:
 		TO_LUA virtual bool getPartsGroupTenmetuFinished(int group_index)=0;
 		TO_LUA virtual void setPartsGroupIsWorkRender(int group_index, bool t)=0;
 		TO_LUA virtual void setHensuuRule(int scene_id, int hensuu_id, int hensuu, int group_index)=0;
+		TO_LUA virtual void setTempHensuuRule(int scene_id, int hensuu_id, int hensuu, int group_index) = 0;
+		TO_LUA virtual void deleteTempHensuuRule(int scene_id)=0;
 		TO_LUA virtual void makeHensuu(int scene_id, int hensuu_id, int default_hensuu)=0;
 		TO_LUA virtual int getHensuu(int scene_id, int hensuu_id)=0;
 	};
@@ -366,6 +376,7 @@ public:
 		int hensuu[KTROBO_GAMEN2_EVENT_MAX];
 		vector<pair<int, pair<int, int>>> gihiandh;
 		vector<pair<int, pair<int, int>>> gihiandh_forcpp;
+		vector<pair<int, pair<int, int>>> temp_gihiandh;
 	public:
 		Gamen2_event(int scene_id);
 		~Gamen2_event();
@@ -377,7 +388,9 @@ public:
 	public:
 		void setHensuuRule(int hensuu_id, int hensuu, int group_index); // ŠO‚ÅCS_LOAD_CS‚ðŒÄ‚Ô
 		void selected(int group_index); // ŠO‚ÅCS_LOAD_CS‚ðŒÄ‚Ô
-		void clear_cpp() { gihiandh_forcpp.clear(); };
+		void setTempHensuuRule(int hensuu_id, int hensuu, int group_index);
+		void clear_temp() { temp_gihiandh.clear(); };
+		void clear_cpp() { gihiandh_forcpp.clear(); temp_gihiandh.clear(); };
 	};
 
 	class Gamen2 : public IGamen2
@@ -442,6 +455,8 @@ public:
 		int getHensuu(int scene_id, int hensuu_id);
 		void setHensuuRule(int scene_id, int hensuu_id, int hensuu, int group_index);
 		void makeHensuu(int scene_id,int hensuu_id, int default_hensuu);
+		void setTempHensuuRule(int scene_id, int hensuu_id, int hensuu, int group_index);
+		void deleteTempHensuuRule(int scene_id);
 		Gamen2_event* getEvent(int scene_id);
 		Gamen2(Texture* tex, Texture* tex2);
 		~Gamen2();

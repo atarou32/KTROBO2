@@ -5,6 +5,7 @@ using namespace KTROBO;
 
 UserData::UserData()
 {
+	gold = 120000;
 }
 
 
@@ -91,7 +92,20 @@ void AsmBody::setHyoukaName() {
 
 }
 
+bool UserData::buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory category) {
+	if (!parts) return false;
 
+	int daikin = parts->data->getData("price")->int_data;
+	if (gold < daikin) {
+		return false;
+	}
+	Item* newite = new Item(this->myitem.size());
+	newite->init(parts);
+	myitem.push_back(newite);
+	gold = gold - daikin;
+	return true;
+
+}
 
 
 void ShopParts::atoload(Graphics* g) {

@@ -51,5 +51,17 @@ gamen2:setPartsGroupMoveTo(i,1200,150,(238-68)*2+100,27,"1500.0")
 end
 --gamen2:setSonotokiNowSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category)
 --gamen_id_now = gamen_id_parts_category
-gamen2:setPartsGroupMoveTo(start_index+1,700,120,(238-68)*2+100,27,"1500.0")
-gamen2:setPartsGroupMoveTo(start_index,600,80,(238-68)*2+100,27,"1500.0")
+ss_i = gamen2:getNowSonotokiCursorGroup()
+
+if (ss_i > start_index) then
+gamen2:setPartsGroupMoveTo(ss_i-1,700,40,(238-68)*2+100,27,"500.0")
+
+end
+if (ss_i < end_index) then
+gamen2:setPartsGroupMoveTo(ss_i+1,700,120,(238-68)*2+100,27,"500.0")
+end
+gamen2:setPartsGroupMoveTo(ss_i,600,80,(238-68)*2+100,27,"500.0")
+
+
+--gamen2:setPartsGroupMoveTo(start_index+1,700,120,(238-68)*2+100,27,"1500.0")
+--gamen2:setPartsGroupMoveTo(ss_i,600,80,(238-68)*2+100,27,"1500.0")

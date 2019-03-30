@@ -130,7 +130,13 @@ private:
 	bool is_equiped; // 出撃する機体のパーツのときは
 	bool is_part_loaded;
 public:
-	Item(int item_id) {};
+	Item(int item_id) {
+		this->item_id = item_id;
+		is_equiped = false;
+		is_part_loaded = false;
+		parts_id = 0;
+		part = 0;
+	};
 	~Item() {};
 	enum ITEM_SOUBI_KASHO {
 		UNKNOWN = 0,
@@ -150,7 +156,9 @@ public:
 
 	ITEM_SOUBI_KASHO kasho;
 
-	void init(RoboParts* parts) {};
+	void init(RoboParts* parts) {
+	
+	};
 	void init(int item_id) {}; // userdat ファイルから読み込む
 	void release() {};
 
@@ -314,6 +322,9 @@ private:
 
 class UserData
 {
+private:
+	int gold;
+	vector<Item*> myitem;
 public:
 	UserData();
 	~UserData();
@@ -325,8 +336,9 @@ public:
 	// ロードした時になってる構成もアセンブルボディで書く
 	void overWriteAsmBodyFile(int file_id, AsmBody* ab) {};
 	void loadAsmBodyfile(int file_id) {};
+	int getGold() { return gold; }
 
-	void buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory category) {};
+	bool buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory category);
 	void sellItemInShop(int item_id, Item* i) {}; // AsmBodyfileに使っているものであれば警告を出す
 
 
