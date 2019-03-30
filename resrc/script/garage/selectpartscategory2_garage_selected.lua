@@ -4,6 +4,7 @@ selected_group_inde = gamen2:getNowSonotokiCursorGroup()
 gamen_id_select_parts_category = 2
 gamen2:makeSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE,gamen_id_select_parts_category,"resrc/script/garage/p2_genter.lua")
 gamen2:setSonotokiMakeKo(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_select_parts_category)
+gamen2:setSonotokiMakeKo(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_select_parts_category)
 gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_select_parts_category,selected_group_inde)
 gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_select_parts_category,shop_gindex)
 gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_select_parts_category,assemble_gindex)
@@ -24,6 +25,8 @@ gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE,gamen_id_select_pa
 gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE,gamen_id_select_parts_category,blade_arm_gindex,0)
 gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE,gamen_id_select_parts_category,energyblade_arm_gindex,0) 
 gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE,gamen_id_select_parts_category,pile_arm_gindex,0)
+robog = gamen2:getCPPPartsIndex(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_select_parts_category,robog,1)
 
 --gamen2:setPartsGroupMoveTo(handgun_arm_gindex,         770,10+20     ,238-68     ,54,"2000.0")
 --gamen2:setPartsGroupMoveTo(machinegun_arm_gindex,      700,10+80     ,238-68     ,54,"2000.0")

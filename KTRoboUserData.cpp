@@ -168,10 +168,12 @@ void ShopParts::loadInside(Graphics* g) {
 				}
 				
 				this->parts_list.push_back(head);
+				this->meta_datas.push_back(head_md);
 			//	ma.SkipNode();
 			}
 			ma.deletedayo();
-			delete head_md;
+			//delete head_md;
+			iden_meta_datas.push_back(head_md);
 		}
 		
 	}
@@ -270,10 +272,12 @@ void ShopParts::load(Graphics* g) {
 			}
 		
 			this->parts_list.push_back(head);
+			meta_datas.push_back(head_md);
 			//ma.SkipNode();
 		}
 		ma.deletedayo();
-		delete head_md;
+		//delete head_md;
+		iden_meta_datas.push_back(head_md);
 	}
 	
 

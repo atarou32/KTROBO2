@@ -46,6 +46,8 @@ end
 
 gamen2:makeSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category, "resrc/script/garage/pts1_genter.lua")
 gamen2:setSonotokiMakeKo(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category)
+gamen2:setSonotokiMakeKo(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category)
+gamen2:setSonotokiMakeKo(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category)
 
 if (pg== KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_LEG) then
 gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category,leg_gindex)
@@ -88,6 +90,11 @@ for i=start_index,end_index do
 gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category,i,0)
 --gamen2:setPartsGroupMoveTo(i,1200,150,(238-68)*2+100,27,"1500.0")
 end
+shopparts_index = gamen2:getCPPPartsIndex(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYSHOPPARTS)
+myrobo_index = gamen2:getCPPPartsIndex(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category,shopparts_index,1)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category,myrobo_index,2)
+
 gamen2:setSonotokiNowSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category)
 gamen_id_now = gamen_id_parts_category
 --gamen2:setPartsGroupMoveTo(start_index+1,700,120,(238-68)*2+100,27,"1500.0")

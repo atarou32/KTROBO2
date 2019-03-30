@@ -52,9 +52,13 @@ public:
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
 
 	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
+
+	const char* getHelpString() {
+		return "あなたの愛情を一身に受けて大活躍するロボットです。";
+	}
 };
 
-class ShopParts_Garage2 : public Loadable2{
+class ShopParts_Garage2 : public Gamen2_part, public Loadable2{
 private:
 	ShopParts* sp;
 	MyTextureLoader* loader;
@@ -76,7 +80,7 @@ public:
 	void render(Graphics* g, MYMATRIX* view, MYMATRIX* proj, float dt);
 	void load(Graphics* g);
 	void atoload(Graphics* g);
-	void makeTexDayo(Graphics* g, Texture* tex, Texture* tex2);
+	void makeTexDayo(MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2);
 	void Del(Texture* tex, Texture* tex2);
 };
 
@@ -131,6 +135,11 @@ public:
 	void mouse_move(Texture* tex1, Texture* tex2, Game* game,int x, int y);
 	void mouse_clicked_down(Texture* tex1, Texture* tex2, Game* game, int x, int y);
 	void mouse_clicked_up(MyTextureLoader* loader, Texture* tex1, Texture* tex2, Game* game, int x, int y);
+	void pressed_button_enter(MyTextureLoader* loader, Texture* tex1, Texture* tex2, Game* game);
+	void pressed_button_up(Texture* tex1, Texture* tex2, Game* game);
+	void pressed_button_down(Texture* tex1, Texture* tex2, Game* game);
+	void pressed_button_left(Texture* tex1, Texture* tex2, Game* game);
+	void pressed_button_right(Texture* tex1, Texture* tex2, Game* game);
 	void setCursorTexPosToCursorPos(Texture* tex1, Texture* tex2, Game* game);
 };
 class SceneGarage2 : public Scene, public INPUTSHORICLASS {

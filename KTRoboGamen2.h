@@ -5,6 +5,7 @@
 #include <vector>
 #include "MyButukari.h"
 #include <string>
+#include <set>
 #include <map>
 #include "MyDefine.h"
 #include "lua.hpp"
@@ -18,7 +19,7 @@ namespace KTROBO {
 
 #define KTROBO_GAMEN2_LUA_FILENAME_NO_LUA "NO_LUA"
 #define KTROBO_GAMEN2_SCENE_ID_GARAGE 1
-#define KTROBO_GARAGE2_IMG_PATH "resrc/img/garage2.png"
+#define KTROBO_GARAGE2_IMG_PATH "resrc/img/garage3.png"
 #define KTROBO_GARAGE2_INIT_LUA_FILEPATH "resrc/script/garage/init_garage.lua"
 #define KTROBO_GARAGE2_HENSUU_ID_FIRSTCATEGORY 0
 #define KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY 1
@@ -76,6 +77,8 @@ namespace KTROBO {
 #define KTROBO_GARAGE2_GAMEN_ID_CPP_OFFSET 1000
 #define KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START 5000
 #define KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END 5500
+#define KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYSHOPPARTS 5600
+#define KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO 5601
 
 	class Texture;
 
@@ -86,6 +89,8 @@ public:
 		TO_LUA virtual void makeSonotoki(int scene_id, int gamen_id, char* lua_filename)=0;
 		TO_LUA virtual void setSonotokiMakeKo(int scene_id, int gamen_id)=0;
 		TO_LUA virtual void setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int all_index)=0;
+		TO_LUA virtual void setSonotokiSetGroupOnlyRenderGroupFromNowSonotokiIsRender(int scene_id, int gamen_id)=0;
+
 		TO_LUA virtual void setSonotokiSetGroupGroup(int scene_id, int gamen_id, int all_index, int cursor_x)=0;
 		TO_LUA virtual int getSonotokiCursorGroup(int scene_id, int gamen_id)=0;
 		TO_LUA virtual void setSonotokiNowSonotoki(int scene_id, int gamen_id)=0;
@@ -350,6 +355,7 @@ public:
 		void setGroupOnlyRenderGroup(int group_index);
 		void setGroupGroup(int group_index, int cursor_x);
 		void setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* all_parts, vector<Gamen2_part*>* cpp_parts);
+		void getAllIndexOfGGANDONLYRENDERGROUP(set<int>* outdayo);
 	};
 
 #define KTROBO_GAMEN2_EVENT_MAX 128
@@ -405,6 +411,8 @@ public:
 		void makeSonotoki(int scene_id, int gamen_id, char* lua_filename); // rock load
 		void setSonotokiMakeKo(int scene_id, int gamen_id); // rock load
 		void setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int all_index); // rock load
+		void setSonotokiSetGroupOnlyRenderGroupFromNowSonotokiIsRender(int scene_id, int gamen_id);
+
 		void setSonotokiSetGroupGroup(int scene_id, int gamen_id, int all_index, int cursor_x); // rock load
 		int getSonotokiCursorGroup(int scene_id, int gamen_id); // rock load
 		void setSonotokiNowSonotoki(int scene_id, int gamen_id); // rock load lua_filename‚ªŒÄ‚Î‚ê‚é

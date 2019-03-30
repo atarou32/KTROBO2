@@ -168,7 +168,9 @@ struct ShopPartsInfo {
 class ShopParts : public Loadable2 {
 private:
 	vector<RoboParts*> parts_list;
+	vector<RoboDataMetaData*> meta_datas;
 
+	vector<RoboDataMetaData*> iden_meta_datas;
 	MyTextureLoader* tex_loader;
 
 public:
@@ -181,6 +183,12 @@ public:
 		}
 		return 0;
 	};
+	RoboDataMetaData* getMetaData(int index) {
+		if ((index >= 0) && index < meta_datas.size()) {
+			return meta_datas[index];
+		}
+		return 0;
+	}
 	void getShopPartsInfo(int index, ShopPartsInfo* info) {};
 
 	enum PartsListCategory {
@@ -266,6 +274,7 @@ public:
 	ShopParts(PartsListCategory cat, MyTextureLoader* loader) {
 		category = cat;
 		tex_loader = loader;
+		
 	};
 	~ShopParts() {
 		int size = parts_list.size();
@@ -278,6 +287,15 @@ public:
 		}
 		parts_list.clear();
 
+		int msize = iden_meta_datas.size();
+		for (int i = 0; i < msize; i++) {
+			if (iden_meta_datas[i]) {
+				delete iden_meta_datas[i];
+				iden_meta_datas[i] = 0;
+			}
+		}
+		iden_meta_datas.clear();
+		meta_datas.clear();
 	};
 	void atoload(Graphics* g); // meshパーツのロード
 	void load(Graphics* g);

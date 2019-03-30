@@ -61,7 +61,7 @@ void SceneGarage2::mainrenderIMPL(bool is_focused, Graphics* g, Game* game) {
 }
 void SceneGarage2::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
 
-
+	garage_impl->setCursorTexPosToCursorPos(tex, tex2, game);
 
 
 }
@@ -127,8 +127,9 @@ void SceneGarage2::leave() {
 
 void Garage2::setCursorTexPosToCursorPos(Texture* tex1, Texture* tex2, Game* game) {
 
+	
+	//CS::instance()->enter(CS_MESSAGE_CS, "e");
 	CS::instance()->enter(CS_LOAD_CS, "ee");
-	CS::instance()->enter(CS_MESSAGE_CS, "e");
 	Gamen2_Sonotoki* sono = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotoki();
 	if (sono) {
 		try {
@@ -143,16 +144,19 @@ void Garage2::setCursorTexPosToCursorPos(Texture* tex1, Texture* tex2, Game* gam
 		}
 		catch (GameError* err) {
 			// 無視する
+			mylog::writelog(KTROBO::WARNING, err->getMessage());
+			delete err;
 		}
 		catch (...) {
-			CS::instance()->leave(CS_MESSAGE_CS, "e");
+		
 			CS::instance()->leave(CS_LOAD_CS, "ee");
-			
+			//CS::instance()->leave(CS_MESSAGE_CS, "e");
+			return;
 		}
 	}
-	CS::instance()->leave(CS_MESSAGE_CS, "e");
-	CS::instance()->leave(CS_LOAD_CS, "ee");
 
+	CS::instance()->leave(CS_LOAD_CS, "ee");
+//	CS::instance()->leave(CS_MESSAGE_CS, "e");
 
 }
 
@@ -190,7 +194,7 @@ bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
 	int y = input->getMOUSESTATE()->mouse_y;
 
 
-	garage_impl->setCursorTexPosToCursorPos(tex, tex2, game);
+	//garage_impl->setCursorTexPosToCursorPos(tex, tex2, game);
 
 	CS::instance()->enter(CS_MESSAGE_CS, "enter");
 	if (msg == KTROBO_INPUT_MESSAGE_ID_MOUSEMOVE) {
@@ -215,6 +219,31 @@ bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
 		if (input->getKEYSTATE()[VK_ESCAPE] & KTROBO_INPUT_BUTTON_DOWN) {
 			CS::instance()->leave(CS_MESSAGE_CS, "enter");
 			garage_impl->modoru(tex, tex2, game);
+			CS::instance()->enter(CS_MESSAGE_CS, "enter");
+		}
+		if (input->getKEYSTATE()[VK_DOWN] & KTROBO_INPUT_BUTTON_DOWN) {
+			CS::instance()->leave(CS_MESSAGE_CS, "enter");
+			garage_impl->pressed_button_down(tex, tex2, game);
+			CS::instance()->enter(CS_MESSAGE_CS, "enter");
+		}
+		if (input->getKEYSTATE()[VK_UP] & KTROBO_INPUT_BUTTON_DOWN) {
+			CS::instance()->leave(CS_MESSAGE_CS, "enter");
+			garage_impl->pressed_button_up(tex, tex2, game);
+			CS::instance()->enter(CS_MESSAGE_CS, "enter");
+		}
+		if (input->getKEYSTATE()[VK_LEFT] & KTROBO_INPUT_BUTTON_DOWN) {
+			CS::instance()->leave(CS_MESSAGE_CS, "enter");
+			garage_impl->pressed_button_left(tex, tex2, game);
+			CS::instance()->enter(CS_MESSAGE_CS, "enter");
+		}
+		if (input->getKEYSTATE()[VK_RIGHT] & KTROBO_INPUT_BUTTON_DOWN) {
+			CS::instance()->leave(CS_MESSAGE_CS, "enter");
+			garage_impl->pressed_button_right(tex, tex2, game);
+			CS::instance()->enter(CS_MESSAGE_CS, "enter");
+		}
+		if (input->getKEYSTATE()[VK_RETURN] & KTROBO_INPUT_BUTTON_DOWN) {
+			CS::instance()->leave(CS_MESSAGE_CS, "enter");
+			garage_impl->pressed_button_enter(loader,tex, tex2, game);
 			CS::instance()->enter(CS_MESSAGE_CS, "enter");
 		}
 
@@ -276,6 +305,7 @@ bool SceneGarage2::handleMessage(int msg, void* data, DWORD time) {
 	*/
 
 	CS::instance()->leave(CS_MESSAGE_CS, "enter");
+//	garage_impl->setCursorTexPosToCursorPos(tex, tex2, game);
 	return false;
 }
 
@@ -353,7 +383,7 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 		robog->touroku();
 		return;
 	}
-
+	CS::instance()->enter(CS_MESSAGE_CS, "destruct_parts");
 	CS::instance()->enter(CS_LOAD_CS, "destruct_parts");
 	volatile int size = destruct_shopparts.size();
 	for (int i = 0; i < size; i++) {
@@ -368,7 +398,7 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 	destruct_shopparts.clear();
 	temp = shopparts_g;
 	CS::instance()->leave(CS_LOAD_CS, "destruct_parts");
-	
+	CS::instance()->leave(CS_MESSAGE_CS, "destruct_parts");
 	if (temp) {
 		// tempがこの時点でほかのスレッドからデストラクトされる予定に入ってしまっていたとしても
 		// デストラクタが実際に呼ばれるのは次のこの関数が呼ばれるときなので大丈夫.
@@ -377,7 +407,7 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 
 			if (temp->hasLoaded()) {
 				// makeTexdayo
-				temp->makeTexDayo(g, tex1, tex2);
+				temp->makeTexDayo(this->robog,g, tex1, tex2);
 			}
 
 		} else {
@@ -429,8 +459,9 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 		*/
 	}
 
-	CS::instance()->enter(CS_LOAD_CS, "ee");
+
 	CS::instance()->enter(CS_MESSAGE_CS, "e");
+	CS::instance()->enter(CS_LOAD_CS, "ee");
 	Gamen2_Sonotoki* sono = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotoki();
 	if (sono) {
 		const vector<vector<int>*> const * cg = sono->getCG();
@@ -443,8 +474,9 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 			for (int k = 0; k < grosize; k++) {
 				int ginde = (*gro)[k];
 				Gamen2_part* pp = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(ginde);
-				pp->unfocused(x, y);
-
+				if (pp) {
+					pp->unfocused(x, y);
+				}
 			}
 		}
 
@@ -457,7 +489,7 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 			for (int k = 0; k < grosize; k++) {
 				int ginde = (*gro)[k];
 				Gamen2_part* pp = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(ginde);
-				if (pp->focused(x, y)) {
+				if (pp && pp->focused(x, y)) {
 					if (pp != focused_part) {
 						char test[1024];
 						memset(test, 0, 1024);
@@ -474,8 +506,9 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 
 
 					}
-					CS::instance()->leave(CS_MESSAGE_CS, "e");
+					
 					CS::instance()->leave(CS_LOAD_CS, "ee");
+					CS::instance()->leave(CS_MESSAGE_CS, "e");
 					return;
 				}
 			}
@@ -486,13 +519,13 @@ void Garage2::mouse_move(Texture* tex, Texture* tex2, Game* game, int x, int y) 
 			focused_part = 0;
 			char test[1024];
 			memset(test, 0, 1024);
-			mystrcpy(test, 1024, 0, this->getHelpStringWhenNoneFocused());
-			tex2->setRenderTextChangeText(help_text, test);
+			//mystrcpy(test, 1024, 0, this->getHelpStringWhenNoneFocused());
+			//tex2->setRenderTextChangeText(help_text, test);
 		}
 	}
-	CS::instance()->leave(CS_MESSAGE_CS, "e");
-	CS::instance()->leave(CS_LOAD_CS, "ee");
 
+	CS::instance()->leave(CS_LOAD_CS, "ee");
+	CS::instance()->leave(CS_MESSAGE_CS, "e");
 
 }
 
@@ -510,8 +543,12 @@ void ShopParts_Garage2::render(Graphics* g,MYMATRIX* view, MYMATRIX* proj, float
 				pp->drawMesh(g, view, proj);
 			}
 		}
-
-		RoboParts* pp = sp->getRoboParts(0);
+		int cgi = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotokiCursorGroup();
+		int inde=0;
+		if (cgi > KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET) {
+			inde = cgi - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+		}
+		RoboParts* pp = sp->getRoboParts(inde);
 		if (pp && pp->hasMeshLoaded()) {
 			const D3D11_VIEWPORT* ggg = g->getViewPort();
 			D3D11_VIEWPORT ggg2;
@@ -579,7 +616,7 @@ ShopParts_Garage2::~ShopParts_Garage2() {
 	pgs.clear();
 }
 
-void ShopParts_Garage2::makeTexDayo(Graphics* g, Texture* tex, Texture* tex2) {
+void ShopParts_Garage2::makeTexDayo(MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2) {
 
 	//shop_parts はパーツだけ
 
@@ -645,12 +682,23 @@ void ShopParts_Garage2::makeTexDayo(Graphics* g, Texture* tex, Texture* tex2) {
 	int tex_index2 = tex->getTexture(KTROBO_GARAGE2_IMG_PATH);
 	tex_haikei = tex->getRenderTex(tex_index2, 0xFFFFFFFF, 600, 450, 250, 250, 18, 390, 1, 1);
 	tex->setRenderTexColor(tex_haikei, 0xFFBBBBBDD);
+	MYRECT re;
+	re.left = 600;
+	re.right = re.left + 250;
+	re.top = 450;
+	re.bottom = 450 + 250;
+	this->setRect(&re);
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(this, KTROBO_GAMEN2_SCENE_ID_GARAGE
+		, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYSHOPPARTS);
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(parts, KTROBO_GAMEN2_SCENE_ID_GARAGE
+		, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO);
 
 	MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(KTROBO_GARAGE2_SHOP_PART_TEX_SONOTOKI_LUA);
 }
 
 
 void ShopParts_Garage2::Del(Texture* tex, Texture* tex2) {
+	CS::instance()->enter(CS_MESSAGE_CS, "test");
 	CS::instance()->enter(CS_LOAD_CS, "test");
 	int siz = pgs.size();
 	for (int i = 0; i < siz; i++) {
@@ -661,8 +709,15 @@ void ShopParts_Garage2::Del(Texture* tex, Texture* tex2) {
 		}
 	}
 	pgs.clear();
+	if (tex_haikei) {
+		tex->lightdeleteRenderTex(tex_haikei);
+	}
+	if (tex_waku) {
+		tex2->lightdeleteRenderTex(tex_waku);
+	}
 
 	CS::instance()->leave(CS_LOAD_CS, "test");
+	CS::instance()->leave(CS_MESSAGE_CS, "test");
 }
 
 void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x, int y) {
@@ -706,8 +761,9 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 	}
 
 
-	CS::instance()->enter(CS_LOAD_CS, "ee");
+	
 	CS::instance()->enter(CS_MESSAGE_CS, "e");
+	CS::instance()->enter(CS_LOAD_CS, "ee");
 	Gamen2_Sonotoki* sono = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotoki();
 	if (sono) {
 		const vector<vector<int>*> const * cg = sono->getCG();
@@ -720,8 +776,9 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 			for (int k = 0; k < grosize; k++) {
 				int ginde = (*gro)[k];
 				Gamen2_part* pp = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(ginde);
-				pp->unfocused(x, y);
-
+				if (pp) {
+					pp->unfocused(x, y);
+				}
 			}
 		}
 
@@ -734,7 +791,7 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 			for (int k = 0; k < grosize; k++) {
 				int ginde = (*gro)[k];
 				Gamen2_part* pp = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(ginde);
-				if (pp->focused(x, y)) {
+				if (pp && pp->focused(x, y)) {
 					if (pp != focused_part) {
 						char test[1024];
 						memset(test, 0, 1024);
@@ -751,8 +808,9 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 
 
 					}
-					CS::instance()->leave(CS_MESSAGE_CS, "e");
+					
 					CS::instance()->leave(CS_LOAD_CS, "ee");
+					CS::instance()->leave(CS_MESSAGE_CS, "e");
 					return;
 				}
 			}
@@ -763,13 +821,13 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 			focused_part = 0;
 			char test[1024];
 			memset(test, 0, 1024);
-			mystrcpy(test, 1024, 0, this->getHelpStringWhenNoneFocused());
-			tex2->setRenderTextChangeText(help_text, test);
+			//mystrcpy(test, 1024, 0, this->getHelpStringWhenNoneFocused());
+			//tex2->setRenderTextChangeText(help_text, test);
 		}
 	}
-	CS::instance()->leave(CS_MESSAGE_CS, "e");
-	CS::instance()->leave(CS_LOAD_CS, "ee");
 
+	CS::instance()->leave(CS_LOAD_CS, "ee");
+	CS::instance()->leave(CS_MESSAGE_CS, "e");
 
 
 
@@ -791,13 +849,14 @@ void Garage2::mouse_clicked_up(MyTextureLoader* loader, Texture* tex, Texture* t
 		*/
 	}
 
-	CS::instance()->enter(CS_LOAD_CS, "ee");
+	
 	CS::instance()->enter(CS_MESSAGE_CS, "e");
+	CS::instance()->enter(CS_LOAD_CS, "ee");
 	Gamen2_Sonotoki* sono = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotoki();
 	if (sono) {
 		int focused_group_all_index = sono->getCursorGroup();
 		Gamen2_part* focused_part = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(focused_group_all_index);
-		if (focused_part->selected(x, y)) {
+		if (focused_part && focused_part->selected(x, y)) {
 			// lua ファイルを呼ぶ
 			MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->pauseWork();
 
@@ -827,9 +886,9 @@ void Garage2::mouse_clicked_up(MyTextureLoader* loader, Texture* tex, Texture* t
 			}
 		}
 	}
-	CS::instance()->leave(CS_MESSAGE_CS, "e");
+	
 	CS::instance()->leave(CS_LOAD_CS, "ee");
-
+	CS::instance()->leave(CS_MESSAGE_CS, "e");
 }
 
 void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader) {
@@ -857,6 +916,8 @@ void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2
 	stex_g = new ShopTex_Garage2();
 	stex_g->load(g, tex, tex2, loader, hantei);
 	*/
+
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(robog, KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO);
 
 	MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(KTROBO_GARAGE2_INIT_LUA_FILEPATH);
 		
@@ -897,6 +958,7 @@ void Garage2::load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2
 MyRobo_Garage2::MyRobo_Garage2() : Loadable2(), Gamen2_part() {
 	robo = 0;
 	tex_waku = 0;
+	
 }
 MyRobo_Garage2::~MyRobo_Garage2() {
 	if (robo) {
@@ -918,7 +980,7 @@ void MyRobo_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX
 		D3D11_VIEWPORT ggg2;
 		D3D11_VIEWPORT ggg3;
 		ggg2 = *ggg;
-		ggg3.TopLeftX = 50;
+		ggg3.TopLeftX = 71;
 		ggg3.TopLeftY = 350;
 		ggg3.Width = 400;
 		ggg3.Height = 400;
@@ -1009,17 +1071,19 @@ void MyRobo_Garage2::load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLo
 	robo = new Robo();
 	robo->init(g, loader, hantei);
 	int tex_index2  = tex1->getTexture(KTROBO_GARAGE2_IMG_PATH);
-	tex_haikei = tex1->getRenderTex(tex_index2, 0xFFFFFFFF, 50, 350, 400, 400, 18, 390, 1, 1);
+	tex_haikei = tex1->getRenderTex(tex_index2, 0xFFFFFFFF, 71, 350, 400, 400, 18, 390, 1, 1);
 	tex1->setRenderTexColor(tex_haikei, 0xAAAAAAFF);
 	int tex_index = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
 //	tex_waku = tex2->getRenderTex(tex_index, 0xFFFFFFFF, 0, 0, 238, 46, 0, 0, 238, 46);
-	tex_waku = tex2->getRenderTex(tex_index, 0xFFFFFFFF, 50,350,400,400, 245, 0, 200, 200);
+	tex_waku = tex2->getRenderTex(tex_index, 0xFFFFFFFF, 71,350,400,400, 245, 0, 200, 200);
 	MYRECT re;
-	re.left = 50;
-	re.right = 50 + 400;
+	re.left = 71;
+	re.right = 71 + 400;
 	re.top = 350;
 	re.bottom = 350 + 400;
 	setRect(&re);
+	
+	
 	setLoaded();
 }
 
@@ -1386,7 +1450,194 @@ void Garage2::modoru(Texture* tex, Texture* tex2, Game* game) {
 		this->destruct_shopparts.push_back(shopparts_g);
 		shopparts_g = 0;
 	}
+	if (focused_part) {
+		focused_part = 0;
+	}
+	if (selected_categorypart) {
+		selected_categorypart = 0;
+	}
 	CS::instance()->leave(CS_LOAD_CS, "enter");
-	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->clearCPPParts(KTROBO_GAMEN2_SCENE_ID_GARAGE);
-	MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/garage/modoru.lua");
+	if (robog) {
+			MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->clearCPPParts(KTROBO_GAMEN2_SCENE_ID_GARAGE);
+			MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(robog, KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO);
+			MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/garage/modoru.lua");
+	}
+}
+
+
+
+
+
+void Garage2::pressed_button_enter(MyTextureLoader* loader, Texture* tex1, Texture* tex2, Game* game) {
+	
+	CS::instance()->enter(CS_MESSAGE_CS, "e");
+	CS::instance()->enter(CS_LOAD_CS, "ee");
+	Gamen2_Sonotoki* sono = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotoki();
+	if (sono) {
+		int allinde = sono->getCursorGroup();
+		Gamen2_part* pp = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(allinde);
+		if (pp && pp->getIsWork()) {
+			focused_part = pp;
+			pp->selectExe();
+			// lua ファイルを呼ぶ
+			MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->pauseWork();
+
+			Gamen2_event* eve = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getEvent(KTROBO_GAMEN2_SCENE_ID_GARAGE);
+			if (eve) {
+				eve->selected(allinde);
+				if (eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS) == KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_YES) {
+					// 
+					if (this->shopparts_g) {
+						this->destruct_shopparts.push_back(shopparts_g);
+					}
+					shopparts_g = new ShopParts_Garage2(eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY),
+						eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2), loader);
+
+
+					eve->setHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO);
+				}
+				// 変数をセットする
+				// bool is_load_parts
+			}
+			selected_categorypart = focused_part;
+			char strdayo[1024];
+			memset(strdayo, 0, 1024);
+			mystrcpy(strdayo, 1024, 0, focused_part->getSelectedLua());
+			if (strcmp(KTROBO_GAMEN2_LUA_FILENAME_NO_LUA, strdayo) != 0) {
+				MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(strdayo);
+			}
+
+		}
+	}
+	
+	CS::instance()->leave(CS_LOAD_CS, "ee");
+	CS::instance()->leave(CS_MESSAGE_CS, "e");
+}
+void Garage2::pressed_button_up(Texture* tex1, Texture* tex2, Game* game) {
+	
+	CS::instance()->enter(CS_MESSAGE_CS, "e");
+	CS::instance()->enter(CS_LOAD_CS, "ee");
+	Gamen2_Sonotoki* sono = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotoki();
+	if (sono) {
+		sono->setCursorY(sono->getCursorY() - 1);
+		int all_inde = sono->getCursorGroup();
+		Gamen2_part* pp = 0;
+		pp = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(all_inde);
+		if (pp && pp->getIsWork()) {
+			if (focused_part != pp) {
+				focused_part = pp;
+				pp->focusExe();
+				char test[1024];
+				memset(test, 0, 1024);
+				mystrcpy(test, 1024, 0, pp->getHelpString());
+				tex2->setRenderTextChangeText(help_text, test);
+
+				memset(test, 0, 1024);
+				mystrcpy(test, 1024, 0, pp->getFocusedLua());
+				if (strcmp(test, KTROBO_GAMEN2_LUA_FILENAME_NO_LUA) != 0) {
+					MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(test);
+				}
+
+			}
+		}
+	}
+	
+	CS::instance()->leave(CS_LOAD_CS, "ee");
+	CS::instance()->leave(CS_MESSAGE_CS, "e");
+}
+void Garage2::pressed_button_down(Texture* tex1, Texture* tex2, Game* game) {
+	
+	CS::instance()->enter(CS_MESSAGE_CS, "e");
+	CS::instance()->enter(CS_LOAD_CS, "ee");
+	Gamen2_Sonotoki* sono = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotoki();
+	if (sono) {
+		sono->setCursorY(sono->getCursorY() + 1);
+		int all_inde = sono->getCursorGroup();
+		Gamen2_part* pp = 0;
+		pp = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(all_inde);
+		if (pp && pp->getIsWork()) {
+			if (focused_part != pp) {
+				focused_part = pp;
+				pp->focusExe();
+				char test[1024];
+				memset(test, 0, 1024);
+				mystrcpy(test, 1024, 0, pp->getHelpString());
+				tex2->setRenderTextChangeText(help_text, test);
+
+				memset(test, 0, 1024);
+				mystrcpy(test, 1024, 0, pp->getFocusedLua());
+				if (strcmp(test, KTROBO_GAMEN2_LUA_FILENAME_NO_LUA) != 0) {
+					MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(test);
+				}
+
+			}
+		}
+	}
+
+	CS::instance()->leave(CS_LOAD_CS, "ee");
+	CS::instance()->leave(CS_MESSAGE_CS, "e");
+}
+void Garage2::pressed_button_left(Texture* tex1, Texture* tex2, Game* game) {
+
+	CS::instance()->enter(CS_MESSAGE_CS, "e");
+	CS::instance()->enter(CS_LOAD_CS, "ee");
+	Gamen2_Sonotoki* sono = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotoki();
+	if (sono) {
+		sono->setCursorX(sono->getCursorX() + 1);
+		int all_inde = sono->getCursorGroup();
+		Gamen2_part* pp = 0;
+		pp = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(all_inde);
+		if (pp && pp->getIsWork()) {
+			if (focused_part != pp) {
+				focused_part = pp;
+				pp->focusExe();
+				char test[1024];
+				memset(test, 0, 1024);
+				mystrcpy(test, 1024, 0, pp->getHelpString());
+				tex2->setRenderTextChangeText(help_text, test);
+
+				memset(test, 0, 1024);
+				mystrcpy(test, 1024, 0, pp->getFocusedLua());
+				if (strcmp(test, KTROBO_GAMEN2_LUA_FILENAME_NO_LUA) != 0) {
+					MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(test);
+				}
+
+			}
+		}
+	}
+	
+	CS::instance()->leave(CS_LOAD_CS, "ee");
+	CS::instance()->leave(CS_MESSAGE_CS, "e");
+}
+void Garage2::pressed_button_right(Texture* tex1, Texture* tex2, Game* game) {
+	
+	CS::instance()->enter(CS_MESSAGE_CS, "e");
+	CS::instance()->enter(CS_LOAD_CS, "ee");
+	Gamen2_Sonotoki* sono = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotoki();
+	if (sono) {
+		sono->setCursorX(sono->getCursorX() - 1);
+		int all_inde = sono->getCursorGroup();
+		Gamen2_part* pp = 0;
+		pp =MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(all_inde);
+		if (pp && pp->getIsWork()) {
+			if (focused_part != pp) {
+				focused_part = pp;
+				pp->focusExe();
+				char test[1024];
+				memset(test, 0, 1024);
+				mystrcpy(test, 1024, 0, pp->getHelpString());
+				tex2->setRenderTextChangeText(help_text, test);
+
+				memset(test, 0, 1024);
+				mystrcpy(test, 1024, 0, pp->getFocusedLua());
+				if (strcmp(test, KTROBO_GAMEN2_LUA_FILENAME_NO_LUA) != 0) {
+					MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(test);
+				}
+
+			}
+		}
+	}
+	
+	CS::instance()->leave(CS_LOAD_CS, "ee");
+	CS::instance()->leave(CS_MESSAGE_CS, "e");
 }

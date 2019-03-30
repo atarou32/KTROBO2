@@ -82,7 +82,9 @@ void Gamen2_Sonotoki::setCursorY(int cursor_y) {
 		return;
 	}
 	int dd = cursor_x % cg_size;
-	cursor_ys[dd] = cursor_y;
+	if (cursor_y >= 0 && cursor_y < cursor_group[dd]->size()) {
+		cursor_ys[dd] = cursor_y;
+	}
 }
 
 void Gamen2_Sonotoki::setCursorX(int cursor_x) {
@@ -94,20 +96,20 @@ void Gamen2_Sonotoki::setCursorX(int cursor_x) {
 
 	if (this->cursor_x > cursor_x) {
 		if (cursor_x < 0) {
-			while (cursor_x < 0) {
-				cursor_x = cursor_x + cg_size;
-			}
-			this->cursor_x = cursor_x % cg_size;
+			this->cursor_x = 0;
 			return;
+		}
+		else {
+			this->cursor_x = cursor_x;
 		}
 
 	}
 	else if (this->cursor_x < cursor_x) {
 		if (cg_size <= cursor_x) {
-			while (cursor_x >= cg_size) {
-				cursor_x = cursor_x - cg_size;
-			}
-			this->cursor_x = cursor_x % cg_size;
+			this->cursor_x = cg_size - 1;
+		}
+		else {
+			this->cursor_x = cursor_x;
 		}
 	}
 
@@ -155,9 +157,9 @@ int Gamen2_Sonotoki::getCursorGroup() {
 
 void Gamen2_partGroup::cleardayo(Texture* tex, Texture* tex2) {
 	// texÇ‚textÇÃì‡óeÇ»Ç«ÇlightdeleteÇ∑ÇÈ vectorÇ‡ÉNÉäÉAÇ∑ÇÈ
-
-	CS::instance()->enter(CS_LOAD_CS, "gamen2partgroup");
 	CS::instance()->enter(CS_MESSAGE_CS, "gamen2partgroup");
+	CS::instance()->enter(CS_LOAD_CS, "gamen2partgroup");
+	
 	vector<GAMEN2_PARTGROUPSTRUCT>::iterator it =  tex_or_textindexs.begin();
 	while (it != tex_or_textindexs.end()) {
 		GAMEN2_PARTGROUPSTRUCT* ii = &(*it);
@@ -191,9 +193,9 @@ void Gamen2_partGroup::cleardayo(Texture* tex, Texture* tex2) {
 
 
 	is_use = false;
-	CS::instance()->leave(CS_MESSAGE_CS, "gamen2partgroup");
+	
 	CS::instance()->leave(CS_LOAD_CS, "gamen2partgroup");
-
+	CS::instance()->leave(CS_MESSAGE_CS, "gamen2partgroup");
 }
 
 Gamen2_part* Gamen2::getGamen2Part(int all_index) {
@@ -209,10 +211,12 @@ Gamen2_part* Gamen2::getGamen2Part(int all_index) {
 		}
 		else {
 			mylog::writelog(KTROBO::WARNING, "out of boud allindex");
+			return 0;
 		}
 	}
 	else {
-		throw new GameError(KTROBO::FATAL_ERROR, "out of boundallindex");
+		mylog::writelog(KTROBO::FATAL_ERROR, "out of boundallindex");
+		return 0;
 	}
 
 
@@ -233,6 +237,15 @@ void Gamen2::pauseWork() {
 		pp->setIsWork(false);
 		it++;
 	}
+
+	it = cpp_parts.begin();
+	while (it != cpp_parts.end()) {
+		Gamen2_part* pp = *it;
+		bool t = pp->getIsWork();
+		pp->setIsWork(false);
+		it++;
+	}
+
 
 	CS::instance()->leave(CS_LOAD_CS, "enterpause");
 
@@ -315,6 +328,67 @@ void Gamen2::setSonotokiMakeKo(int scene_id, int gamen_id) {
 	CS::instance()->leave(CS_LOAD_CS, "makeko");
 
 }
+void Gamen2_Sonotoki::getAllIndexOfGGANDONLYRENDERGROUP(set<int>* outdayo) {
+	int size = this->not_cursor_but_render_group.size();
+	for (int i = 0; i < size; i++) {
+		if (outdayo->find(not_cursor_but_render_group[i]) == outdayo->end()) {
+			outdayo->insert(not_cursor_but_render_group[i]);
+		}
+	}
+	
+	size = cursor_group.size();
+	for (int i = 0; i < size; i++) {
+		vector<int>* pp = cursor_group[i];
+		int psiz = pp->size();
+		for (int k = 0; k < psiz; k++) {
+			int ppp = (*pp)[k];
+			if (outdayo->find(ppp) == outdayo->end()) {
+				outdayo->insert(ppp);
+			}
+		}
+
+	}
+}
+void Gamen2::setSonotokiSetGroupOnlyRenderGroupFromNowSonotokiIsRender(int scene_id, int gamen_id) {
+
+	CS::instance()->enter(CS_LOAD_CS, "org");
+
+	if (sonotokis_map.find(pair<int, int>(scene_id, gamen_id)) != sonotokis_map.end()) {
+		int inde = sonotokis_map.find(pair<int, int>(scene_id, gamen_id))->second;
+		int smap = sonotokis.size();
+		if ((inde < smap) && inde >= 0) {
+			if (now_sonotoki) {
+				// now_sonotoki ÇÃÇ∑Ç◊ÇƒÇÃallindexÇonlyrendergroupÇ…ê›íËÇ∑ÇÈ
+				set<int> test;
+				now_sonotoki->getAllIndexOfGGANDONLYRENDERGROUP(&test);
+				set<int>::iterator it =  test.begin();
+				while (it != test.end()) {
+					int p = *it;
+					sonotokis[inde]->setGroupOnlyRenderGroup(p);
+					it++;
+				}
+				
+			}
+			else {
+				mylog::writelog(KTROBO::WARNING, "there is no nowsonotoki");
+			}
+		}
+		else {
+			CS::instance()->leave(CS_LOAD_CS, "org");
+			throw new GameError(FATAL_ERROR, "org vector error");
+		}
+	}
+	else {
+		CS::instance()->leave(CS_LOAD_CS, "org");
+		throw new GameError(FATAL_ERROR, "org dont find");
+	}
+
+
+
+	CS::instance()->leave(CS_LOAD_CS, "org");
+
+}
+
 void Gamen2::setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int all_index) {
 	// rock load
 	// rock load
@@ -427,6 +501,30 @@ void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* al
 		(*cpp_parts)[i]->setIsWorkAndRender(false);
 	}
 
+	int nsize = not_cursor_but_render_group.size();
+	for (int i = 0; i < nsize; i++) {
+		int inde = not_cursor_but_render_group[i];
+		if ((asize > inde) && (inde >= 0) && (inde < KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET)) {
+			Gamen2_part* pg = (*all_parts)[inde];
+			pg->setIsWorkAndRender(true);
+			pg->setIsWork(false);
+		}
+		else if (inde >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET) {
+			int cppinde = inde - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+			if ((cppinde >= 0) && (cppinde < cppsize)) {
+				Gamen2_part* pp = (*cpp_parts)[cppinde];
+				pp->setIsWorkAndRender(true);
+				pp->setIsWork(false);
+			}
+			else {
+				mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
+			}
+		}
+		else {
+			mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
+		}
+	}
+
 	int xsize = cursor_group.size();
 	for (int i = 0; i < xsize; i++) {
 		vector<int>* gg = cursor_group[i];
@@ -455,29 +553,7 @@ void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* al
 
 	}
 
-	int nsize = not_cursor_but_render_group.size();
-	for (int i = 0; i < nsize; i++) {
-		int inde = not_cursor_but_render_group[i];
-		if ((asize > inde) && (inde >= 0) && (inde < KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET)) {
-			Gamen2_part* pg = (*all_parts)[inde];
-			pg->setIsWorkAndRender(true);
-			pg->setIsWork(false);
-		}
-		else if (inde >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET) {
-			int cppinde = inde - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
-			if ((cppinde >= 0) && (cppinde < cppsize)) {
-				Gamen2_part* pp = (*cpp_parts)[cppinde];
-				pp->setIsWorkAndRender(true);
-				pp->setIsWork(false);
-			}
-			else {
-				mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
-			}
-		}
-		else {
-			mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
-		}
-	}
+	
 
 
 }
@@ -813,6 +889,7 @@ bool Gamen2::getPartsGroupTenmetuFinished(int group_index) {
 }
 
 void Gamen2::Del() {
+	CS::instance()->enter(CS_MESSAGE_CS, "test");
 	CS::instance()->enter(CS_LOAD_CS, "gamen2 del");
 	cpp_parts.clear();
 	all_parts.clear();
@@ -851,7 +928,7 @@ void Gamen2::Del() {
 	events.clear();
 
 	CS::instance()->leave(CS_LOAD_CS, "gamen2 del");
-
+	CS::instance()->leave(CS_MESSAGE_CS, "test");
 
 }
 
