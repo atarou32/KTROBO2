@@ -100,6 +100,7 @@ Game::Game(void)
 	lua_ets = 0;
 	rmap = 0;
 	g2s = 0;
+	user_data = 0;
 }
 
 
@@ -420,7 +421,7 @@ bool Game::Init(HWND hwnd) {
 	//mesh_instanceds->setSkeleton(mesh);
 	
 	
-	
+	user_data = new UserData();
 	
 	MYMATRIX kakeru;
 	MyMatrixIdentity(kakeru);
@@ -755,6 +756,10 @@ void Game::Del() {
 		te = 0;
 	}
 */
+		if (user_data) {
+			delete user_data;
+			user_data = 0;
+		}
 
 	if (messages) {
 		delete messages;

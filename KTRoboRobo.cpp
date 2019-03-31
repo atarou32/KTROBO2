@@ -2105,6 +2105,40 @@ void Robo::init(Graphics* g, MyTextureLoader* tex_loader, AtariHantei* hantei) {
 
 	}
 
+	{
+		// ENGINE
+		ma.load("resrc/ktrobo/info/metadata/ktroboenginepartsmetadata.txt");
+		RoboDataMetaData* lweapon_md = new RoboDataMetaData();
+		RoboMetaDataPart rmdp;
+		rmdp.clear();
+		int dnum = ma.GetIntToken();
+		for (int i = 0; i < dnum; i++) {
+			rmdp.clear();
+			rmdp.readline(&ma);
+			lweapon_md->setData(rmdp.data_name, rmdp.data_name2, rmdp.data_type, rmdp.data_sentence, rmdp.data_compare);
+		}
+
+		ma.deletedayo();
+		ma.load("resrc/ktrobo/info/ktroboengineparts.txt");
+
+		engine = new RoboEngine();
+		try {
+			engine->init(&ma, lweapon_md, g, tex_loader);
+		}
+		catch (GameError* err) {
+
+			//	MessageBoxA(g->getHWND(), err->getMessage(), err->getErrorCodeString(err->getErrorCode()), MB_OK);
+			delete lweapon_md;
+			ma.deletedayo();
+			throw err;
+		}
+		delete lweapon_md;
+		ma.deletedayo();
+
+		
+
+	}
+
 
 
 	{
@@ -2226,7 +2260,7 @@ void Robo::init(Graphics* g, MyTextureLoader* tex_loader, AtariHantei* hantei) {
 		apinfo->loadFile();
 	}
 	
-
+	roboparam.Init(this);
 	roboparam.calcParam();
 
 	atarihan->calcJyusinAndR();

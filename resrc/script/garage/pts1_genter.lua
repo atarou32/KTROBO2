@@ -29,7 +29,7 @@ gamen2:setPartsGroupMoveTo(larm_gindex, 20,150,238-68,54,"2000.0")
 end
 
 
-if (pg==KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_RKARA) then
+if (pg==KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_RKATA) then
 --gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category,rshoul_gindex)
 gamen2:setPartsGroupMoveTo(rshoul_gindex, 20,150,238-68,54,"2000.0")
 end
@@ -52,6 +52,9 @@ end
 --gamen2:setSonotokiNowSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category)
 --gamen_id_now = gamen_id_parts_category
 ss_i = gamen2:getNowSonotokiCursorGroup()
+if ((ss_i <start_index) or (ss_i >end_index)) then
+ss_i = start_index
+end
 
 if (ss_i > start_index) then
 gamen2:setPartsGroupMoveTo(ss_i-1,700,40,(238-68)*2+100,27,"500.0")

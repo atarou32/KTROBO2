@@ -35,27 +35,59 @@ public:
 	const char* getHelpString() {
 		return "ガレージ画面です。ここでアセンブルやショップなどの出撃の準備ができます。";
 	};
+	
 };
-
+class Garage2;
 class MyRobo_Garage2 : public Loadable2 , public Gamen2_part{
 private:
 	int tex_waku;
 	int tex_haikei;
-
+	bool toggle_render;
+	int robo_parts_tex[32];
+	int robo_parts_text[32];
 public:
 	Robo* robo;
 private:
 	void haribote_render(Graphics* g, MYMATRIX* view, MYMATRIX* proj);
+	void setRoboPartsTexText(Texture* tex2,int temp,int index, int x, int y, int tex_height, char* prefix, const char* parts_name,int tex_width);
 public:
 	MyRobo_Garage2();
 	~MyRobo_Garage2();
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
 
-	void load(Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
+	void load(Garage2* gg,Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
 
 	const char* getHelpString() {
 		return "あなたの愛情を一身に受けて大活躍するロボットです。";
 	}
+	const char* getSelectedLua() {
+		return "resrc/script/garage/modoru_now.lua";
+	}
+};
+
+class RoboParts_Info {
+public:
+	RoboMetaDataPart* metpart;
+	RoboParts* parts;
+	int tex;
+	int text;
+	RoboParts_Info() {
+		metpart = 0;
+		parts = 0;
+		tex = 0;
+		text = 0;
+	}
+	void del(Texture* tex1, Texture* tex2) {
+		if (tex) {
+			tex1->lightdeleteRenderTex(tex);
+			tex = 0;
+		}
+		if (text) {
+			tex1->lightdeleteRenderText(text);
+			text = 0;
+		}
+	}
+	
 };
 
 class ShopParts_Garage2 : public Gamen2_part, public Loadable2{
@@ -63,26 +95,42 @@ private:
 	ShopParts* sp;
 	MyTextureLoader* loader;
 	vector<Gamen2_partGroup*> pgs;
+	RoboParts_Info parts_info[32];
+	int parts_info_max;
+
 	int tex_waku;
 	int tex_haikei;
+	bool toggle_render;
+	int parts_index;
 public:
 	int parts_category;
 	int parts_category2;
-	ShopParts_Garage2(int p, int p2, MyTextureLoader* loaer) {
+	ShopParts_Garage2(int p, int p2, MyTextureLoader* loaer):Gamen2_part() {
 		parts_category = p;
 		parts_category2 = p2;
 		loader = loaer;
 		sp = 0;
 		tex_waku = 0;
 		tex_haikei = 0;
+		toggle_render = true;
+		parts_index = 0;
+		parts_info_max = 0;
+		
 	}
 	~ShopParts_Garage2();
-	void render(Graphics* g, MYMATRIX* view, MYMATRIX* proj, float dt);
+	void render(Garage2* gg2,MyRobo_Garage2* robop, Texture* tex1, Texture* tex2, Graphics* g, MYMATRIX* view, MYMATRIX* proj, float dt);
 	void load(Graphics* g);
 	void atoload(Graphics* g);
-	void makeTexDayo(MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2);
+	void makeTexDayo(Garage2* gg2, MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2);
+	void changeTexPartsDayo(Garage2* gg2,MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2);
 	void Del(Texture* tex, Texture* tex2);
-	bool buyParts(int all_index);
+	bool buyParts(int all_index, Game* g);
+	const char* getHelpString() {
+		return "選択しているパーツの外見です。ゴージャス！";
+	}
+	const char* getSelectedLua() {
+		return "resrc/script/garage/modoru_now.lua";
+	}
 };
 
 
@@ -97,6 +145,11 @@ private:
 	int help_text_waku;
 
 	int cursor_tex;
+
+	int has_gold_tex;
+	int has_gold_text;
+	int has_gold_tex_waku;
+
 
 	Gamen2_part* selected_categorypart;
 	Gamen2_part* focused_part;
@@ -122,7 +175,7 @@ public:
 	// Loadable2 を使ってみようということになった.
 
 	// ガレージ画面が始まったときに最低限ロードされていなければならないもの
-	void load(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
+	void load(Game* gg,Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
 
 	// ガレージ画面が始まってから遅れてロードしてもいいもの
 	// 主に表示部分だよね
@@ -141,7 +194,8 @@ public:
 	void pressed_button_left(Texture* tex1, Texture* tex2, Game* game);
 	void pressed_button_right(Texture* tex1, Texture* tex2, Game* game);
 	void setCursorTexPosToCursorPos(Texture* tex1, Texture* tex2, Game* game);
-	void getMessageFromLua(Texture* tex1, Texture* tex2, Game* game);
+	void getMessageFromLua(Graphics* g,Texture* tex1, Texture* tex2, Game* game);
+	void getSuutiChara(int suuti, char* chara);
 };
 class SceneGarage2 : public Scene, public INPUTSHORICLASS {
 

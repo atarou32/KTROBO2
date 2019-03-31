@@ -31,7 +31,7 @@ gamen_id_parts_category = 3
 end
 
 
-if (pg==KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_RKARA) then
+if (pg==KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_RKATA) then
 --gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category,rshoul_gindex)
 --gamen2:setPartsGroupMoveTo(rshoul_gindex, 20,150,238-68,54,"2000.0")
 gamen_id_parts_category = 3
@@ -68,7 +68,7 @@ gamen_id_parts_category = 3
 end
 
 
-if (pg==KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_RKARA) then
+if (pg==KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_RKATA) then
 gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category,rshoul_gindex)
 --gamen2:setPartsGroupMoveTo(rshoul_gindex, 20,150,238-68,54,"2000.0")
 gamen_id_parts_category = 3

@@ -11,6 +11,14 @@ UserData::UserData()
 
 UserData::~UserData()
 {
+	int siz = myitem.size();
+	for (int i = 0; i < siz; i++) {
+		if (myitem[i]) {
+			delete myitem[i];
+			myitem[i] = 0;
+		}
+	}
+	myitem.clear();
 }
 
 
@@ -95,7 +103,7 @@ void AsmBody::setHyoukaName() {
 bool UserData::buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory category) {
 	if (!parts) return false;
 
-	int daikin = parts->data->getData("price")->int_data;
+	int daikin = parts->data->getData("PRICE")->int_data;
 	if (gold < daikin) {
 		return false;
 	}

@@ -40,6 +40,7 @@
 #include "KTRoboWeaponEffect.h"
 #include "KTRoboLuaExector.h"
 #include "KTRoboGamen2.h"
+#include "KTRoboUserData.h"
 
 namespace KTROBO {
 
@@ -162,6 +163,7 @@ private:
 public:
 	EffectManagers* effect_managers;
 	WeaponEffectManager* weapon_effect_manager;
+	UserData* user_data;
 public:
 	EffectSuuji* effect_suuji;
 //	Sinai* sinai;
@@ -178,6 +180,8 @@ public:
 public:
 	Game(void);
 	~Game(void);
+
+	UserData* getUserData() { return user_data; };
 
 public:
 	bool Init(HWND hwnd);
