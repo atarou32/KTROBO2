@@ -1872,7 +1872,76 @@ void Robo::settyakuBoosterWithLeg() {
 
 }
 
+void Robo::initWithOutLoadingParts(Graphics* g, MyTextureLoader* loader) {
+	screen_height = g->getScreenHeight();
+	head = 0;
+	body = 0;
+	leg = 0;
+	arm = 0;
+	raweapon = 0;
+	laweapon = 0;
+	rsweapon = 0;
+	lsweapon = 0;
+	iweapon = 0;
+	fcs = 0;
+	booster = 0;
+	engine = 0;
+	// headparts のメタデータの読み込み
+	atarihan = new UMeshUnit();
+	this->remakeUMesh(g, loader);
 
+
+	anime_loop_leg.setAnime(10, 30, true);
+	anime_loop_leg.setTimeAndSpeed(0.01, 0);
+	//	world = atarihan->world;
+	ap = new ArmPositioner(3.14 / 60000, 3.14 / 3, 0.62);
+	ap->setTheta(0.96429, -0.92417, 0.1193, 0, 0.20, 0.19);
+	aphelper = new ArmPositionerHelper(this, ap, true);
+
+	ap_hidari = new ArmPositioner(3.14 / 60000, 3.14 / 3, 0.62);
+	ap_hidari->setTheta(0.96429, -0.92417, 0.1193, 0, 0.20, 0.19);
+	aphelper_hidari = new ArmPositionerHelper(this, ap_hidari, false);
+
+	roboparam.Init(this);
+	roboparam.calcParam();
+
+	atarihan->calcJyusinAndR();
+
+}
+
+void Robo::loadFCS() {
+	if (apinfo) {
+		delete apinfo;
+		apinfo = 0;
+	}
+
+	if (fcs) {
+		apinfo = new ArmPointIndexInfo(fcs->data->getData("LOCKFILE")->string_data,
+			(float)fcs->data->getData("LOCKMIND")->int_data,
+			(float)fcs->data->getData("LOCKMAXD")->int_data,
+			(float)fcs->data->getData("LOCKMINV")->int_data,
+			(float)fcs->data->getData("LOCKMAXV")->int_data,
+			(float)fcs->data->getData("LOCKMINH")->int_data,
+			(float)fcs->data->getData("LOCKMAXH")->int_data,
+			(float)fcs->data->getData("LOCKDV")->int_data,
+			(float)fcs->data->getData("LOCKDH")->int_data,
+			(float)fcs->data->getData("LOCKDD")->int_data);
+
+
+	}
+	else {
+		apinfo = new ArmPointIndexInfo("ktrobofcs6.txt", 150, 300, 30, 30, 30, 30, 6, 6, 40);//70,150,10,10,30,30,2,2,5);// 70,120,20,40,20,40,5,5,15);
+	}
+	if (apinfo->hasFile()) {
+		apinfo->loadFile();
+	}
+	else {
+		apinfo->makeNewFile();
+		apinfo->loadFile();
+	}
+
+	
+}
 void Robo::init(Graphics* g, MyTextureLoader* tex_loader, AtariHantei* hantei) {
 	/*	Mesh* head;
 		Mesh* body;

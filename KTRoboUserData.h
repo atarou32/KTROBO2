@@ -8,61 +8,49 @@
 namespace KTROBO {
 
 #define KTROBO_USERDATA_ASMBODY_MAX 16
-#define KTROBO_USERDATA_ITEM_MAX 1024
-
-class Item;
-	// AsmRobo では　Item*　および　Robo*　の　デストラクタは呼ばない
+#define KTROBO_USERDATA_ITEM_MAX 512
+	
+class ItemWithCategory;
+	// AsmRobo では　Item* の　デストラクタは呼ばない
 class AsmRobo {
 	private:
 
-		Item* head;
-		Item* body;
-		Item* arm;
-		Item* leg;
-		Item* booster;
-		Item* engine;
-		Item* fcs;
-		Item* rarm_weapon;
-		Item* larm_weapon;
-		Item* rshoulder_weapon;
-		Item* lshoulder_weapon;
-		Item* inside_weapon;
+		ItemWithCategory* head;
+		ItemWithCategory* body;
+		ItemWithCategory* arm;
+		ItemWithCategory* leg;
+		ItemWithCategory* booster;
+		ItemWithCategory* engine;
+		ItemWithCategory* fcs;
+		ItemWithCategory* rarm_weapon;
+		ItemWithCategory* larm_weapon;
+		ItemWithCategory* rshoulder_weapon;
+		ItemWithCategory* lshoulder_weapon;
+		ItemWithCategory* inside_weapon;
 		Robo* robo;
 
-		int ap;
-		int def;
-		int e_def;
-		int max_weight;
-		int weight;
-		int energy_pool;
-		int energy_supply;
-		int energy_shuturyoku;
-		int jump_power;
-		int booster_power;
-		int booster_useenergy;
-
-		int move_speed;
-		int boost_speed;
-		int on_speed;
-
-
 	public:
-		AsmRobo() {};
+		AsmRobo() {
+			robo = new Robo();
+			head = 0;
+			body = 0;
+			arm = 0;
+			leg = 0;
+			booster = 0;
+			engine = 0;
+			fcs = 0;
+			rarm_weapon = 0;
+			larm_weapon = 0;
+			rshoulder_weapon = 0;
+			lshoulder_weapon = 0;
+			inside_weapon = 0;
+		};
 		~AsmRobo() {};
-		void setHead(Item* h) {};
-		void setBody(Item* h) {};
-		void setLeg(Item* h) {};
-		void setArm(Item* h) {};
-		void setBooster(Item* h) {};
-		void setEngine(Item* h) {};
-		void setFCS(Item* h) {};
-		void setRArmWeapon(Item* h) {};
-		void setLArmWeapon(Item* h) {};
-		void setRShoulderWeapon(Item* h) {};
-		void setLShoulderWeapon(Item* h) {};
-		void setRobo(Robo* robo) {};
-
-		void setParam() {};
+		void initRobo(Graphics* g, MyTextureLoader* loader) {
+			robo->initWithOutLoadingParts(g, loader);
+		}
+		void setItemWithCategory(ItemWithCategory* i);
+		bool hanneiItemToRobo(); // ロボにメッシュまでを反映させる　できなかったらfalseを返す
 
 };
 
@@ -112,7 +100,6 @@ private:
 	string hyouka_name;
 
 	void setHyoukaName();
-	void hyouka() {};
 
 public:
 	AsmBody() {};
@@ -123,10 +110,12 @@ public:
 
 
 class Item : public Loadable2 {
+
 private:
 	int item_id;
 	int parts_id;
 	RoboParts* part;
+
 	bool is_equiped; // 出撃する機体のパーツのときは
 	bool is_part_loaded;
 public:
@@ -136,40 +125,27 @@ public:
 		is_part_loaded = false;
 		parts_id = 0;
 		part = 0;
-	};
-	~Item() {};
-	enum ITEM_SOUBI_KASHO {
-		UNKNOWN = 0,
-		HEAD = 1,
-		BODY = 2,
-		ARM = 3,
-		LEG = 4,
-		BOOSTER = 5,
-		ENGINE = 6,
-		FCS = 7,
-		RARMWEAPON = 8,
-		LARMWEAPON = 9,
-		RSWEAPON = 10,
-		LSWEAPON = 11,
-		INSIDE = 12,
-	};
-
-	ITEM_SOUBI_KASHO kasho;
-
-	void init(RoboParts* parts) {
 	
 	};
-	void init(int item_id) {}; // userdat ファイルから読み込む
-	void release() {};
+	~Item() {};
+	
 
-	void equip(Robo* robo) {}; // robo に装備させる
-};
+	void setParts(RoboParts* parts) {
+		this->part = parts;
+		parts_id = this->part->data->getData("id")->int_data;
+		this->is_part_loaded = true;
+		setLoaded();
+	}
+	
+	void release() {
+		if (part) {
+			part->Release();
+			delete part;
+			part = 0;
+		}
+	};
 
-
-struct ShopPartsInfo {
-	string parts_name;
-	string category;
-	int price;
+	
 };
 
 
@@ -181,6 +157,7 @@ private:
 	vector<RoboDataMetaData*> iden_meta_datas;
 	MyTextureLoader* tex_loader;
 
+	
 public:
 	// roboparts を外部で使用するときは　shopparts->hasloaded を呼んでロードされたのを確認してから関数を呼ぶ
 	// もしまだロードされていなければ　商品の整理中です　みたいなダイアログを出しておく
@@ -197,8 +174,7 @@ public:
 		}
 		return 0;
 	}
-	void getShopPartsInfo(int index, ShopPartsInfo* info) {};
-
+	
 	enum PartsListCategory {
 		UNKNOWN = 0,
 		HEAD = 1,
@@ -282,7 +258,6 @@ public:
 	ShopParts(PartsListCategory cat, MyTextureLoader* loader) {
 		category = cat;
 		tex_loader = loader;
-		
 	};
 	~ShopParts() {
 		int size = parts_list.size();
@@ -307,13 +282,41 @@ public:
 	};
 	void atoload(Graphics* g); // meshパーツのロード
 	void load(Graphics* g);
+public:
+	static RoboParts* constructParts(PartsListCategory category);
 private:
-	RoboParts* constructParts();
 	char* getMetaDataName();
 	char* getDataName();
+private:
 	void loadInside(Graphics* g);
 };
 
+class ItemWithCategory:public Loadable2 {
+public:
+	Item* item;
+	ShopParts::PartsListCategory category;
+	string metadata_filename;
+	string parts_filename;
+	int parts_node_index; // parts_filenameの何番目に書いてあるか
+public:
+	ItemWithCategory(int item_id, ShopParts::PartsListCategory categ, const char* metadata_f, const char* parts_f, int parts_node_index) {
+		item = new Item(item_id);
+		category = categ;
+		metadata_filename = metadata_f;
+		parts_filename = parts_f;
+		this->parts_node_index =parts_node_index;
+	}
+
+	~ItemWithCategory() {
+		if (item) {
+			delete item;
+			item = 0;
+		}
+	}
+
+	void loadRoboParts(Graphics* g, MyTextureLoader* loader);
+
+};
 
 
 
@@ -324,7 +327,8 @@ class UserData
 {
 private:
 	int gold;
-	vector<Item*> myitem;
+	vector<ItemWithCategory*> myitem;
+	vector<
 public:
 	UserData();
 	~UserData();

@@ -1,5 +1,6 @@
 #include "KTRoboUserData.h"
 #include "MyTextureLoader.h"
+#include "KTRoboLoadable.h"
 
 using namespace KTROBO;
 
@@ -102,14 +103,28 @@ void AsmBody::setHyoukaName() {
 
 bool UserData::buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory category) {
 	if (!parts) return false;
-
 	int daikin = parts->data->getData("PRICE")->int_data;
 	if (gold < daikin) {
 		return false;
 	}
-	Item* newite = new Item(this->myitem.size());
-	newite->init(parts);
-	myitem.push_back(newite);
+	if (parts->getFilenameSet()) {
+		ItemWithCategory* ii = new ItemWithCategory();
+		ii->category = category;
+		ii->metadata_filename = parts->getMetadataFilename();
+		ii->parts_filename = parts->getPartsFilename();
+		ii->parts_node_index = parts->getPIndex();
+		
+
+		Item* newite = new Item(this->myitem.size());
+		//newite->init(parts); // item のパーツは個々にロードする
+		ii->item = newite;
+		myitem.push_back(ii);
+	}
+	else {
+		mylog::writelog(KTROBO::WARNING, "parts filename no set\n");
+		return false;
+	}
+
 	gold = gold - daikin;
 	return true;
 
@@ -169,12 +184,13 @@ void ShopParts::loadInside(Graphics* g) {
 			}
 
 			ma.deletedayo();
-
+			int pindex = 0;
 			ma.load(dfile[i]);
 			while (!ma.enddayo()) {
-				RoboParts* head = constructParts();
+				RoboParts* head = constructParts(category);
 				try {
 					head->init(&ma, head_md, g, tex_loader,false);
+					head->setFilenameAndIndex(pindex, dfile[i], mdfile[i]);
 				}
 				catch (GameError* err) {
 					if (err->getErrorCode() == KTROBO::WARNING) {
@@ -191,6 +207,7 @@ void ShopParts::loadInside(Graphics* g) {
 				
 				this->parts_list.push_back(head);
 				this->meta_datas.push_back(head_md);
+				pindex++;
 			//	ma.SkipNode();
 			}
 			ma.deletedayo();
@@ -201,7 +218,7 @@ void ShopParts::loadInside(Graphics* g) {
 	}
 
 }
-RoboParts* ShopParts::constructParts() {
+RoboParts* ShopParts::constructParts(ShopParts::PartsListCategory category) {
 	if (category == ShopParts::PartsListCategory::HEAD) {
 		return new RoboHead();
 	}
@@ -273,12 +290,13 @@ void ShopParts::load(Graphics* g) {
 		}
 
 		ma.deletedayo();
-
+		int pindex = 0;
 		ma.load(dfile);
 		while (!ma.enddayo()) {
-			RoboParts* head = constructParts();
+			RoboParts* head = constructParts(category);
 			try {
 				head->init(&ma, head_md, g, tex_loader,false);
+				head->setFilenameAndIndex(pindex, dfile, mdfile);
 			}
 			catch (GameError* err) {
 				if (err->getErrorCode() == KTROBO::WARNING) {
@@ -295,6 +313,7 @@ void ShopParts::load(Graphics* g) {
 		
 			this->parts_list.push_back(head);
 			meta_datas.push_back(head_md);
+			pindex++;
 			//ma.SkipNode();
 		}
 		ma.deletedayo();
@@ -620,3 +639,234 @@ char* ShopParts::getDataName() {
 }
 
 
+void ItemWithCategory::loadRoboParts(Graphics* g, MyTextureLoader* tex_loader) {
+	if (this->item) {
+		const char* mdfile = this->metadata_filename.c_str();
+		const char* dfile = this->parts_filename.c_str();
+
+		MyTokenAnalyzer ma;
+		{
+			ma.load(mdfile);
+			RoboDataMetaData* head_md = new RoboDataMetaData();
+			RoboMetaDataPart rmdp;
+			rmdp.clear();
+			int dnum = ma.GetIntToken();
+			for (int i = 0; i < dnum; i++) {
+				rmdp.clear();
+				rmdp.readline(&ma);
+				head_md->setData(rmdp.data_name, rmdp.data_name2, rmdp.data_type, rmdp.data_sentence, rmdp.data_compare);
+			}
+
+			ma.deletedayo();
+			
+			ma.load(dfile);
+			while (!ma.enddayo()) {
+
+				for (int i = 0; i < this->parts_node_index; i++) {
+					ma.SkipNode();
+				}
+
+				RoboParts* head = ShopParts::constructParts(this->category);
+				try {
+					head->init(&ma, head_md, g, tex_loader, false);
+					head->setFilenameAndIndex(parts_node_index, dfile, mdfile);
+				}
+				catch (GameError* err) {
+					if (err->getErrorCode() == KTROBO::WARNING) {
+						delete err;
+						head->Release();
+						delete head;
+						continue;
+					}
+					//	MessageBoxA(g->getHWND(), err->getMessage(), err->getErrorCodeString(err->getErrorCode()), MB_OK);
+					delete head_md;
+					ma.deletedayo();
+					throw err;
+				}
+				this->item->setParts(head);
+
+				//this->parts_list.push_back(head);
+				//meta_datas.push_back(head_md);
+				//pindex++;
+				//ma.SkipNode();
+			}
+			ma.deletedayo();
+			//delete head_md;
+			//iden_meta_datas.push_back(head_md);
+		}
+
+		setLoaded();
+
+	}
+
+
+}
+
+
+void AsmRobo::setItemWithCategory(ItemWithCategory* i) {
+	if (!i) return;
+	switch (i->category) {
+	case ShopParts::PartsListCategory::ARM:
+		arm = i;
+		break;
+	case ShopParts::PartsListCategory::BODY:
+		body = i;
+		break;
+	case ShopParts::PartsListCategory::BOOSTER:
+		booster = i;
+		break;
+	case ShopParts::PartsListCategory::ENGINE:
+		engine = i;
+		break;
+	case ShopParts::PartsListCategory::FCS:
+		fcs = i;
+		break;
+	case ShopParts::PartsListCategory::HEAD:
+		head = i;
+		break;
+	case ShopParts::PartsListCategory::INSIDE_WEAPON:
+		inside_weapon = i;
+		break;
+	default:
+		if ((i->category >= ShopParts::PartsListCategory::LEG_START) && (i->category <= ShopParts::PartsListCategory::LEG_END)) {
+			leg = i;
+		}
+		if ((i->category >= ShopParts::PartsListCategory::LARMWEAPON_START) && (i->category <= ShopParts::PartsListCategory::LARMWEAPON_END)) {
+			larm_weapon = i;
+		}
+		if ((i->category >= ShopParts::PartsListCategory::RARMWEAPON_START) && (i->category <= ShopParts::PartsListCategory::RARMWEAPON_END)) {
+			rarm_weapon = i;
+		}
+		if ((i->category >= ShopParts::PartsListCategory::LKATAWEAPON_START) && (i->category <= ShopParts::PartsListCategory::LKATAWEAPON_END)) {
+			lshoulder_weapon = i;
+		}
+		if ((i->category >= ShopParts::PartsListCategory::RKATAWEAPON_START) && (i->category <= ShopParts::PartsListCategory::RKATAWEAPON_END)) {
+			rshoulder_weapon = i;
+		}
+
+	}
+
+}
+
+bool AsmRobo::hanneiItemToRobo() {
+	if (robo) {
+		// inside rarm larm rkata lkata のみ　0になってるときに外す
+		// ほかの部位に関しては　元のままにする
+		if (!rarm_weapon) {
+			RoboPartsEmpty emp;
+			emp.emptyRArmWeapon(robo, true);
+		}
+		if (!larm_weapon) {
+			RoboPartsEmpty emp;
+			emp.emptyLArmWeapon(robo, true);
+		}
+
+		if (!lshoulder_weapon) {
+			RoboPartsEmpty emp;
+			emp.emptyLShoulderWeapon(robo, true);
+		}
+		if (!rshoulder_weapon) {
+			RoboPartsEmpty emp;
+			emp.emptyRShoulderWeapon(robo, true);
+		}
+
+		if (!inside_weapon) {
+			RoboPartsEmpty emp;
+			emp.emptyInsideWeapon(robo, true);
+		}
+
+		if (head) {
+			if (head->hasLoaded()) {
+				head->item->equip(robo);
+			}
+			else {
+				return false;
+			}
+		}
+
+		if (body) {
+			if (body->hasLoaded()) {
+				body->item->equip(robo);
+			}
+			else {
+				return false;
+			}
+		}
+
+		if (arm) {
+			if (arm->hasLoaded()) {
+				arm->item->equip(robo);
+			}
+			else {
+				return false;
+			}
+		}
+
+		if (leg) {
+			if (leg->hasLoaded()) {
+				leg->item->equip(robo);
+			}
+			else {
+				return false;
+			}
+		}
+
+		if (this->booster) {
+			if (booster->hasLoaded()) {
+				booster->item->equip(robo);
+			}
+			else {
+				return false;
+			}
+		}
+
+		if (engine) {
+			if (engine->hasLoaded()) {
+				engine->item->equip(robo);
+			}
+			else {
+				return false;
+			}
+		}
+
+		if (fcs) {
+			if (fcs->hasLoaded()) {
+				fcs->item->equip(robo);
+			}
+		}
+
+		if (rarm_weapon) {
+			if (rarm_weapon->hasLoaded()) {
+				rarm_weapon->item->equip(robo);
+			}
+		}
+		if (larm_weapon) {
+			if (larm_weapon->hasLoaded()) {
+				larm_weapon->item->equip(robo);
+			}
+		}
+
+		if (lshoulder_weapon) {
+			if (lshoulder_weapon->hasLoaded()) {
+				lshoulder_weapon->item->equip(robo);
+			}
+		}
+		if (rshoulder_weapon) {
+			if (rshoulder_weapon->hasLoaded()) {
+				rshoulder_weapon->item->equip(robo);
+			}
+		}
+
+		if (inside_weapon) {
+			if (inside_weapon->hasLoaded()) {
+				inside_weapon->item->equip(robo);
+			}
+		}
+
+
+
+	}
+
+
+
+}

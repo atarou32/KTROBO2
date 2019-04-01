@@ -177,10 +177,24 @@ public:
 	RoboData* data;
 protected:
 	bool mesh_loaded;
+	string parts_filename;
+	string metadata_filename;
+	int parts_node_index;
+	bool filename_set;
 public:
-	RoboParts() {data = 0;mesh_loaded=false;}
+	RoboParts() { data = 0; mesh_loaded = false; parts_node_index = 0; filename_set = false; }
 	virtual ~RoboParts();
-	
+	void setFilenameAndIndex(int index, string parts_filename, string metadata_filename) {
+		parts_node_index = index;
+		this->parts_filename = parts_filename;
+		this->metadata_filename = metadata_filename;
+		filename_set = true;
+	};
+	bool getFilenameSet() { return filename_set; };
+	const char* getPartsFilename() { return parts_filename.c_str(); };
+	const char* getMetadataFilename() { return metadata_filename.c_str(); };
+	int getPIndex() { return parts_node_index; };
+
 	virtual float getR(){return 1;};
 	virtual MYVECTOR3 getC() {return MYVECTOR3(0,0,0);} 
 	void loadData(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data);
@@ -1767,6 +1781,8 @@ public:
 	void byouga(Graphics* g, MYMATRIX* view, MYMATRIX* proj);
 	void byougaRay(Graphics* g, MYMATRIX* view, MYMATRIX* proj);
 
+	void initWithOutLoadingParts(Graphics* g, MyTextureLoader* loader);
+	void loadFCS();
 	void init(Graphics* g, MyTextureLoader* tex_loader, AtariHantei* hantei);
 	void release();
 	void atarishori(Graphics* g , MYMATRIX* view, AtariHantei* hantei, float dt, int stamp);
