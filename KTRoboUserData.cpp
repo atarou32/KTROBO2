@@ -37,8 +37,218 @@ void UserData::Init(Graphics* g, MyTextureLoader* loader) {
 	
 
 }
-void UserData::loadAsmBodyFile(int file_id) {
 
+
+
+void UserData::getSuutiChara(int suuti, char* chara) {
+	int temp = 0;
+	if (suuti < 0) {
+		chara[temp] = '-';
+		temp++;
+		suuti *= -1;
+	}
+	int suut = suuti;
+	int keta = 0;
+	while (suut > 0) {
+		suut = suut / 10;
+		keta++;
+	}
+	if (keta == 0) {
+		chara[temp] = '0';
+		temp++;
+		chara[temp] = '\0';
+		return;
+	}
+	suut = suuti;
+	int tt = keta;
+	while (keta > 0) {
+		int amari = suut % 10;
+		if (amari == 0) {
+			chara[temp + keta - 1] = '0';
+		}
+		else if (amari == 1) {
+			chara[temp + keta - 1] = '1';
+		}
+		else if (amari == 2) {
+			chara[temp + keta - 1] = '2';
+		}
+		else if (amari == 3) {
+			chara[temp + keta - 1] = '3';
+		}
+		else if (amari == 4) {
+			chara[temp + keta - 1] = '4';
+		}
+		else if (amari == 5) {
+			chara[temp + keta - 1] = '5';
+		}
+		else if (amari == 6) {
+			chara[temp + keta - 1] = '6';
+		}
+		else if (amari == 7) {
+			chara[temp + keta - 1] = '7';
+		}
+		else if (amari == 8) {
+			chara[temp + keta - 1] = '8';
+		}
+		else if (amari == 9) {
+			chara[temp + keta - 1] = '9';
+		}
+		suut = suut / 10;
+		keta--;
+	}
+	chara[temp + tt] = 0;
+	return;
+
+
+}
+
+void UserData::loadAsmBodyFile(int file_id) {
+	if ((file_id < 0) || (file_id >= KTROBO_USERDATA_ASMBODY_MAX)) return;
+
+	char str[1024];
+	FILE* file;
+	memset(str, 0, 1024);
+	getSuutiChara(file_id, str);
+	string filename = string("userdata/asm") + string(str) + string(".myasm");
+	CS::instance()->enter(CS_LOG_CS, "loadasm");
+	if (0 != fopen_s(&file, filename.c_str(), "r")) {
+		CS::instance()->leave(CS_LOG_CS, "loadasm");
+		return;
+	}
+
+	fclose(file);
+	CS::instance()->leave(CS_LOG_CS, "loadasm");
+	MyTokenAnalyzer ma;
+	if (ma.load(filename.c_str())) {
+		while (!ma.enddayo()) {
+			ma.GetToken();
+			if (strcmp(ma.Toke(), "head") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "body") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "arm") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "leg") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "booster") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "fcs") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "engine") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "rarm") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "larm") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "rkata") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "lkata") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+			else if (strcmp(ma.Toke(), "inside") == 0) {
+				asms[file_id].arobo.setItemWithCategory(
+					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+			}
+		}
+	}
+
+}
+void AsmBody::saveToFile(const char* filename) {
+	arobo.saveToFile(filename);
+
+
+}
+void AsmRobo::saveToFile(const char* filename) {
+	if (head) {
+		mylog::writelog(filename, "head=%d;\n", head->item->getItemId());
+	}
+	if (body) {
+		mylog::writelog(filename, "body=%d;\n", body->item->getItemId());
+	}
+	if (leg) {
+		mylog::writelog(filename, "leg=%d;\n", leg->item->getItemId());
+	}
+	if (arm) {
+		mylog::writelog(filename, "arm=%d;\n", arm->item->getItemId());
+	}
+
+	if (booster) {
+		mylog::writelog(filename, "booster=%d;\n", booster->item->getItemId());
+	}
+
+	if (engine) {
+		mylog::writelog(filename, "engine=%d;\n", engine->item->getItemId());
+	}
+	if (fcs) {
+		mylog::writelog(filename, "fcs=%d;\n", fcs->item->getItemId());
+	}
+
+	if (rarm_weapon) {
+		mylog::writelog(filename, "rarm=%d;\n", rarm_weapon->item->getItemId());
+	}
+	if (larm_weapon) {
+		mylog::writelog(filename, "larm=%d;\n", larm_weapon->item->getItemId());
+	}
+
+	if (rshoulder_weapon) {
+		mylog::writelog(filename, "rkata=%d;\n", rshoulder_weapon->item->getItemId());
+	}
+
+	if (lshoulder_weapon) {
+		mylog::writelog(filename, "lkata=%d;\n", lshoulder_weapon->item->getItemId());
+	}
+
+	if (inside_weapon) {
+		mylog::writelog(filename, "inside=%d;\n", inside_weapon->item->getItemId());
+	}
+
+
+
+}
+
+void UserData::writeAsmBodyFile(int file_id, AsmBody* ab) {
+	char str[1024];
+	FILE* file;
+	memset(str, 0, 1024);
+	getSuutiChara(file_id, str);
+	string filename = string("userdata/asm") + string(str) + string(".myasm");
+	if (ab) {
+		CS::instance()->enter(CS_LOG_CS, "saveasm");
+		if (0 != fopen_s(&file, filename.c_str(), "w")) {
+			CS::instance()->leave(CS_LOG_CS, "saveasm");
+			return;
+		}
+
+		fclose(file);
+
+		
+		ab->saveToFile(filename.c_str());
+
+
+		CS::instance()->leave(CS_LOG_CS, "loaditem");
+	}
 }
 
 
@@ -46,6 +256,7 @@ void UserData::saveItemFile() {
 	FILE* file;
 	const char* filename = "userdata/item.mydat";
 	int size = myitem.size();
+	CS::instance()->enter(CS_LOAD_CS, "enter");
 	CS::instance()->enter(CS_LOG_CS, "saveitem");
 	if (0 != fopen_s(&file, filename, "w")) {
 		CS::instance()->leave(CS_LOG_CS, "saveitem");
@@ -53,20 +264,28 @@ void UserData::saveItemFile() {
 	}
 
 	fclose(file);
-	
-	
-	mylog::writelog(filename, "%d;\n", myitem.size());
+	int tempp = 0;
 	for (int i = 0; i < size; i++) {
-		mylog::writelog(filename, "{\n");
-		mylog::writelog(filename, "pindex=%d;\n", myitem[i]->parts_node_index);
-		mylog::writelog(filename, "metadata_filename=\"%s\";\n", myitem[i]->metadata_filename.c_str());
-		mylog::writelog(filename, "parts_filename=\"%s\";\n", myitem[i]->parts_filename.c_str());
-		mylog::writelog(filename, "category=%d;\n", (int)myitem[i]->category);
-		mylog::writelog(filename, "itemID=%d;\n", myitem[i]->item->getItemId());
-		mylog::writelog(filename, "partsID=%d;\n", myitem[i]->item->getPartsId());
-		mylog::writelog(filename, "}\n");
+		if (!myitem[i]->is_erased()) {
+			tempp++;
+		}
+	}
+	
+	mylog::writelog(filename, "%d;\n", tempp);
+	for (int i = 0; i < size; i++) {
+		if (!myitem[i]->is_erased()) {
+			mylog::writelog(filename, "{\n");
+			mylog::writelog(filename, "pindex=%d;\n", myitem[i]->parts_node_index);
+			mylog::writelog(filename, "metadata_filename=\"%s\";\n", myitem[i]->metadata_filename.c_str());
+			mylog::writelog(filename, "parts_filename=\"%s\";\n", myitem[i]->parts_filename.c_str());
+			mylog::writelog(filename, "category=%d;\n", (int)myitem[i]->category);
+			mylog::writelog(filename, "itemID=%d;\n", myitem[i]->item->getItemId());
+			mylog::writelog(filename, "partsID=%d;\n", myitem[i]->item->getPartsId());
+			mylog::writelog(filename, "}\n");
+		}
 	}
 	CS::instance()->leave(CS_LOG_CS, "saveitem");
+	CS::instance()->leave(CS_LOAD_CS, "enter");
 }
 
 
@@ -1033,3 +1252,10 @@ bool AsmRobo::hanneiItemToRobo(Graphics* g, MyTextureLoader* loader) {
 	return true;
 
 }
+
+
+
+
+	
+	
+	

@@ -58,7 +58,7 @@ public:
 		}
 		void setItemWithCategory(ItemWithCategory* i);
 		bool hanneiItemToRobo(Graphics* g , MyTextureLoader* tex_loader); // ロボにメッシュまでを反映させる　できなかったらfalseを返す
-
+		void saveToFile(const char* filename);
 };
 
 class AsmBody : public Loadable2 {
@@ -66,8 +66,6 @@ class AsmBody : public Loadable2 {
 public:
 	AsmRobo arobo;
 private:
-	string filename;
-	int file_id;
 public:
 	enum AsmRank {
 		UNKNOWN = 0,
@@ -121,7 +119,7 @@ public:
 		soukou_rank = E;
 	};
 	~AsmBody() {};
-
+	void saveToFile(const char* filename);
 	string getHyoukaName() { return hyouka_name; };
 };
 
@@ -314,6 +312,8 @@ private:
 };
 
 class ItemWithCategory:public Loadable2 {
+private:
+	bool is_save;
 public:
 	Item* item;
 	ShopParts::PartsListCategory category;
@@ -327,6 +327,7 @@ public:
 		metadata_filename;// = metadata_f;
 		parts_filename;// = parts_f;
 		this->parts_node_index = 0;// parts_node_index;
+		is_save = true;
 	}
 
 	~ItemWithCategory() {
@@ -335,7 +336,10 @@ public:
 			item = 0;
 		}
 	}
-
+	bool is_erased() { return !is_save; };
+	void erase() {
+		is_save = false;
+	}
 	void loadRoboParts(Graphics* g, MyTextureLoader* loader);
 
 };
@@ -353,18 +357,18 @@ private:
 	map<int, int> item_id_to_index_map;
 	int item_max_id;
 
-	AsmBody asms[KTROBO_USERDATA_ASMBODY_MAX];
-
+	AsmBody asms[KTROBO_USERDATA_ASMBODY_MAX]; // 0が現在の　パーツ構成となる
+	void getSuutiChara(int suuti, char* chara);
 public:
 	UserData();
 	~UserData();
 
 
-	void saveAsmBodyFile(AsmBody* save_ab) {}; // 最初のデフォルトの機体構成はアセンブルボディがない場合　
+	//void saveAsmBodyFile(); // 最初のデフォルトの機体構成はアセンブルボディがない場合　
 	// アセンブルボディが多すぎるときは例外を投げる　
 	// この関数を呼ぶところで例外をキャッチして　メッセージをダイアログに投げる
 	// ロードした時になってる構成もアセンブルボディで書く
-	void overWriteAsmBodyFile(int file_id, AsmBody* ab) {};
+	void writeAsmBodyFile(int file_id, AsmBody* ab);
 	void Init(Graphics* g, MyTextureLoader* loader);
 	void loadAsmBodyFile(int file_id);
 	void loadItemFile();
@@ -374,11 +378,8 @@ public:
 
 
 	bool buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory category);
-	void sellItemInShop(int item_id, Item* i) {}; // AsmBodyfileに使っているものであれば警告を出す
+	void sellItemInShop(int item_id, Item* i) {}; // AsmBodyfileに使っているものであれば消させない
 
-
-	void getUnLoadedItemIds(int item_ids_size, int* item_ids) {}; // ITEM_IDS_SIZE 32まで item_ids に格納する
-	Item* getItem(int item_id) {};
 	void loadItem(int item_id) {}; // parts の　mesh までロードする
 
 	bool isThisItemUsedInAllAsmBody(int item_id, Item* i) {};
