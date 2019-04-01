@@ -22,6 +22,30 @@ UserData::~UserData()
 	myitem.clear();
 }
 
+void AsmBody::init(Graphics* g, MyTextureLoader* loader) {
+	arobo.initRobo(g, loader);
+}
+
+bool AsmBody::calc() {
+	bool t  = arobo.hanneiItemToRobo();
+	if (!t) return false;
+
+	// rank 付けの仕方については　パラメータ調整をしてから考える
+	sougou_rank = S;
+	kidou_rank = B;
+	soukou_rank = A;
+	attack_rank = C;
+
+
+
+	setHyoukaName();
+	return true;
+
+
+
+
+
+}
 
 void AsmBody::setHyoukaName() {
 	// hyouka_name に　評価の文字列をセットする
@@ -695,6 +719,7 @@ void ItemWithCategory::loadRoboParts(Graphics* g, MyTextureLoader* tex_loader) {
 			//iden_meta_datas.push_back(head_md);
 		}
 
+		item->loadRoboParts(g, tex_loader);
 		setLoaded();
 
 	}
@@ -702,6 +727,28 @@ void ItemWithCategory::loadRoboParts(Graphics* g, MyTextureLoader* tex_loader) {
 
 }
 
+void Item::equip(Robo* robo, Graphics* g, MyTextureLoader* loader) {
+	if (part) {
+		if (this->hasLoaded()) {
+			part->equipRobo(robo, g, loader);
+		}
+		else {
+			mylog::writelog(KTROBO::WARNING, "there is yet loaded part in item equip\n");
+		}
+	}
+	else {
+		mylog::writelog(KTROBO::WARNING, "there is no part in item equip\n");
+	}
+}
+void Item::loadRoboParts(Graphics* g, MyTextureLoader* loader) {
+	if (part) {
+		part->loadMesh(g, loader);
+		setLoaded();
+	}
+	else {
+		mylog::writelog(KTROBO::WARNING, "there is no part in item\n");
+	}
+}
 
 void AsmRobo::setItemWithCategory(ItemWithCategory* i) {
 	if (!i) return;
@@ -748,7 +795,7 @@ void AsmRobo::setItemWithCategory(ItemWithCategory* i) {
 
 }
 
-bool AsmRobo::hanneiItemToRobo() {
+bool AsmRobo::hanneiItemToRobo(Graphics* g, MyTextureLoader* loader) {
 	if (robo) {
 		// inside rarm larm rkata lkata のみ　0になってるときに外す
 		// ほかの部位に関しては　元のままにする
@@ -777,7 +824,7 @@ bool AsmRobo::hanneiItemToRobo() {
 
 		if (head) {
 			if (head->hasLoaded()) {
-				head->item->equip(robo);
+				head->item->equip(robo,g,loader);
 			}
 			else {
 				return false;
@@ -786,7 +833,7 @@ bool AsmRobo::hanneiItemToRobo() {
 
 		if (body) {
 			if (body->hasLoaded()) {
-				body->item->equip(robo);
+				body->item->equip(robo, g, loader);
 			}
 			else {
 				return false;
@@ -795,7 +842,7 @@ bool AsmRobo::hanneiItemToRobo() {
 
 		if (arm) {
 			if (arm->hasLoaded()) {
-				arm->item->equip(robo);
+				arm->item->equip(robo, g, loader);
 			}
 			else {
 				return false;
@@ -804,7 +851,7 @@ bool AsmRobo::hanneiItemToRobo() {
 
 		if (leg) {
 			if (leg->hasLoaded()) {
-				leg->item->equip(robo);
+				leg->item->equip(robo, g, loader);
 			}
 			else {
 				return false;
@@ -813,7 +860,7 @@ bool AsmRobo::hanneiItemToRobo() {
 
 		if (this->booster) {
 			if (booster->hasLoaded()) {
-				booster->item->equip(robo);
+				booster->item->equip(robo, g, loader);
 			}
 			else {
 				return false;
@@ -822,7 +869,7 @@ bool AsmRobo::hanneiItemToRobo() {
 
 		if (engine) {
 			if (engine->hasLoaded()) {
-				engine->item->equip(robo);
+				engine->item->equip(robo, g, loader);
 			}
 			else {
 				return false;
@@ -831,35 +878,35 @@ bool AsmRobo::hanneiItemToRobo() {
 
 		if (fcs) {
 			if (fcs->hasLoaded()) {
-				fcs->item->equip(robo);
+				fcs->item->equip(robo, g, loader);
 			}
 		}
 
 		if (rarm_weapon) {
 			if (rarm_weapon->hasLoaded()) {
-				rarm_weapon->item->equip(robo);
+				rarm_weapon->item->equip(robo, g, loader);
 			}
 		}
 		if (larm_weapon) {
 			if (larm_weapon->hasLoaded()) {
-				larm_weapon->item->equip(robo);
+				larm_weapon->item->equip(robo, g, loader);
 			}
 		}
 
 		if (lshoulder_weapon) {
 			if (lshoulder_weapon->hasLoaded()) {
-				lshoulder_weapon->item->equip(robo);
+				lshoulder_weapon->item->equip(robo, g, loader);
 			}
 		}
 		if (rshoulder_weapon) {
 			if (rshoulder_weapon->hasLoaded()) {
-				rshoulder_weapon->item->equip(robo);
+				rshoulder_weapon->item->equip(robo, g, loader);
 			}
 		}
 
 		if (inside_weapon) {
 			if (inside_weapon->hasLoaded()) {
-				inside_weapon->item->equip(robo);
+				inside_weapon->item->equip(robo, g, loader);
 			}
 		}
 

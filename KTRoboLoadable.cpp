@@ -7,7 +7,7 @@ using namespace KTROBO;
 Loadable2::Loadable2()
 {
 	is_loaded = false;
-	is_loaded_only_for_thread = 0;
+	is_loaded_only_for_thread = false;
 	thread_id_for_is_loaded = 0;
 }
 
@@ -53,6 +53,12 @@ void Loadable2::setLoadedForLoopThread() {
 	}
 }
 
+void Loadable2::reset() {
+	CS::instance()->enter(CS_LOAD_CS, "loadable");
+	is_loaded = false;
+	is_loaded_only_for_thread = false;
+	CS::instance()->leave(CS_LOAD_CS, "loadable");
+}
 bool Loadable2::hasLoaded() {
 	if (getIsLoadedForLoopThread()) {
 

@@ -27,6 +27,7 @@ class AsmRobo {
 		ItemWithCategory* rshoulder_weapon;
 		ItemWithCategory* lshoulder_weapon;
 		ItemWithCategory* inside_weapon;
+public:
 		Robo* robo;
 
 	public:
@@ -50,7 +51,7 @@ class AsmRobo {
 			robo->initWithOutLoadingParts(g, loader);
 		}
 		void setItemWithCategory(ItemWithCategory* i);
-		bool hanneiItemToRobo(); // ロボにメッシュまでを反映させる　できなかったらfalseを返す
+		bool hanneiItemToRobo(Graphics* g , MyTextureLoader* tex_loader); // ロボにメッシュまでを反映させる　できなかったらfalseを返す
 
 };
 
@@ -96,13 +97,23 @@ private:
 
 	LegType leg;
 	WeaponType weapon;
-
+	
 	string hyouka_name;
-
+public:
+	void init(Graphics* g, MyTextureLoader* loader);
+	bool calc();
+private:
 	void setHyoukaName();
 
 public:
-	AsmBody() {};
+	AsmBody() {
+		weapon = BALANCE;
+		leg = LEG_T2;
+		sougou_rank = E;
+		kidou_rank = E;
+		attack_rank = E;
+		soukou_rank = E;
+	};
 	~AsmBody() {};
 
 	string getHyoukaName() { return hyouka_name; };
@@ -116,13 +127,11 @@ private:
 	int parts_id;
 	RoboParts* part;
 
-	bool is_equiped; // 出撃する機体のパーツのときは
-	bool is_part_loaded;
+	
+
 public:
 	Item(int item_id) {
 		this->item_id = item_id;
-		is_equiped = false;
-		is_part_loaded = false;
 		parts_id = 0;
 		part = 0;
 	
@@ -131,10 +140,11 @@ public:
 	
 
 	void setParts(RoboParts* parts) {
+
+		release();
+
 		this->part = parts;
 		parts_id = this->part->data->getData("id")->int_data;
-		this->is_part_loaded = true;
-		setLoaded();
 	}
 	
 	void release() {
@@ -143,8 +153,10 @@ public:
 			delete part;
 			part = 0;
 		}
+		parts_id = 0;
 	};
-
+	void equip(Robo* robo, Graphics* g, MyTextureLoader* loader);
+	void loadRoboParts(Graphics* g, MyTextureLoader* loader);
 	
 };
 
@@ -299,12 +311,12 @@ public:
 	string parts_filename;
 	int parts_node_index; // parts_filenameの何番目に書いてあるか
 public:
-	ItemWithCategory(int item_id, ShopParts::PartsListCategory categ, const char* metadata_f, const char* parts_f, int parts_node_index) {
-		item = new Item(item_id);
-		category = categ;
-		metadata_filename = metadata_f;
-		parts_filename = parts_f;
-		this->parts_node_index =parts_node_index;
+	ItemWithCategory() {
+		item = 0;// new Item(item_id);
+		category = ShopParts::PartsListCategory::UNKNOWN;// = categ;
+		metadata_filename;// = metadata_f;
+		parts_filename;// = parts_f;
+		this->parts_node_index = 0;// parts_node_index;
 	}
 
 	~ItemWithCategory() {
@@ -328,7 +340,7 @@ class UserData
 private:
 	int gold;
 	vector<ItemWithCategory*> myitem;
-	vector<
+
 public:
 	UserData();
 	~UserData();
