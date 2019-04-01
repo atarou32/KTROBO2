@@ -288,69 +288,70 @@ void Robo::remakeUMesh(Graphics* g, MyTextureLoader* tex_loader) {
 	// atarihan‚Ìumesh‚ð‚Â‚­‚é
 	MYMATRIX wor;
 	MyMatrixIdentity(wor);
-	if (body->body) {
-	UMesh* um_core = new UMesh(g,body->body->filename, tex_loader,
-		body->body,true, &wor,NULL,KTROBO_MESH_BONE_NULL,false);
-	atarihan->setUMesh(um_core);
-	atari_core = um_core;
-	}
-	if (leg->leg) {
-	UMesh* um_leg = new UMesh(g, leg->leg->filename, tex_loader,
-		leg->leg,false, &wor, body->body->Bones[body->body->BoneIndexes["legJointBone"]],body->body->BoneIndexes["legJointBone"],false);
-	atarihan->setUMesh(um_leg);
-	atari_leg = um_leg;
-	}
-	if (arm->rarm) {
-	UMesh* um_rarm = new UMesh(g,arm->rarm->filename, tex_loader,
-		arm->rarm, false, &wor,  body->body->Bones[body->body->BoneIndexes["rightArmJointBone"]],body->body->BoneIndexes["rightArmJointBone"],false);
-	atarihan->setUMesh(um_rarm);
+	if (body && leg && arm && head) {
+		if (body->body) {
+			UMesh* um_core = new UMesh(g, body->body->filename, tex_loader,
+				body->body, true, &wor, NULL, KTROBO_MESH_BONE_NULL, false);
+			atarihan->setUMesh(um_core);
+			atari_core = um_core;
+		}
+		if (leg->leg) {
+			UMesh* um_leg = new UMesh(g, leg->leg->filename, tex_loader,
+				leg->leg, false, &wor, body->body->Bones[body->body->BoneIndexes["legJointBone"]], body->body->BoneIndexes["legJointBone"], false);
+			atarihan->setUMesh(um_leg);
+			atari_leg = um_leg;
+		}
+		if (arm->rarm) {
+			UMesh* um_rarm = new UMesh(g, arm->rarm->filename, tex_loader,
+				arm->rarm, false, &wor, body->body->Bones[body->body->BoneIndexes["rightArmJointBone"]], body->body->BoneIndexes["rightArmJointBone"], false);
+			atarihan->setUMesh(um_rarm);
 
-			MyMatrixScaling(arm->rarm->rootbone_matrix_local_kakeru,1.1,1.1,1.1);
-			static int test=0;
+			MyMatrixScaling(arm->rarm->rootbone_matrix_local_kakeru, 1.1, 1.1, 1.1);
+			static int test = 0;
 			test++;
 
 			MYMATRIX wor;
 			MYMATRIX wor2;
 			MYMATRIX wor3;
-		//	MyMatrixRotationZ(wor, 3.141592f);
-		//	MyMatrixRotationX(wor2, 3.141592f);
+			//	MyMatrixRotationZ(wor, 3.141592f);
+			//	MyMatrixRotationX(wor2, 3.141592f);
 			MyMatrixRotationY(wor3, 0);//-3.141592f);
 			wor3._11 = -1;
 			MyMatrixMultiply(arm->rarm->rootbone_matrix_local_kakeru, wor3, arm->rarm->rootbone_matrix_local_kakeru);
-	//		arm->rarm->animate(40,true);
+			//		arm->rarm->animate(40,true);
 			atari_rarm = um_rarm;
 
-	}
-	if (arm->larm) {
-	UMesh* um_larm = new UMesh(g, arm->larm->filename, tex_loader,
-		arm->larm, false, &wor,  body->body->Bones[body->body->BoneIndexes["leftArmJointBone"]],body->body->BoneIndexes["leftArmJointBone"],false);
-	atarihan->setUMesh(um_larm);
-		MyMatrixScaling(arm->larm->rootbone_matrix_local_kakeru,1.1,1.1,1.1);
-	//	arm->larm->animate(40,true);
-		atari_larm = um_larm;
-	}
+		}
+		if (arm->larm) {
+			UMesh* um_larm = new UMesh(g, arm->larm->filename, tex_loader,
+				arm->larm, false, &wor, body->body->Bones[body->body->BoneIndexes["leftArmJointBone"]], body->body->BoneIndexes["leftArmJointBone"], false);
+			atarihan->setUMesh(um_larm);
+			MyMatrixScaling(arm->larm->rootbone_matrix_local_kakeru, 1.1, 1.1, 1.1);
+			//	arm->larm->animate(40,true);
+			atari_larm = um_larm;
+		}
 
-	if (head->head) {
-	UMesh* um_head = new UMesh(g, head->head->filename, tex_loader,
-		head->head, false, &wor, body->body->Bones[body->body->BoneIndexes["headJointBone"]],body->body->BoneIndexes["headJointBone"],false);
-	atarihan->setUMesh(um_head);
-	atari_head = um_head;
-	}
+		if (head->head) {
+			UMesh* um_head = new UMesh(g, head->head->filename, tex_loader,
+				head->head, false, &wor, body->body->Bones[body->body->BoneIndexes["headJointBone"]], body->body->BoneIndexes["headJointBone"], false);
+			atarihan->setUMesh(um_head);
+			atari_head = um_head;
+		}
 
-	if (head->head2) {
-	UMesh* um_head2 = new UMesh(g, head->head2->filename, tex_loader,
-		head->head2, false, &wor, body->body->Bones[body->body->BoneIndexes["headJointBone"]],body->body->BoneIndexes["headJointBone"],false);
-	atarihan->setUMesh(um_head2);
-	atari_head2  = um_head2;
-	}
+		if (head->head2) {
+			UMesh* um_head2 = new UMesh(g, head->head2->filename, tex_loader,
+				head->head2, false, &wor, body->body->Bones[body->body->BoneIndexes["headJointBone"]], body->body->BoneIndexes["headJointBone"], false);
+			atarihan->setUMesh(um_head2);
+			atari_head2 = um_head2;
+		}
 
-	if (head->head3) {
-	UMesh* um_head3 = new UMesh(g, head->head3->filename, tex_loader,
-		head->head3, false, &wor, body->body->Bones[body->body->BoneIndexes["headJointBone"]],body->body->BoneIndexes["headJointBone"],false);
-	atarihan->setUMesh(um_head3);
-	atari_head3 = um_head3;
+		if (head->head3) {
+			UMesh* um_head3 = new UMesh(g, head->head3->filename, tex_loader,
+				head->head3, false, &wor, body->body->Bones[body->body->BoneIndexes["headJointBone"]], body->body->BoneIndexes["headJointBone"], false);
+			atarihan->setUMesh(um_head3);
+			atari_head3 = um_head3;
+		}
 	}
-
 	float frames[16];
 	bool matrs[16];
 	for (int i=0;i<16;i++) {
@@ -372,14 +373,14 @@ void Robo::remakeUMesh(Graphics* g, MyTextureLoader* tex_loader) {
 	//atarihan->setXYZ(5,3,5.5);
 	atarihan->setXYZ(0,0,0);
 	atarihan->calcJyusinAndR();
-
-	if (arm->larm) {
-		arm->larm->animate(40,true);
+	if (arm) {
+		if (arm->larm) {
+			arm->larm->animate(40, true);
+		}
+		if (arm->rarm) {
+			arm->rarm->animate(40, true);
+		}
 	}
-	if (arm->rarm) {
-		arm->rarm->animate(40,true);
-	}
-
 }
 
 void Robo::atariAim(Graphics* g, MYMATRIX* view, float dt, int stamp) {

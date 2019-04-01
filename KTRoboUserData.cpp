@@ -6,7 +6,7 @@ using namespace KTROBO;
 
 UserData::UserData()
 {
-	gold = 120000;
+	gold = 12000000;
 }
 
 
@@ -26,8 +26,117 @@ void AsmBody::init(Graphics* g, MyTextureLoader* loader) {
 	arobo.initRobo(g, loader);
 }
 
-bool AsmBody::calc() {
-	bool t  = arobo.hanneiItemToRobo();
+
+void UserData::Init(Graphics* g, MyTextureLoader* loader) {
+	
+	loadItemFile();
+	for (int i = 0; i < KTROBO_USERDATA_ASMBODY_MAX; i++) {
+		asms[i].init(g, loader);
+		loadAsmBodyFile(i);
+	}
+	
+
+}
+void UserData::loadAsmBodyFile(int file_id) {
+
+}
+
+
+void UserData::saveItemFile() {
+	FILE* file;
+	const char* filename = "userdata/item.mydat";
+	int size = myitem.size();
+	CS::instance()->enter(CS_LOG_CS, "saveitem");
+	if (0 != fopen_s(&file, filename, "w")) {
+		CS::instance()->leave(CS_LOG_CS, "saveitem");
+		return;
+	}
+
+	fclose(file);
+	
+	
+	mylog::writelog(filename, "%d;\n", myitem.size());
+	for (int i = 0; i < size; i++) {
+		mylog::writelog(filename, "{\n");
+		mylog::writelog(filename, "pindex=%d;\n", myitem[i]->parts_node_index);
+		mylog::writelog(filename, "metadata_filename=\"%s\";\n", myitem[i]->metadata_filename.c_str());
+		mylog::writelog(filename, "parts_filename=\"%s\";\n", myitem[i]->parts_filename.c_str());
+		mylog::writelog(filename, "category=%d;\n", (int)myitem[i]->category);
+		mylog::writelog(filename, "itemID=%d;\n", myitem[i]->item->getItemId());
+		mylog::writelog(filename, "partsID=%d;\n", myitem[i]->item->getPartsId());
+		mylog::writelog(filename, "}\n");
+	}
+	CS::instance()->leave(CS_LOG_CS, "saveitem");
+}
+
+
+void UserData::loadItemFile() {
+	FILE* file;
+	const char* filename = "userdata/item.mydat";
+
+	CS::instance()->enter(CS_LOG_CS, "loaditem");
+	if (0 != fopen_s(&file, filename, "r")) {
+		CS::instance()->leave(CS_LOG_CS, "loaditem");
+		return;
+	}
+
+	fclose(file);
+	CS::instance()->leave(CS_LOG_CS, "loaditem");
+	// あるので
+	MyTokenAnalyzer ma;
+	item_max_id = 0;
+	if (ma.load(filename)) {
+		int itemmax = ma.GetIntToken();
+		int temp_i = 0;
+		while (!ma.enddayo() && (temp_i < itemmax)) {
+			ma.GetToken("{");
+			ma.GetToken("pindex");
+			int pindex = ma.GetIntToken();
+			ma.GetToken("metadata_filename");
+			char metadata_filename[1024];
+			memset(metadata_filename, 0, 1024);
+			ma.GetToken();
+			mystrcpy(metadata_filename, 1024, 0, ma.Toke());
+
+			ma.GetToken("parts_filename");
+			char parts_filename[1024];
+			memset(parts_filename, 0, 1024);
+			ma.GetToken();
+			mystrcpy(parts_filename, 1024, 0, ma.Toke());
+			ma.GetToken("category");
+			int category = ma.GetIntToken();
+			ma.GetToken("itemID");
+			int item_id = ma.GetIntToken();
+
+			if (item_id > item_max_id) {
+				item_max_id = item_id;
+			}
+
+			ma.GetToken("partsID");
+			int parts_id = ma.GetIntToken();
+
+			ItemWithCategory* ic = new ItemWithCategory();
+			ic->item = new Item(item_id,parts_id);
+			ic->metadata_filename = metadata_filename;
+			ic->parts_filename = parts_filename;
+			ic->parts_node_index = pindex;
+			ic->category = (ShopParts::PartsListCategory)category;
+			item_id_to_index_map.insert(pair<int, int>(item_id, myitem.size()));
+			myitem.push_back(ic);
+			ma.GetToken("}");
+			temp_i++;
+
+
+		}
+
+		ma.deletedayo();
+		item_max_id++;
+	}
+}
+
+
+bool AsmBody::calc(Graphics* g, MyTextureLoader* loader) {
+	bool t  = arobo.hanneiItemToRobo(g, loader);
 	if (!t) return false;
 
 	// rank 付けの仕方については　パラメータ調整をしてから考える
@@ -127,6 +236,8 @@ void AsmBody::setHyoukaName() {
 
 bool UserData::buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory category) {
 	if (!parts) return false;
+	if (myitem.size() >= KTROBO_USERDATA_ITEM_MAX) return false;
+
 	int daikin = parts->data->getData("PRICE")->int_data;
 	if (gold < daikin) {
 		return false;
@@ -139,10 +250,13 @@ bool UserData::buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory cate
 		ii->parts_node_index = parts->getPIndex();
 		
 
-		Item* newite = new Item(this->myitem.size());
+		Item* newite = new Item(this->myitem.size(),parts->data->getData("id")->int_data);
 		//newite->init(parts); // item のパーツは個々にロードする
 		ii->item = newite;
+		item_id_to_index_map.insert(pair<int, int>(item_max_id, myitem.size()));
 		myitem.push_back(ii);
+		item_max_id++;
+		
 	}
 	else {
 		mylog::writelog(KTROBO::WARNING, "parts filename no set\n");
@@ -150,6 +264,7 @@ bool UserData::buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory cate
 	}
 
 	gold = gold - daikin;
+	saveItemFile();
 	return true;
 
 }
@@ -747,6 +862,7 @@ void Item::loadRoboParts(Graphics* g, MyTextureLoader* loader) {
 	}
 	else {
 		mylog::writelog(KTROBO::WARNING, "there is no part in item\n");
+		throw new GameError(KTROBO::FATAL_ERROR, "no item\n");
 	}
 }
 
@@ -914,6 +1030,6 @@ bool AsmRobo::hanneiItemToRobo(Graphics* g, MyTextureLoader* loader) {
 
 	}
 
-
+	return true;
 
 }

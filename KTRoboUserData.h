@@ -46,7 +46,13 @@ public:
 			lshoulder_weapon = 0;
 			inside_weapon = 0;
 		};
-		~AsmRobo() {};
+		~AsmRobo() {
+			if (robo) {
+				robo->release();
+				delete robo;
+				robo = 0;
+			}
+		};
 		void initRobo(Graphics* g, MyTextureLoader* loader) {
 			robo->initWithOutLoadingParts(g, loader);
 		}
@@ -101,7 +107,7 @@ private:
 	string hyouka_name;
 public:
 	void init(Graphics* g, MyTextureLoader* loader);
-	bool calc();
+	bool calc(Graphics* g, MyTextureLoader* loader);
 private:
 	void setHyoukaName();
 
@@ -130,21 +136,25 @@ private:
 	
 
 public:
-	Item(int item_id) {
+	Item(int item_id,int parts_id) {
 		this->item_id = item_id;
-		parts_id = 0;
+		this->parts_id = parts_id;
 		part = 0;
 	
 	};
 	~Item() {};
 	
+	int getItemId() { return item_id; };
+	int getPartsId() { return parts_id; };
 
 	void setParts(RoboParts* parts) {
 
 		release();
 
 		this->part = parts;
-		parts_id = this->part->data->getData("id")->int_data;
+		if (parts_id != this->part->data->getData("id")->int_data) {
+			mylog::writelog(KTROBO::WARNING, "there is item okasii in %d itemid %d parts_id", item_id, parts_id);
+		}
 	}
 	
 	void release() {
@@ -340,6 +350,10 @@ class UserData
 private:
 	int gold;
 	vector<ItemWithCategory*> myitem;
+	map<int, int> item_id_to_index_map;
+	int item_max_id;
+
+	AsmBody asms[KTROBO_USERDATA_ASMBODY_MAX];
 
 public:
 	UserData();
@@ -351,8 +365,13 @@ public:
 	// この関数を呼ぶところで例外をキャッチして　メッセージをダイアログに投げる
 	// ロードした時になってる構成もアセンブルボディで書く
 	void overWriteAsmBodyFile(int file_id, AsmBody* ab) {};
-	void loadAsmBodyfile(int file_id) {};
+	void Init(Graphics* g, MyTextureLoader* loader);
+	void loadAsmBodyFile(int file_id);
+	void loadItemFile();
+	void saveItemFile();
+
 	int getGold() { return gold; }
+
 
 	bool buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory category);
 	void sellItemInShop(int item_id, Item* i) {}; // AsmBodyfileに使っているものであれば警告を出す

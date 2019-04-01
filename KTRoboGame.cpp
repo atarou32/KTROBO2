@@ -422,7 +422,8 @@ bool Game::Init(HWND hwnd) {
 	
 	
 	user_data = new UserData();
-	
+	user_data->Init(g, this->demo->tex_loader);
+
 	MYMATRIX kakeru;
 	MyMatrixIdentity(kakeru);
 	
