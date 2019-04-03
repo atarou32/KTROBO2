@@ -46,7 +46,7 @@ celd(0)
 
 
 
-hensuu = gamen2:getHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ASSEMBLE_PARTS_WHAT)
+hensuu = gamen2:getHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_ASSEMBLE_PARTS_WHAT)
 tex2:lightdeleteRenderTex(texe)
 tex2:lightdeleteRenderText(texe2)
 gamen2:deleteTempHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE)
