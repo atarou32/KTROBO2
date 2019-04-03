@@ -64,26 +64,26 @@ if (ss_i ~= end_index2) then
 
 
 if (ss_i > start_index) then
-gamen2:setPartsGroupMoveTo(ss_i-1,700,40,(238-68)*2+100,27,"500.0")
+gamen2:setPartsGroupMoveTo(ss_i-1,700,40,(238-68)*2+100,27,"490.0")
 
 end
 if (ss_i < end_index) then
-gamen2:setPartsGroupMoveTo(ss_i+1,700,120,(238-68)*2+100,27,"500.0")
+gamen2:setPartsGroupMoveTo(ss_i+1,700,120,(238-68)*2+100,27,"491.0")
 end
 
 if (ss_i == end_index) then
-gamen2:setPartsGroupMoveTo(end_index2,700,120,(238-68)*2+100,27,"500.0")
+gamen2:setPartsGroupMoveTo(end_index2,700,120,(238-68)*2+100,27,"492.0")
 end
 
 end
 
 if (ss_i == end_index2) then
-gamen2:setPartsGroupMoveTo(end_index,700,40,(238-68)*2+100,27,"500.0")
+gamen2:setPartsGroupMoveTo(end_index,700,40,(238-68)*2+100,27,"493.0")
 end
 
 
-gamen2:setPartsGroupMoveTo(ss_i,600,80,(238-68)*2+100,27,"500.0")
+gamen2:setPartsGroupMoveTo(ss_i,600,80,(238-68)*2+100,27,"494.0")
 
 
 --gamen2:setPartsGroupMoveTo(start_index+1,700,120,(238-68)*2+100,27,"1500.0")
---gamen2:setPartsGroupMoveTo(ss_i,600,80,(238-68)*2+100,27,"1500.0")
+--gamen2:setPartsGroupMoveTo(ss_i,600,80,(238-68)*2+100,27,"1501.0")

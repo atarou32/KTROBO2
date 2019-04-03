@@ -232,6 +232,11 @@ arm_gindex_end = pile_arm_gindex
 hai_gindex = setButton(tex,tex2, gps, gp_map_name_to_group_index, "ハイ", "hai", "提案に承諾します。", "NO_LUA", "NO_LUA",100,150,28)
 iie_gindex = setButton(tex,tex2, gps, gp_map_name_to_group_index, "イイエ", "iie", "提案を却下します。", "NO_LUA", "NO_LUA",100,150,28)
 
+sellp_gindex = setButton(tex,tex2, gps, gp_map_name_to_group_index, "売却", "sellp", "パーツを売却します。", "NO_LUA", "NO_LUA",100,150,28)
+equipp_gindex = setButton(tex,tex2, gps, gp_map_name_to_group_index, "装着", "equipp", "パーツを装着します。", "NO_LUA", "NO_LUA",100,150,28)
+
+ok_gindex = setButton(tex,tex2, gps, gp_map_name_to_group_index, "OK", "ok", "この世の中だまってうなずくしかない時もある。", "NO_LUA", "NO_LUA",100,150,28)
+
 
 
 chaingun_st = [[チェインガンは殺傷能力の高い弾を連続で発射します。]]
@@ -306,11 +311,61 @@ gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_s
 robog = gamen2:getCPPPartsIndex(KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO)
 gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_shop_start,robog,1)
 
+gamen_id_garage_assemble_start = 1000
+gamen2:makeSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start, "resrc/script/garage/start_garage_assemble.lua")
+gamen2:setSonotokiMakeKo(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start)
+gamen2:setSonotokiMakeKo(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start)
+gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,assemble_gindex)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,head_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,body_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,arm_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,leg_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,booster_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,engine_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,fcs_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,rarm_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,larm_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,rshoul_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,lshoul_gindex,0)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,inside_gindex,0)
+robog = gamen2:getCPPPartsIndex(KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO)
+gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_garage_assemble_start,robog,1)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+gamen2:makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_FIRSTCATEGORY, KTROBO_GARAGE2_HENSUU_FIRSTCATEGORY_SHOP)
 gamen2:makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO)
 gamen2:makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY, KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY_HEAD)
 gamen2:makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2, KTROBO_GARAGE2_HENSUU_PARTS_CATEGORY2_LEG_K2)
 gamen2:makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_LUA_KEY_CALL, KTROBO_GARAGE2_HENSUU_LUA_KEY_CALL_NOKEY)
+
+
+
+
+
+gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_FIRSTCATEGORY, KTROBO_GARAGE2_HENSUU_FIRSTCATEGORY_SHOP, shop_gindex)
+gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_FIRSTCATEGORY, KTROBO_GARAGE2_HENSUU_FIRSTCATEGORY_ASSEMBLE, assemble_gindex)
+gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_FIRSTCATEGORY, KTROBO_GARAGE2_HENSUU_FIRSTCATEGORY_ASMLOAD, asmload_gindex)
+gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_FIRSTCATEGORY, KTROBO_GARAGE2_HENSUU_FIRSTCATEGORY_ASMSAVE, asmsave_gindex)
+
+
+
+
 
 
 gamen2:setHensuuRule(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_YES, head_gindex)

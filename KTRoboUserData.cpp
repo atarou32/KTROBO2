@@ -15,6 +15,11 @@ UserData::~UserData()
 	int siz = myitem.size();
 	for (int i = 0; i < siz; i++) {
 		if (myitem[i]) {
+			if (myitem[i]->item) {
+				myitem[i]->item->release();
+				delete myitem[i]->item;
+				myitem[i]->item = 0;
+			}
 			delete myitem[i];
 			myitem[i] = 0;
 		}
@@ -263,6 +268,7 @@ void UserData::saveItemFile() {
 	CS::instance()->enter(CS_LOG_CS, "saveitem");
 	if (0 != fopen_s(&file, filename, "w")) {
 		CS::instance()->leave(CS_LOG_CS, "saveitem");
+		CS::instance()->leave(CS_LOAD_CS, "enter");
 		return;
 	}
 
@@ -1001,7 +1007,7 @@ char* ShopParts::getDataName() {
 
 
 void ItemWithCategory::loadRoboParts(Graphics* g, MyTextureLoader* tex_loader) {
-	if (this->item) {
+	if (this->item&& !this->hasLoaded()) {
 		const char* mdfile = this->metadata_filename.c_str();
 		const char* dfile = this->parts_filename.c_str();
 
@@ -1024,6 +1030,7 @@ void ItemWithCategory::loadRoboParts(Graphics* g, MyTextureLoader* tex_loader) {
 			while (!ma.enddayo()) {
 
 				for (int i = 0; i < this->parts_node_index; i++) {
+				//	ma.GetToken();
 					ma.SkipNode();
 				}
 
@@ -1045,7 +1052,8 @@ void ItemWithCategory::loadRoboParts(Graphics* g, MyTextureLoader* tex_loader) {
 					throw err;
 				}
 				this->item->setParts(head);
-
+				delete head_md;
+				break;
 				//this->parts_list.push_back(head);
 				//meta_datas.push_back(head_md);
 				//pindex++;
@@ -1056,14 +1064,33 @@ void ItemWithCategory::loadRoboParts(Graphics* g, MyTextureLoader* tex_loader) {
 			//iden_meta_datas.push_back(head_md);
 		}
 
-		item->loadRoboParts(g, tex_loader);
+		//item->loadRoboParts(g, tex_loader);
 		setLoaded();
 
 	}
 
 
 }
+RoboParts* Item::getLoadedParts() {
+	if (part) {
+		return part;
+		/*
+		if (this->hasLoaded()) {
+			return part;
+		}
+		else {
+			return part;
+			mylog::writelog(KTROBO::INFO, "there is yet loaded part in item equip\n");
+		}
+		*/
+	}
+	else {
+		mylog::writelog(KTROBO::WARNING, "there is no part in item equip\n");
+	}
 
+	return 0;
+
+}
 void Item::equip(Robo* robo, Graphics* g, MyTextureLoader* loader) {
 	if (part) {
 		if (this->hasLoaded()) {
@@ -1079,7 +1106,9 @@ void Item::equip(Robo* robo, Graphics* g, MyTextureLoader* loader) {
 }
 void Item::loadRoboParts(Graphics* g, MyTextureLoader* loader) {
 	if (part) {
-		part->loadMesh(g, loader);
+		if (!hasLoaded()) {
+			part->loadMesh(g, loader);
+		}
 		setLoaded();
 	}
 	else {
@@ -1261,4 +1290,15 @@ bool AsmRobo::hanneiItemToRobo(Graphics* g, MyTextureLoader* loader) {
 
 	
 	
-	
+void UserData::setItemWithCategoryToVector(vector<ItemWithCategory*>* outdayo, ShopParts::PartsListCategory category) {
+	outdayo->clear();
+	outdayo->push_back(&emptyitem);
+
+	int siz = myitem.size();
+	for (int i = 0; i < siz; i++) {
+		if (myitem[i]->category == category) {
+			outdayo->push_back(myitem[i]);
+		}
+	}
+}
+

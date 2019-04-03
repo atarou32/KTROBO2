@@ -9,7 +9,8 @@ namespace KTROBO {
 
 #define KTROBO_USERDATA_ASMBODY_MAX 16
 #define KTROBO_USERDATA_ITEM_MAX 512
-	
+#define KTROBO_USERDATA_EMPTYITEM_METADATA_FILENAME "resrc/ktrobo/info/metadata/ktroboemptypartsmetadata.txt"
+
 class ItemWithCategory;
 	// AsmRobo では　Item* の　デストラクタは呼ばない
 class AsmRobo {
@@ -144,32 +145,66 @@ public:
 		part = 0;
 	
 	};
-	~Item() {};
+	~Item() {
+		release();
+	};
 	
-	int getItemId() { return item_id; };
-	int getPartsId() { return parts_id; };
+	virtual int getItemId() { return item_id; };
+	virtual int getPartsId() { return parts_id; };
 
-	void setParts(RoboParts* parts) {
+	virtual void setParts(RoboParts* parts) {
 
 		release();
 
 		this->part = parts;
 		if (parts_id != this->part->data->getData("id")->int_data) {
-			mylog::writelog(KTROBO::WARNING, "there is item okasii in %d itemid %d parts_id", item_id, parts_id);
+			mylog::writelog(KTROBO::WARNING, "there is item okasii in %s itemid %d parts_id",parts->data->getData("id")->int_data, item_id, parts_id);
 		}
 	}
 	
-	void release() {
+	virtual void release() {
 		if (part) {
 			part->Release();
 			delete part;
 			part = 0;
 		}
-		parts_id = 0;
+		//parts_id = 0;
 	};
-	void equip(Robo* robo, Graphics* g, MyTextureLoader* loader);
-	void loadRoboParts(Graphics* g, MyTextureLoader* loader);
-	
+	virtual void equip(Robo* robo, Graphics* g, MyTextureLoader* loader);
+	virtual void loadRoboParts(Graphics* g, MyTextureLoader* loader);
+	virtual RoboParts* getLoadedParts();
+
+	virtual bool isEmpty() { return false; };
+};
+
+
+class EmptyItem : public Item {
+private:
+	RoboPartsEmpty* empty;
+
+public:
+
+	EmptyItem() : Item(0, 0) {
+		empty = new RoboPartsEmpty();
+	}
+
+	~EmptyItem() {};
+
+	void release() {
+		Item::release();
+		if (empty) {
+			empty->Release();
+			delete empty;
+			empty = 0;
+		}
+	};
+
+	virtual void equip(Robo* robo, Graphics* g, MyTextureLoader* loader) {};
+	virtual void loadRoboParts(Graphics* g, MyTextureLoader* loader) {};
+	virtual RoboParts* getLoadedParts() {
+		return empty;
+	};
+	bool isEmpty() { return true; };
 };
 
 
@@ -336,6 +371,7 @@ public:
 
 	~ItemWithCategory() {
 		if (item) {
+			item->release();
 			delete item;
 			item = 0;
 		}
@@ -344,14 +380,30 @@ public:
 	void erase() {
 		is_save = false;
 	}
-	void loadRoboParts(Graphics* g, MyTextureLoader* loader);
+	virtual void loadRoboParts(Graphics* g, MyTextureLoader* loader); // meshはロードしない　item のloadRoboPartsを呼ぶ
 
 };
 
+class EmptyItemWithCategory : public ItemWithCategory {
 
+public:
+	EmptyItemWithCategory(): ItemWithCategory() {
+		erase();
+		this->item = new EmptyItem();
+		metadata_filename = KTROBO_USERDATA_EMPTYITEM_METADATA_FILENAME;
+	}
 
+	~EmptyItemWithCategory() {
+		if (item) {
+			item->release();
+			delete item;
+			item = 0;
+		}
 
+	}
+	void loadRoboParts(Graphics* g, MyTextureLoader* loader) { setLoaded(); };
 
+};
 
 class UserData
 {
@@ -360,6 +412,7 @@ private:
 	vector<ItemWithCategory*> myitem;
 	map<int, int> item_id_to_index_map;
 	int item_max_id;
+	EmptyItemWithCategory emptyitem;
 
 	AsmBody asms[KTROBO_USERDATA_ASMBODY_MAX]; // 0が現在の　パーツ構成となる
 	void getSuutiChara(int suuti, char* chara);
@@ -380,6 +433,7 @@ public:
 
 	int getGold() { return gold; }
 
+	void setItemWithCategoryToVector(vector<ItemWithCategory*>* outdayo, ShopParts::PartsListCategory category);
 
 	bool buyItemInShop(RoboParts* parts, ShopParts::PartsListCategory category);
 	void sellItemInShop(int item_id, Item* i) {}; // AsmBodyfileに使っているものであれば消させない

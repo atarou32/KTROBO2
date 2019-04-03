@@ -90,6 +90,55 @@ public:
 	
 };
 
+class ItemWithCategory;
+class AssembleParts_Garage2 : public Gamen2_part, public Loadable2 {
+private:
+	vector<ItemWithCategory*> sp; //消さなくてよい
+	vector<RoboDataMetaData*> metadatas;
+	map<string, int> metadatas_map; // mdfile to index
+	MyTextureLoader* loader;
+	vector<Gamen2_partGroup*> pgs;
+	RoboParts_Info parts_info[32];
+	int parts_info_max;
+
+	int tex_waku;
+	int tex_haikei;
+	bool toggle_render;
+	int parts_index;
+public:
+	int parts_category;
+	int parts_category2;
+	AssembleParts_Garage2(int p, int p2, MyTextureLoader* loaer) :Gamen2_part() {
+		parts_category = p;
+		parts_category2 = p2;
+		loader = loaer;
+		
+		tex_waku = 0;
+		tex_haikei = 0;
+		toggle_render = true;
+		parts_index = 0;
+		parts_info_max = 0;
+
+	}
+	~AssembleParts_Garage2();
+	void render(Garage2* gg2, MyRobo_Garage2* robop, Texture* tex1, Texture* tex2, Graphics* g, MYMATRIX* view, MYMATRIX* proj, float dt);
+	void load(Game* gg,Graphics* g);
+	void atoload(Game* gg, Graphics* g);
+	void makeTexDayo(Garage2* gg2, MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2);
+	void changeTexPartsDayo(Garage2* gg2, MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2);
+	void Del(Texture* tex, Texture* tex2);
+	
+	bool purgeParts(int all_index, Game* g);
+	bool assembleParts(int all_index, Game* g);
+	bool sellParts(int all_index, Game* g);
+	const char* getHelpString() {
+		return "選択しているパーツの外見です。ゴージャス！";
+	}
+	const char* getSelectedLua() {
+		return "resrc/script/garage/modoru_now.lua";
+	}
+};
+
 class ShopParts_Garage2 : public Gamen2_part, public Loadable2{
 private:
 	ShopParts* sp;
@@ -157,6 +206,10 @@ private:
 	const char* getHelpStringWhenNoneFocused();
 	vector<ShopParts_Garage2*> destruct_shopparts; // 廃棄予定のパーツ
 	ShopParts_Garage2* shopparts_g;
+
+	vector<AssembleParts_Garage2*> destruct_assembles;
+	AssembleParts_Garage2* assembles_g;
+
 public:
 	Garage2();
 	~Garage2();
@@ -181,7 +234,7 @@ public:
 	// 主に表示部分だよね
 private:
 	// atoniyobareru
-	void atoload(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
+	void atoload(Game* gg,Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
 public:	
 	void modoru(Texture* tex, Texture* tex2, Game* game);
 	void render(Graphics* g, Texture* tex, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);

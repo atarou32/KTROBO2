@@ -1,7 +1,7 @@
 selected_group_inde = gamen2:getNowSonotokiCursorGroup()
 -- selectÇ≥ÇÍÇΩÉOÉãÅ[ÉvÇà⁄ìÆÇ≥ÇπÇÈ
 --gamen2:setPartsGroupMoveTo(selected_group_inde, 20,150,238-68,54,"2000.0")
-gamen_id_select_parts_category = 2
+gamen_id_select_parts_category = gamen_id_now + 1
 gamen2:makeSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE,gamen_id_select_parts_category,"resrc/script/garage/p2_genter.lua")
 gamen2:setSonotokiMakeKo(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_select_parts_category)
 gamen2:setSonotokiMakeKo(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_select_parts_category)

@@ -45,9 +45,9 @@ void Gamen2_Sonotoki::makeKoCursorGroup() {
 
 }
 void Gamen2_Sonotoki::deletedayo() {
-	CS::instance()->enter(CS_LOAD_CS, "gamen2sonotoki");
+	
 	CS::instance()->enter(CS_MESSAGE_CS, "gamen2sonotoki");
-
+	CS::instance()->enter(CS_LOAD_CS, "gamen2sonotoki");
 	int cg_size = cursor_group.size();
 	for (int i = 0; i < cg_size; i++) {
 		if (cursor_group[i]) {
@@ -59,8 +59,9 @@ void Gamen2_Sonotoki::deletedayo() {
 	cursor_group.clear();
 	cursor_ys.clear();
 	not_cursor_but_render_group.clear();
-	CS::instance()->leave(CS_MESSAGE_CS, "gamen2sonotoki");
 	CS::instance()->leave(CS_LOAD_CS, "gamen2sonotoki");
+	CS::instance()->leave(CS_MESSAGE_CS, "gamen2sonotoki");
+	
 
 }
 int Gamen2_Sonotoki::getCursorY() { 

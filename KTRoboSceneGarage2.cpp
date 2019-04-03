@@ -9,6 +9,14 @@ using namespace KTROBO;
 #define KTROBO_GARAGE2_SHOP_PART_TEX_SELECTED_LUA "resrc/script/garage/part_tex_selected.lua"
 #define KTROBO_GARAGE2_SHOP_PART_TEX_SONOTOKI_LUA "resrc/script/garage/part_tex_sonotoki.lua"
 
+#define KTROBO_GARAGE2_ASSEMBLE_PART_TEX_SONOTOKI_LUA "resrc/script/garage/assemble/part_tex_sonotoki.lua"
+#define KTROBO_GARAGE2_ASSEMBLE_PART_TEX_FOCUSED_LUA "resrc/script/garage/part_tex_focused.lua"
+#define KTROBO_GARAGE2_ASSEMBLE_PART_TEX_SELECTED_LUA "resrc/script/garage/assemble/part_tex_selected.lua"
+#define KTROBO_GARAGE2_ASSEMBLE_EMPTY_PART_TEX_SELECTED_LUA "resrc/script/garage/assemble/empty_part_tex_selected.lua"
+
+
+ShopParts::PartsListCategory getPLC(int fc, int fc2);
+
 SceneGarage2::SceneGarage2(AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader) : Scene("garage", 6)
 {
 	garage_impl = 0;
@@ -140,40 +148,47 @@ void Garage2::getMessageFromLua(Graphics* g, Texture* tex1, Texture* tex2, Game*
 				if (msgs[i] == KTROBO_MESSAGE_MSG_GARAGE_SHOP_BUY_PARTS) {
 					int ginde = senders[i];
 					CS::instance()->enter(CS_LOAD_CS, "enter");
-					if (shopparts_g) {
-						
-						bool is_true = shopparts_g->buyParts(ginde,game);
+					try {
+						if (shopparts_g) {
 
-						if (is_true) {
-							MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecCoDoNow("resrc/script/garage/shop_buy_parts.lua");
+							bool is_true = shopparts_g->buyParts(ginde, game);
+
+							if (is_true) {
+								MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecCoDoNow("resrc/script/garage/shop_buy_parts.lua");
+
+							}
+							else {
+								MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecCoDoNow("resrc/script/garage/shop_buy_parts_error.lua");
+							}
+
+							//has_gold_tex = tex->getRenderText("所持金:", 600, g->getScreenHeight() - 85 + 11, 20, g->getScreenWidth() - 600 - 10, 20);
+							int ggg = game->getUserData()->getGold();
+							char test[1024];
+							memset(test, 0, 1024);
+							getSuutiChara(ggg, test);
+							int last = strlen(test);
+							test[last] = 'G';
+							test[last + 1] = '\0';
+
+							tex1->setRenderTextChangeText(has_gold_text, test);
+							tex1->setRenderTextPos(has_gold_text, 600 + (16 - strlen(test)) * 20, g->getScreenHeight() - 85 + 11);
+
+							//	has_gold_tex_waku = tex1->getRenderTex(tex_index2, 0x000000FF, 600, g->getScreenHeight() - 85 + 11, g->getScreenWidth() - 600 - 10, 20, 18, 390, 1, 1);
+
+
+
 
 						}
 						else {
+							// エラー
 							MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecCoDoNow("resrc/script/garage/shop_buy_parts_error.lua");
 						}
-
-						//has_gold_tex = tex->getRenderText("所持金:", 600, g->getScreenHeight() - 85 + 11, 20, g->getScreenWidth() - 600 - 10, 20);
-						int ggg = game->getUserData()->getGold();
-						char test[1024];
-						memset(test, 0, 1024);
-						getSuutiChara(ggg, test);
-						int last = strlen(test);
-						test[last] = 'G';
-						test[last + 1] = '\0';
-					
-						tex1->setRenderTextChangeText(has_gold_text, test);
-						tex1->setRenderTextPos(has_gold_text, 600 + (16-strlen(test)) * 20, g->getScreenHeight() - 85 + 11);
-
-					//	has_gold_tex_waku = tex1->getRenderTex(tex_index2, 0x000000FF, 600, g->getScreenHeight() - 85 + 11, g->getScreenWidth() - 600 - 10, 20, 18, 390, 1, 1);
-
-
-
-
 					}
-					else {
-						// エラー
-						MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecCoDoNow("resrc/script/garage/shop_buy_parts_error.lua");
+					catch (GameError* err) {
+						mylog::writelog(err->getErrorCode(), err->getMessage());
+						delete err;
 					}
+
 					CS::instance()->leave(CS_LOAD_CS, "enter");
 				}
 			}
@@ -181,6 +196,54 @@ void Garage2::getMessageFromLua(Graphics* g, Texture* tex1, Texture* tex2, Game*
 
 		MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/garage/modoru_now.lua");
 	}
+
+
+
+
+
+	for (int i = 0; i < 32; i++) {
+		msgs[i] = 0;
+		msg_indexs[i] = 0;
+		msgids[i] = 0;
+		senders[i] = 0;
+		receivers[i] = 0;
+		fmsgs[i] = 0;
+	}
+	msize = MyLuaGlueSingleton::getInstance()->getColMessages(0)->getInstance(0)->getMessageIndexsFromMsgId(KTROBO_MESSAGE_ID_GARAGE_ASSEMBLE_PARTS, msg_indexs);
+	if (msize) {
+		MyLuaGlueSingleton::getInstance()->getColMessages(0)->getInstance(0)->getMsgBody(msize, msg_indexs, msgids, senders, receivers, msgs, fmsgs);
+		for (int i = 0; i < msize; i++) {
+			if (msgids[i] == KTROBO_MESSAGE_ID_GARAGE_ASSEMBLE_PARTS) {
+				int ginde = senders[i];
+				if (msgs[i] == KTROBO_MESSAGE_MSG_GARAGE_ASSEMBLE_EQUIP_PARTS) {
+					CS::instance()->enter(CS_LOAD_CS, "enter");
+					if (this->assembles_g) {
+						assembles_g->assembleParts(ginde, game);
+					}
+					CS::instance()->leave(CS_LOAD_CS, "enter");
+				}
+				else if (msgs[i] == KTROBO_MESSAGE_MSG_GARAGE_ASSEMBLE_SELL_PARTS) {
+					CS::instance()->enter(CS_LOAD_CS, "enter");
+					if (this->assembles_g) {
+						assembles_g->sellParts(ginde, game);
+					}
+
+					CS::instance()->leave(CS_LOAD_CS, "enter");
+				}
+				else if (msgs[i] == KTROBO_MESSAGE_MSG_GARAGE_ASSEMBLE_PURGE_PARTS) {
+					CS::instance()->enter(CS_LOAD_CS, "enter");
+					if (assembles_g) {
+						assembles_g->purgeParts(ginde, game);
+					}
+					CS::instance()->leave(CS_LOAD_CS, "enter");
+
+				}
+			}
+		}
+		MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/garage/modoru_now.lua");
+	}
+
+
 }
 void SceneGarage2::enter() {
 	//	gg = new Gamen_GARAGE();
@@ -254,9 +317,10 @@ void Garage2::setCursorTexPosToCursorPos(Texture* tex1, Texture* tex2, Game* gam
 void Garage2::render(Graphics* g,Texture* tex,Texture* tex2, MYMATRIX* view, MYMATRIX* proj) {
 	CS::instance()->enter(CS_RENDERDATA_CS, "render");
 	if (robog) {
+		CS::instance()->leave(CS_RENDERDATA_CS, "render");
 		robog->render(g, tex2,view, proj);
 
-
+		CS::instance()->enter(CS_RENDERDATA_CS, "render");
 
 
 
@@ -276,6 +340,13 @@ void Garage2::render(Graphics* g,Texture* tex,Texture* tex2, MYMATRIX* view, MYM
 		shopparts_g->render(this,robog,tex,tex2,g, view, proj, 30);
 		CS::instance()->enter(CS_RENDERDATA_CS, "render");
 	}
+	if (assembles_g && robog) {
+		CS::instance()->leave(CS_RENDERDATA_CS, "render");
+		assembles_g->render(this, robog, tex, tex2, g, view, proj, 30);
+		CS::instance()->enter(CS_RENDERDATA_CS, "render");
+	}
+
+
 	CS::instance()->leave(CS_RENDERDATA_CS, "render");
 }
 
@@ -425,6 +496,9 @@ Garage2::Garage2() :  Loadable2(), Gamen2_part() {
 	has_gold_tex = 0;
 	has_gold_tex_waku = 0;
 	has_gold_text = 0;
+
+	assembles_g = 0;
+
 };
 Garage2::~Garage2() {
 	if (robog) {
@@ -467,10 +541,28 @@ Garage2::~Garage2() {
 		}
 		destruct_shopparts.clear();
 	}
+
+
+	if (this->assembles_g) {
+		delete assembles_g;
+		assembles_g = 0;
+	}
+	if (destruct_assembles.size()) {
+		int s = destruct_assembles.size();
+		for (int i = 0; i < s; i++) {
+			if (destruct_assembles[i]) {
+				delete destruct_assembles[i];
+				destruct_assembles[i] = 0;
+			}
+		}
+		destruct_assembles.clear();
+	}
+
 };
 
-void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* tex2, MyTextureLoader* loader) {
+void Garage2::atoload(Game* game, Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* tex2, MyTextureLoader* loader) {
 	ShopParts_Garage2* temp = 0;
+	AssembleParts_Garage2* temp_assembles = 0;
 	if (!robog->getTouroku()) {
 		robog->load(this,g, tex1,tex2, loader, hantei);
 		robog->robo->atarihan->setXYZ(0, 0, 0);
@@ -490,7 +582,23 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 		}
 	}
 	destruct_shopparts.clear();
+
+	volatile int ssize = destruct_assembles.size();
+	for (int i = 0; i < ssize; i++) {
+		AssembleParts_Garage2* ga = destruct_assembles[i];
+
+		if (ga) {
+			ga->Del(tex1, tex2);
+			delete ga;
+			ga = 0;
+		}
+	}
+	destruct_assembles.clear();
+
+
+
 	temp = shopparts_g;
+	temp_assembles = assembles_g;
 	CS::instance()->leave(CS_LOAD_CS, "destruct_parts");
 	CS::instance()->leave(CS_MESSAGE_CS, "destruct_parts");
 	if (temp) {
@@ -506,6 +614,24 @@ void Garage2::atoload(Graphics* g, AtariHantei* hantei, Texture* tex1, Texture* 
 
 		} else {
 			temp->atoload(g);
+		}
+
+	}
+
+	if (temp_assembles) {
+		// tempがこの時点でほかのスレッドからデストラクトされる予定に入ってしまっていたとしても
+		// デストラクタが実際に呼ばれるのは次のこの関数が呼ばれるときなので大丈夫.
+		if (!temp_assembles->hasLoaded()) {
+			temp_assembles->load(game,g);
+
+			if (temp_assembles->hasLoaded()) {
+				// makeTexdayo
+				temp_assembles->makeTexDayo(this, this->robog, g, tex1, tex2);
+			}
+
+		}
+		else {
+			temp_assembles->atoload(game,g);
 		}
 
 	}
@@ -723,6 +849,489 @@ ShopParts_Garage2::~ShopParts_Garage2() {
 	}
 	pgs.clear();
 }
+
+
+AssembleParts_Garage2::~AssembleParts_Garage2() {
+	sp.clear();
+	int siz = pgs.size();
+	for (int i = 0; i < siz; i++) {
+		if (pgs[i]) {
+			delete pgs[i];
+			pgs[i] = 0;
+		}
+	}
+	pgs.clear();
+	int hi = metadatas.size();
+	for (int i = 0; i < hi; i++) {
+		if (metadatas[i]) {
+			delete metadatas[i];
+			metadatas[i] = 0;
+		}
+	}
+	metadatas_map.clear();
+	metadatas.clear();
+
+}
+void AssembleParts_Garage2::render(Garage2* gg2, MyRobo_Garage2* robop, Texture* tex1, Texture* tex2, Graphics* g, MYMATRIX* view, MYMATRIX* proj, float dt) {
+	CS::instance()->enter(CS_LOAD_CS, "test");
+	CS::instance()->enter(CS_DEVICECON_CS, "test");
+	CS::instance()->enter(CS_RENDERDATA_CS, "test");
+	if (sp.size()) {
+		int siz = sp.size();// ->getPartsSize();
+		/*for (int i = 0; i < siz; i++) {
+
+
+			RoboParts* pp = sp->getRoboParts(i);
+			if (pp->hasMeshLoaded()) {
+				pp->drawMesh(g, view, proj);
+			}
+		}*/
+		int cgi = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotokiCursorGroup();
+
+		if (cgi >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET) {
+			int start_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsIndex(KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START);
+			int end_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsIndex(KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
+			int raw_start_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsRawIndex(start_inde);
+			int sa_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsSa(KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
+			int raw_end_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsRawIndex(end_inde);
+			int raw_cgi = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsRawIndex(cgi);
+
+
+
+			if ((raw_start_inde <= raw_cgi) && (raw_end_inde >= raw_cgi) && (raw_cgi < sp.size())) {
+
+				int ato_parts_index = raw_cgi;
+				if (ato_parts_index != parts_index) {
+					parts_index = ato_parts_index;
+					changeTexPartsDayo(gg2, robop, g, tex1, tex2);
+				}
+			}
+		}
+		RoboParts* pp = sp[parts_index]->item->getLoadedParts();//
+//		RoboParts* pp = sp->getRoboParts(parts_index);
+		if (pp && pp->hasMeshLoaded()) {
+			const D3D11_VIEWPORT* ggg = g->getViewPort();
+			D3D11_VIEWPORT ggg2;
+			D3D11_VIEWPORT ggg3;
+			ggg2 = *ggg;
+			ggg3.TopLeftX = 480;
+			ggg3.TopLeftY = 450;
+			ggg3.Width = 200;
+			ggg3.Height = 200;
+			ggg3.MaxDepth = 0.5;
+			ggg3.MinDepth = 0.3;
+			g->getDeviceContext()->RSSetViewports(1, &ggg3);
+			static float unko = 0;
+			unko += 100 / 3333.0;
+
+
+			//g->getDeviceContext()->ClearRenderTargetView(g->getRenderTargetView(), clearColor);
+			MYMATRIX view;
+
+			float r = pp->getR();
+			MYVECTOR3 c = pp->getC();
+			MYVECTOR3 lookat(c.float3.x, c.float3.y, c.float3.z + r);
+			MYVECTOR3 lookfrom(0, 3 * r, r * 2);
+			MYVECTOR3 up(0, 0, 1);
+			MYMATRIX tes;
+			MyMatrixRotationZ(tes, unko);
+			MyVec3TransformNormal(lookfrom, lookfrom, tes);
+			MyMatrixLookAtRH(view, lookfrom, lookat, up);
+			float clearColor[4] = {
+				0.6f,0.6f,0.8f,1.0f };
+
+			if (pp) {
+				if (pp->hasMeshLoaded()) {
+					pp->drawMesh(g, &view, g->getProj());
+				}
+			}
+
+
+			g->getDeviceContext()->RSSetViewports(1, ggg);
+
+		}
+
+	}
+	CS::instance()->leave(CS_RENDERDATA_CS, "test");
+	CS::instance()->leave(CS_DEVICECON_CS, "test");
+	CS::instance()->leave(CS_LOAD_CS, "test");
+}
+void AssembleParts_Garage2::load(Game* gg, Graphics* g) {
+	// カテゴリに当てはまる　ITEMWITHCATEGORY　の設定　と　EMPTYITEMWITHCATEGORY の設定（外すときに使う)
+	// meshのロードを行うのは　atoloadで行う
+	CS::instance()->enter(CS_LOAD_CS, "enter");
+	gg->getUserData()->setItemWithCategoryToVector(&this->sp, getPLC(this->parts_category, this->parts_category2));
+	//CS::instance()->leave(CS_LOAD_CS, "leave");
+
+	int ssi = sp.size();
+	for (int i = 0; i < ssi; i++) {
+		if (sp[i] && sp[i]->item && !sp[i]->item->isEmpty()) {
+			if (sp[i]->hasLoaded()) continue;
+			if (metadatas_map.find(sp[i]->metadata_filename) == metadatas_map.end()) {
+				
+
+				MyTokenAnalyzer ma;
+				{
+					ma.load(sp[i]->metadata_filename.c_str());
+					RoboDataMetaData* head_md = new RoboDataMetaData();
+					RoboMetaDataPart rmdp;
+					rmdp.clear();
+					int dnum = ma.GetIntToken();
+					for (int i = 0; i < dnum; i++) {
+						rmdp.clear();
+						rmdp.readline(&ma);
+						head_md->setData(rmdp.data_name, rmdp.data_name2, rmdp.data_type, rmdp.data_sentence, rmdp.data_compare);
+					}
+
+					ma.deletedayo();
+
+		//			CS::instance()->enter(CS_LOAD_CS, "leave");
+					int sizs = metadatas.size();
+					metadatas_map.insert(pair<string, int>(sp[i]->metadata_filename, sizs));
+					metadatas.push_back(head_md);
+		//			CS::instance()->leave(CS_LOAD_CS, "leave");
+				}
+			}
+			if (!sp[i]->hasLoaded()) {
+				sp[i]->loadRoboParts(g, loader);
+			}
+		}
+
+		
+	}
+	//CS::instance()->leave(CS_LOAD_CS, "leave");
+	setLoaded();
+	CS::instance()->leave(CS_LOAD_CS, "leave");
+}
+void AssembleParts_Garage2::atoload(Game* gg, Graphics* g) {
+	
+	
+
+	
+	CS::instance()->enter(CS_LOAD_CS, "leave");
+	volatile int siz = sp.size();
+	CS::instance()->leave(CS_LOAD_CS, "leave");
+
+
+	for (int i = 0; i < siz; i++) {
+		CS::instance()->enter(CS_LOAD_CS, "leave");
+		if (!sp[i]->item->hasLoaded()) {
+			sp[i]->item->loadRoboParts(g, loader);
+		}
+		CS::instance()->leave(CS_LOAD_CS, "leave");
+	}
+
+}
+void AssembleParts_Garage2::makeTexDayo(Garage2* gg2, MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2) {
+	//shop_parts はパーツだけ
+
+	int siz = sp.size();// ->getPartsSize();
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->clearCPPParts(KTROBO_GAMEN2_SCENE_ID_GARAGE);
+	//MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_SHOP_BUY_PARTS, KTROBO_GARAGE2_HENSUU_IS_SHOP_BUY_PARTS_YES);
+	//MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_SHOP_BUY_PARTS_ALL_INDEX, KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET);
+	if ((parts_index >= 0) && (parts_index < siz)) {
+		RoboParts* now_pa = sp[parts_index]->item->getLoadedParts();//
+		if (now_pa) {
+			if (metadatas_map.find(sp[parts_index]->metadata_filename) != metadatas_map.end()) {
+				RoboDataMetaData* mdata = metadatas[metadatas_map[sp[parts_index]->metadata_filename]];
+
+
+				//	RoboParts* now_pa = sp->getRoboParts(parts_index);
+				//	RoboDataMetaData* mdata = sp->getMetaData(parts_index);
+				vector<RoboMetaDataPart*>* ppp = mdata->getMetaDatas();
+				int pppsize = ppp->size();
+				if (pppsize > 32) {
+					mylog::writelog(KTROBO::WARNING, "too many robomedatapart 32");
+
+				}
+				else {
+					int now_info_index = 0;
+					for (int i = 0; i < pppsize; i++) {
+						RoboMetaDataPart* pp = (*ppp)[i];
+						int tex_index2 = tex->getTexture(KTROBO_GARAGE2_IMG_PATH);
+						if (strcmp(pp->data_sentence, "YES_SENTENCE") == 0) {
+							// テクスを作る
+							parts_info[now_info_index].metpart = pp;
+							parts_info[now_info_index].parts = now_pa;
+							parts_info[now_info_index].tex = tex->getRenderTex(tex_index2, 0x000000FF,
+								400, 300 + 30 * now_info_index, 300, 30, 18, 390, 1, 1);
+							char str[256];
+							memset(str, 0, 256);
+							mystrcpy3(str, 256, 0, pp->data_name2);
+							mystrcpy3(str, 256, strlen(pp->data_name2), ":");
+							char bstr[256];
+							memset(bstr, 0, 256);
+							if (strcmp(pp->data_type, "INT") == 0) {
+								gg2->getSuutiChara(now_pa->data->getData(pp->data_name)->int_data, bstr);
+								mystrcpy3(str, 256, strlen(str), bstr);
+							}
+							else if (strcmp(pp->data_type, "STRING") == 0) {
+								mystrcpy3(str, 256, strlen(str), now_pa->data->getData(pp->data_name)->string_data);
+							}
+							parts_info[now_info_index].text = tex->getRenderText(str, 400, 300 + 30 * now_info_index, 22, 300, 30);
+							tex->setRenderTextIsRender(parts_info[now_info_index].text, true);
+							now_info_index++;
+
+						}
+					}
+					parts_info_max = now_info_index;
+					int xdayo = 700;
+					int ydayo = 450 - parts_info_max * 30 / 2;
+					// よさげな場所に移動させる
+					for (int i = 0; i < parts_info_max; i++) {
+						tex->setRenderTexPos(parts_info[i].tex, xdayo, ydayo + 30 * i);
+						tex->setRenderTextPos(parts_info[i].text, xdayo, ydayo + 30 * i);
+
+					}
+
+				}
+
+
+			}
+			
+		}
+	}
+
+
+
+
+	for (int i = 0; i < siz; i++) {
+		RoboParts* pp = sp[i]->item->getLoadedParts();
+		if (pp) {
+			
+			Gamen2_partGroup* gg = new Gamen2_partGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET + i,
+				KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET + i, tex, tex2);
+			int unko = tex2->getRenderText(pp->data->getData("name")->string_data, 400, 25 + 50 * i, 20, 400, 40);
+			
+			if (!pp->isEmpty()) {
+				gg->setString(pp->data->getData("COMMENT")->string_data, KTROBO_GARAGE2_ASSEMBLE_PART_TEX_FOCUSED_LUA,
+					KTROBO_GARAGE2_ASSEMBLE_PART_TEX_SELECTED_LUA);
+			}
+			else {
+				gg->setString("なにもないということは悲しむことはない。これからだ！　これからな・・はず。", KTROBO_GARAGE2_ASSEMBLE_PART_TEX_FOCUSED_LUA,
+					KTROBO_GARAGE2_ASSEMBLE_EMPTY_PART_TEX_SELECTED_LUA);
+			}
+			MYRECT re;
+			re.left = 400 - 13;
+			re.right = re.left + (238 - 68) * 2 + 100;
+			re.top = 25 + 50 * i - 5;
+			re.bottom = re.top + 27;
+
+			gg->setRect(&re);
+
+			tex2->setRenderTextIsRender(unko, true);
+			tex2->setRenderTextColor(unko, 0xFF000000);
+			int tex_index2 = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH, 4096);
+			int unko2 = tex2->getRenderTex(tex_index2, 0xFFFFFFFF, 400 - 13, 25 + 50 * i - 5, (238 - 68) * 2 + 40 + 60, 27, 68, 376, 238 - 68, 54);
+			int ret[4];
+			ret[0] = 400;
+			ret[1] = 400 + 400;
+			ret[2] = 25 + 50 * i;
+			ret[3] = ret[2] + 40;
+			gg->setText(unko, true, ret);
+			ret[0] = 400 - 13;
+			ret[1] = ret[0] + (238 - 68) * 2 + 100;
+			ret[2] = 25 + 50 * i - 5;
+			ret[3] = ret[2] + 27;
+			gg->setTex(unko2, true, ret);
+			this->pgs.push_back(gg);
+
+			if (siz == 1) {
+				// END と START が同じでも　二つ登録する
+		
+				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START);
+				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
+
+			}
+			else {
+				if (i == siz - 1) {
+					MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
+				}
+				else {
+					MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START + i);
+				}
+			}
+		}
+	}
+
+	int tex_index = tex->getTexture(KTROBO_GARAGE2_IMG_PATH);
+	//	tex_waku = tex2->getRenderTex(tex_index, 0xFFFFFFFF, 0, 0, 238, 46, 0, 0, 238, 46);
+	int tex_index2 = tex->getTexture(KTROBO_GARAGE2_IMG_PATH);
+
+
+	tex_waku = tex->getRenderTex(tex_index, 0xFFFFFFFF, 480, 450, 200, 200, 245, 0, 200, 200);
+	tex_haikei = tex->getRenderTex(tex_index2, 0xFFFFFFFF, 480, 450, 200, 200, 18, 390, 1, 1);
+	tex->setRenderTexColor(tex_haikei, 0xFFBBBBBDD);
+	MYRECT re;
+	re.left = 480;
+	re.right = re.left + 200;
+	re.top = 450;
+	re.bottom = 450 + 200;
+	this->setRect(&re);
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(this
+		, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYSHOPPARTS);
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(parts
+		, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO);
+
+
+
+	MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(KTROBO_GARAGE2_ASSEMBLE_PART_TEX_SONOTOKI_LUA);
+
+}
+void AssembleParts_Garage2::changeTexPartsDayo(Garage2* gg2, MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2) {
+	int siz = sp.size();// ->getPartsSize();
+	if ((parts_index >= 0) && (parts_index < siz)) {
+		RoboParts* now_pa = sp[parts_index]->item->getLoadedParts();//
+		if (now_pa) {
+			if (metadatas_map.find(sp[parts_index]->metadata_filename) != metadatas_map.end()) {
+				RoboDataMetaData* mdata = metadatas[metadatas_map[sp[parts_index]->metadata_filename]];
+
+				vector<RoboMetaDataPart*>* ppp = mdata->getMetaDatas();
+
+				int pppsize = ppp->size();
+				if (pppsize > 32) {
+					mylog::writelog(KTROBO::WARNING, "too many robomedatapart 32");
+
+				}
+				else {
+					int now_info_index = 0;
+					for (int i = 0; i < pppsize; i++) {
+						RoboMetaDataPart* pp = (*ppp)[i];
+						int tex_index2 = tex->getTexture(KTROBO_GARAGE2_IMG_PATH);
+						if (strcmp(pp->data_sentence, "YES_SENTENCE") == 0) {
+							// テクスを作る
+							parts_info[now_info_index].parts = now_pa;
+							parts_info[now_info_index].metpart = pp;
+							parts_info[now_info_index].parts = now_pa;
+							if (parts_info[now_info_index].tex) {
+								// texは何もしない
+							}
+							else {
+								parts_info[now_info_index].tex = tex->getRenderTex(tex_index2, 0x000000FF,
+									400, 300 + 30 * now_info_index, 300, 30, 18, 390, 1, 1);
+							}
+							char str[256];
+							memset(str, 0, 256);
+							mystrcpy3(str, 256, 0, pp->data_name2);
+							mystrcpy3(str, 256, strlen(pp->data_name2), ":");
+							char bstr[256];
+							memset(bstr, 0, 256);
+							if (strcmp(pp->data_type, "INT") == 0) {
+								gg2->getSuutiChara(now_pa->data->getData(pp->data_name)->int_data, bstr);
+								mystrcpy3(str, 256, strlen(str), bstr);
+							}
+							else if (strcmp(pp->data_type, "STRING") == 0) {
+								mystrcpy3(str, 256, strlen(str), now_pa->data->getData(pp->data_name)->string_data);
+							}
+							if (parts_info[now_info_index].text) {
+								tex->setRenderTextChangeText(parts_info[now_info_index].text, str);
+							}
+							else {
+								parts_info[now_info_index].text = tex->getRenderText(str, 400, 300 + 30 * now_info_index, 22, 300, 30);
+								tex->setRenderTextIsRender(parts_info[now_info_index].text, true);
+							}
+							now_info_index++;
+
+						}
+					}
+					
+					if (parts_info_max > now_info_index) {
+						for (int i = now_info_index; (i < 32) && (i < parts_info_max); i++) {
+							if (parts_info[i].tex) {
+								tex->setRenderTexIsRender(parts_info[i].tex, false);
+							}
+							if (parts_info[i].text) {
+								tex->setRenderTextIsRender(parts_info[i].text, false);
+							}
+						}
+					}
+					parts_info_max = now_info_index;
+					for (int i = 0; (i < 32) && (i < parts_info_max); i++) {
+						if (parts_info[i].tex) {
+							tex->setRenderTexIsRender(parts_info[i].tex, true);
+						}
+						if (parts_info[i].text) {
+							tex->setRenderTextIsRender(parts_info[i].text, true);
+						}
+					}
+
+
+					int xdayo = 700;
+					int ydayo = 450 - parts_info_max * 30 / 2;
+					// よさげな場所に移動させる
+					for (int i = 0; i < parts_info_max; i++) {
+						tex->setRenderTexPos(parts_info[i].tex, xdayo, ydayo + 30 * i);
+						tex->setRenderTextPos(parts_info[i].text, xdayo, ydayo + 30 * i);
+
+					}
+
+				}
+
+
+			}
+			else if (now_pa->isEmpty()) {
+				for (int i = 0; (i < 32) && (i < parts_info_max); i++) {
+					if (parts_info[i].tex) {
+						tex->setRenderTexIsRender(parts_info[i].tex, false);
+					}
+					if (parts_info[i].text) {
+						tex->setRenderTextIsRender(parts_info[i].text, false);
+					}
+				}
+			}
+		}
+	}
+}
+void AssembleParts_Garage2::Del(Texture* tex, Texture* tex2) {
+	CS::instance()->enter(CS_MESSAGE_CS, "test");
+	CS::instance()->enter(CS_LOAD_CS, "test");
+
+	int hi = metadatas.size();
+	for (int i = 0; i < hi; i++) {
+		if (metadatas[i]) {
+
+			delete metadatas[i];
+			metadatas[i] = 0;
+		}
+	}
+	metadatas_map.clear();
+	metadatas.clear();
+
+
+	int siz = pgs.size();
+	for (int i = 0; i < siz; i++) {
+		if (pgs[i]) {
+			pgs[i]->cleardayo(tex, tex2);
+			delete pgs[i];
+			pgs[i] = 0;
+		}
+	}
+	pgs.clear();
+	if (tex_haikei) {
+		tex->lightdeleteRenderTex(tex_haikei);
+	}
+	if (tex_waku) {
+		tex->lightdeleteRenderTex(tex_waku);
+	}
+
+	for (int i = 0; i < 32; i++) {
+		parts_info[i].del(tex, tex2);
+	}
+
+	CS::instance()->leave(CS_LOAD_CS, "test");
+	CS::instance()->leave(CS_MESSAGE_CS, "test");
+}
+bool AssembleParts_Garage2::assembleParts(int all_index, Game* g) {
+	return true;
+}
+bool AssembleParts_Garage2::sellParts(int all_index, Game* g) {
+	return true;
+}
+
+bool AssembleParts_Garage2::purgeParts(int all_index, Game* g) {
+	return true;
+}
+
 void ShopParts_Garage2::changeTexPartsDayo(Garage2* gg2, MyRobo_Garage2* parts, Graphics* g, Texture* tex, Texture* tex2) {
 	int siz = sp->getPartsSize();
 	if ((parts_index >= 0) && (parts_index < siz)) {
@@ -775,7 +1384,31 @@ void ShopParts_Garage2::changeTexPartsDayo(Garage2* gg2, MyRobo_Garage2* parts, 
 
 				}
 			}
+
+			if (parts_info_max > now_info_index) {
+				for (int i = now_info_index; i < 32 && i < parts_info_max; i++) {
+					if (parts_info[i].tex) {
+						tex->setRenderTexIsRender(parts_info[i].tex, false);
+					}
+					if (parts_info[i].text) {
+						tex->setRenderTextIsRender(parts_info[i].text, false);
+					}
+				}
+			}
+
+
 			parts_info_max = now_info_index;
+			for (int i = 0; i < 32 && i < parts_info_max; i++) {
+				if (parts_info[i].tex) {
+					tex->setRenderTexIsRender(parts_info[i].tex, true);
+				}
+				if (parts_info[i].text) {
+					tex->setRenderTextIsRender(parts_info[i].text, true);
+				}
+			}
+
+
+
 			int xdayo = 700;
 			int ydayo = 450 - parts_info_max * 30 / 2;
 			// よさげな場所に移動させる
@@ -892,9 +1525,9 @@ void ShopParts_Garage2::makeTexDayo(Garage2* gg2, MyRobo_Garage2* parts, Graphic
 
 			if (siz == 1) {
 				// END と START が同じでも　二つ登録する
-				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
 			
 				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START);
+				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
 
 			} else {
 				if (i == siz - 1) {
@@ -979,7 +1612,7 @@ void Garage2::mouse_clicked_down(Texture* tex, Texture* tex2, Game* game, int x,
 			if (p->focused(x, y)) {
 				
 				if (p != focused_part) {
-
+				
 					tex2->setRenderTextChangeText(help_text, p->getHelpString());
 					focused_part = p;
 				}
@@ -1104,12 +1737,34 @@ void Garage2::mouse_clicked_up(MyTextureLoader* loader, Texture* tex, Texture* t
 				eve->selected(focused_group_all_index);
 				if (eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS) == KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_YES) {
 					// 
-					if (this->shopparts_g) {
+				/*	if (this->shopparts_g) {
 						this->destruct_shopparts.push_back(shopparts_g);
 					}
 					shopparts_g = new ShopParts_Garage2(eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY),
 					eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2), loader);
-					
+				*/	
+
+
+
+					if (eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_FIRSTCATEGORY) == KTROBO_GARAGE2_HENSUU_FIRSTCATEGORY_SHOP) {
+						if (this->shopparts_g) {
+							this->destruct_shopparts.push_back(shopparts_g);
+						}
+						shopparts_g = new ShopParts_Garage2(eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY),
+							eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2), loader);
+					}
+					else if (eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_FIRSTCATEGORY) == KTROBO_GARAGE2_HENSUU_FIRSTCATEGORY_ASSEMBLE) {
+						if (this->assembles_g) {
+							this->destruct_assembles.push_back(assembles_g);
+						}
+						assembles_g = new AssembleParts_Garage2(eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY),
+							eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2), loader);
+					}
+
+
+
+
+
 
 					eve->setHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO);
 				}
@@ -1144,7 +1799,7 @@ void Garage2::mouse_clicked_up(MyTextureLoader* loader, Texture* tex, Texture* t
 void Garage2::load(Game* gg, Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader) {
 	
 	if (hasLoaded()) {
-		atoload(g, hantei, tex, tex2, loader);
+		atoload(gg, g, hantei, tex, tex2, loader);
 		return;
 	}
 	robog = new MyRobo_Garage2();
@@ -1310,8 +1965,13 @@ void MyRobo_Garage2::haribote_render(Graphics* g, MYMATRIX* view, MYMATRIX* proj
 }
 
 void MyRobo_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj) {
-
+//	CS::instance()->leave(CS_RENDERDATA_CS, "ee");
 	if (hasLoaded()) {
+
+
+		CS::instance()->enter(CS_DEVICECON_CS, "ee");
+		CS::instance() -> enter(CS_RENDERDATA_CS, "ee");
+
 	//	robo->byouga(g, view, proj);
 		const D3D11_VIEWPORT* ggg = g->getViewPort();
 		D3D11_VIEWPORT ggg2;
@@ -1395,12 +2055,16 @@ void MyRobo_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX
 		int stt = (int)(unko2) % 130;
 		unsigned int color = ((((0xFFFF0000 / 130 * stt) & 0x77770000) + 0x88880000) & 0xFFFF0000) + 0x0000FFFF;
 */
-
+		
+		CS::instance()->leave(CS_RENDERDATA_CS, "ee");
+		CS::instance()->leave(CS_DEVICECON_CS, "ee");
 	}
 	else {
 		// haribote->render(g, view, proj);
 		haribote_render(g, view, proj);
 	}
+
+//	CS::instance()->enter(CS_RENDERDATA_CS, "ee");
 }
 void MyRobo_Garage2::setRoboPartsTexText(Texture* tex2, int temp,int index, int x, int y, int tex_height, char* prefix, const char* parts_name,int tex_width=400) {
 	int tex_index22 = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
@@ -1434,29 +2098,29 @@ void MyRobo_Garage2::load(Garage2* gg,Graphics* g, Texture* tex1, Texture* tex2,
 	re.bottom = 350 + 400;
 	setRect(&re);
 	int temp = 0;
-	setRoboPartsTexText(tex2, temp,temp, 250, 170, 15, "頭部：", robo->roboparam.getNameOfHead());
+	setRoboPartsTexText(tex2, temp,temp, 250, 120, 15, "頭部：", robo->roboparam.getNameOfHead());
 	temp++;
-	setRoboPartsTexText(tex2, temp,temp, 250, 170, 15, "コア：", robo->roboparam.getNameOfBody());
+	setRoboPartsTexText(tex2, temp,temp, 250, 120, 15, "コア：", robo->roboparam.getNameOfBody());
 	temp++;
-	setRoboPartsTexText(tex2, temp,temp, 250, 170, 15, "腕部：", robo->roboparam.getNameOfArm());
+	setRoboPartsTexText(tex2, temp,temp, 250, 120, 15, "腕部：", robo->roboparam.getNameOfArm());
 	temp++;
-	setRoboPartsTexText(tex2, temp, temp, 250, 170, 15, "脚部：", robo->roboparam.getNameOfLeg());
+	setRoboPartsTexText(tex2, temp, temp, 250, 120, 15, "脚部：", robo->roboparam.getNameOfLeg());
 	temp++;
-	setRoboPartsTexText(tex2, temp, temp, 250, 170, 15, "エンジン：", robo->roboparam.getNameOfEngine());
+	setRoboPartsTexText(tex2, temp, temp, 250, 120, 15, "エンジン：", robo->roboparam.getNameOfEngine());
 	temp++;
-	setRoboPartsTexText(tex2, temp, temp, 250, 170, 15, "ブースタ：", robo->roboparam.getNameOfBooster());
+	setRoboPartsTexText(tex2, temp, temp, 250, 120, 15, "ブースタ：", robo->roboparam.getNameOfBooster());
 	temp++;
-	setRoboPartsTexText(tex2, temp, temp, 250, 170, 15, "FCS：", robo->roboparam.getNameOfFCS());
+	setRoboPartsTexText(tex2, temp, temp, 250, 120, 15, "FCS：", robo->roboparam.getNameOfFCS());
 	temp++;
-	setRoboPartsTexText(tex2, temp, temp, 250, 170, 15, "右腕武器：", robo->roboparam.getNameOfRArmWeapon());
+	setRoboPartsTexText(tex2, temp, temp, 250, 120, 15, "右腕武器：", robo->roboparam.getNameOfRArmWeapon());
 	temp++;
-	setRoboPartsTexText(tex2, temp, temp, 250, 170, 15, "左腕武器：", robo->roboparam.getNameOfLArmWeapon());
+	setRoboPartsTexText(tex2, temp, temp, 250, 120, 15, "左腕武器：", robo->roboparam.getNameOfLArmWeapon());
 	temp++;
-	setRoboPartsTexText(tex2, temp, temp, 250, 170, 15, "右肩武器：", robo->roboparam.getNameOfRShoulderWeapon());
+	setRoboPartsTexText(tex2, temp, temp, 250, 120, 15, "右肩武器：", robo->roboparam.getNameOfRShoulderWeapon());
 	temp++;
-	setRoboPartsTexText(tex2, temp, temp, 250, 170, 15, "左肩武器：", robo->roboparam.getNameOfLShoulderWeapon());
+	setRoboPartsTexText(tex2, temp, temp, 250, 120, 15, "左肩武器：", robo->roboparam.getNameOfLShoulderWeapon());
 	temp++;
-	setRoboPartsTexText(tex2, temp, temp, 250, 170, 15, "インサイド：", robo->roboparam.getNameOfInside());
+	setRoboPartsTexText(tex2, temp, temp, 250, 120, 15, "インサイド：", robo->roboparam.getNameOfInside());
 	temp++;
 	
 	char str[1024];
@@ -1890,6 +2554,11 @@ void Garage2::modoru(Texture* tex, Texture* tex2, Game* game) {
 	if (selected_categorypart) {
 		selected_categorypart = 0;
 	}
+	if (assembles_g) {
+		this->destruct_assembles.push_back(assembles_g);
+		assembles_g = 0;
+	}
+
 	CS::instance()->leave(CS_LOAD_CS, "enter");
 	if (robog) {
 	//	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_SHOP_BUY_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO);
@@ -1925,12 +2594,20 @@ void Garage2::pressed_button_enter(MyTextureLoader* loader, Texture* tex1, Textu
 				eve->selected(allinde);
 				if (eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS) == KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_YES) {
 					// 
-					if (this->shopparts_g) {
-						this->destruct_shopparts.push_back(shopparts_g);
+					if (eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_FIRSTCATEGORY) == KTROBO_GARAGE2_HENSUU_FIRSTCATEGORY_SHOP) {
+						if (this->shopparts_g) {
+							this->destruct_shopparts.push_back(shopparts_g);
+						}
+						shopparts_g = new ShopParts_Garage2(eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY),
+							eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2), loader);
 					}
-					shopparts_g = new ShopParts_Garage2(eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY),
-						eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2), loader);
-
+					else if (eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_FIRSTCATEGORY) == KTROBO_GARAGE2_HENSUU_FIRSTCATEGORY_ASSEMBLE) {
+						if (this->assembles_g) {
+							this->destruct_assembles.push_back(assembles_g);
+						}
+						assembles_g = new AssembleParts_Garage2(eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY),
+							eve->getHensuu(KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY2), loader);
+					}
 
 					eve->setHensuu(KTROBO_GARAGE2_HENSUU_ID_IS_LOAD_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO);
 				}
