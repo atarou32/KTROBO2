@@ -93,7 +93,9 @@ namespace KTROBO {
 	interface IGamen2 {
 public:
 		
-		TO_LUA virtual int getCPPPartsIndex(int scene_id, int parts_DEF)=0;
+		TO_LUA virtual int getCPPPartsIndex(int parts_DEF)=0;
+		TO_LUA virtual int getCPPPartsSa(int parts_DEF, int ato_parts_DEF) = 0;
+
 		TO_LUA virtual void makeSonotoki(int scene_id, int gamen_id, char* lua_filename)=0;
 		TO_LUA virtual void setSonotokiMakeKo(int scene_id, int gamen_id)=0;
 		TO_LUA virtual void setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int all_index)=0;
@@ -132,7 +134,7 @@ public:
 
 
 
-
+	class Gamen2;
 	class Gamen2_part {
 	private:
 		int pid;
@@ -364,7 +366,7 @@ public:
 
 		void setGroupOnlyRenderGroup(int group_index);
 		void setGroupGroup(int group_index, int cursor_x);
-		void setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* all_parts, vector<Gamen2_part*>* cpp_parts);
+		void setIsWorkAndRenderWhenNowSonotoki(Gamen2* gamen,vector<Gamen2_part*>* all_parts, vector<Gamen2_part*>* cpp_parts);
 		void getAllIndexOfGGANDONLYRENDERGROUP(set<int>* outdayo);
 	};
 
@@ -404,7 +406,7 @@ public:
 
 		vector<Gamen2_Sonotoki*> sonotokis; // lua_file から作られる
 		map<pair<int,int>, int> sonotokis_map;//scene_id gamen_id
-		map<pair<int, int>, int> cpp_parts_map; // scene_id, parts_DEF kara cpp_parts noindex
+		map<int, int> cpp_parts_map; // parts_DEF kara cpp_parts noindex
 		Gamen2_Sonotoki* now_sonotoki;
 		vector<Gamen2_event*> events;
 		map<int, int> events_map; // scene_id とindex
@@ -417,8 +419,10 @@ public:
 	public:
 		//void backFromPauseWork(); // pauseを呼んだ時のis_workに戻るlua_file_when_selected の最後に呼ぶ
 
-		void setCPPParts(Gamen2_part* parts, int scene_id, int parts_DEF);
-		int getCPPPartsIndex(int scene_id, int parts_DEF);// all_indexとしても　group_indexとしても使える？
+		void setCPPParts(Gamen2_part* parts,int parts_DEF);
+		int getCPPPartsIndex(int parts_DEF);// all_indexとしても　group_indexとしても使える？
+		int getCPPPartsSa(int parts_DEF, int ato_parts_DEF);
+		int getCPPPartsRawIndex(int cppparts_index);
 		void clearCPPParts(int scene_id);// { cpp_parts.clear(); cpp_parts_map.clear(); }
 
 		void makeSonotoki(int scene_id, int gamen_id, char* lua_filename); // rock load

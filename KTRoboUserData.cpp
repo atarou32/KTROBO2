@@ -34,7 +34,8 @@ void UserData::Init(Graphics* g, MyTextureLoader* loader) {
 		asms[i].init(g, loader);
 		loadAsmBodyFile(i);
 	}
-	
+
+	asms[0].setIsUse();
 
 }
 
@@ -120,6 +121,8 @@ void UserData::loadAsmBodyFile(int file_id) {
 	CS::instance()->leave(CS_LOG_CS, "loadasm");
 	MyTokenAnalyzer ma;
 	if (ma.load(filename.c_str())) {
+		asms[file_id].setIsUse();
+
 		while (!ma.enddayo()) {
 			ma.GetToken();
 			if (strcmp(ma.Toke(), "head") == 0) {

@@ -66,6 +66,7 @@ class AsmBody : public Loadable2 {
 public:
 	AsmRobo arobo;
 private:
+	bool is_use;
 public:
 	enum AsmRank {
 		UNKNOWN = 0,
@@ -110,6 +111,8 @@ private:
 	void setHyoukaName();
 
 public:
+	void setIsUse() { is_use = true; };
+	bool getIsUse() { return is_use; };
 	AsmBody() {
 		weapon = BALANCE;
 		leg = LEG_T2;
@@ -117,6 +120,7 @@ public:
 		kidou_rank = E;
 		attack_rank = E;
 		soukou_rank = E;
+		is_use = false;
 	};
 	~AsmBody() {};
 	void saveToFile(const char* filename);

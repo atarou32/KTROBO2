@@ -43,18 +43,25 @@ end
 
 --gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category,shop_gindex)
 --gamen2:setSonotokiSetGroupOnlyRenderGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category,selected_group_inde)
-start_index = gamen2:getCPPPartsIndex(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START)
-end_index =   gamen2:getCPPPartsIndex(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END)
+start_index = gamen2:getCPPPartsIndex(KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START)
+sa_inde = gamen2:getCPPPartsSa(KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START,KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END)
+end_index =  sa_inde + start_index-1
+end_index2 =  gamen2:getCPPPartsIndex(KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END)
 for i=start_index,end_index do
 --gamen2:setSonotokiSetGroupGroup(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category,i,0)
 gamen2:setPartsGroupMoveTo(i,1200,150,(238-68)*2+100,27,"1500.0")
 end
+gamen2:setPartsGroupMoveTo(end_index2,1200,150,(238-68)*2+100,27,"1500.0")
+
 --gamen2:setSonotokiNowSonotoki(KTROBO_GAMEN2_SCENE_ID_GARAGE, gamen_id_parts_category)
 --gamen_id_now = gamen_id_parts_category
 ss_i = gamen2:getNowSonotokiCursorGroup()
-if ((ss_i <start_index) or (ss_i >end_index)) then
+if (((ss_i <start_index) or (ss_i >end_index)) and (ss_i ~= end_index2) ) then
 ss_i = start_index
 end
+
+if (ss_i ~= end_index2) then
+
 
 if (ss_i > start_index) then
 gamen2:setPartsGroupMoveTo(ss_i-1,700,40,(238-68)*2+100,27,"500.0")
@@ -63,6 +70,18 @@ end
 if (ss_i < end_index) then
 gamen2:setPartsGroupMoveTo(ss_i+1,700,120,(238-68)*2+100,27,"500.0")
 end
+
+if (ss_i == end_index) then
+gamen2:setPartsGroupMoveTo(end_index2,700,120,(238-68)*2+100,27,"500.0")
+end
+
+end
+
+if (ss_i == end_index2) then
+gamen2:setPartsGroupMoveTo(end_index,700,40,(238-68)*2+100,27,"500.0")
+end
+
+
 gamen2:setPartsGroupMoveTo(ss_i,600,80,(238-68)*2+100,27,"500.0")
 
 

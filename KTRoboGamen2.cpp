@@ -205,9 +205,12 @@ Gamen2_part* Gamen2::getGamen2Part(int all_index) {
 		return all_parts[all_index];
 	}
 	else if ((all_index >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET)) {
-		int cpp_index = all_index - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
-		if ((cpp_index >= 0) && (cpp_index < cpp_parts.size())) {
-			return cpp_parts[cpp_index];
+		//int cpp_index = all_index - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+		int parts_def = all_index - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+		int cpp_index = this->getCPPPartsIndex(parts_def);
+		int raw_index = this->getCPPPartsRawIndex(cpp_index);
+		if ((raw_index >= 0) && (raw_index < cpp_parts.size())) {
+			return cpp_parts[raw_index];
 		}
 		else {
 			mylog::writelog(KTROBO::WARNING, "out of boud allindex");
@@ -253,11 +256,11 @@ void Gamen2::pauseWork() {
 }
 
 
-void Gamen2::setCPPParts(Gamen2_part* parts, int scene_id, int parts_DEF) {
+void Gamen2::setCPPParts(Gamen2_part* parts, int parts_DEF) {
 	CS::instance()->enter(CS_LOAD_CS, "cpppa");
 	volatile int cppindex = this->cpp_parts.size();
 	cpp_parts.push_back(parts);
-	cpp_parts_map.insert(pair<pair<int, int>, int>(pair<int, int>(scene_id, parts_DEF), cppindex));
+	cpp_parts_map.insert(pair<int, int>(parts_DEF, cppindex));
 
 	CS::instance()->leave(CS_LOAD_CS, "cpppa");
 }
@@ -271,15 +274,38 @@ void Gamen2::clearCPPParts(int scene_id) {
 
 	CS::instance()->leave(CS_LOAD_CS, "cpppa");
 }
-int Gamen2::getCPPPartsIndex(int scene_id, int parts_DEF) {
+int Gamen2::getCPPPartsSa(int parts_DEF, int ato_parts_DEF) {
+	int cpp_index = getCPPPartsIndex(parts_DEF);
+	int ato_cpp_index = getCPPPartsIndex(ato_parts_DEF);
+	int raw_index = getCPPPartsRawIndex(cpp_index);
+	int ato_raw_index = getCPPPartsRawIndex(ato_cpp_index);
+	return ato_raw_index - raw_index;
+}
+int Gamen2::getCPPPartsRawIndex(int cpp_parts_index) {
 	CS::instance()->enter(CS_LOAD_CS, "cpppa");
 	volatile int tet = 0;
-	if (cpp_parts_map.find(pair<int, int>(scene_id, parts_DEF)) != cpp_parts_map.end()) {
-		tet = cpp_parts_map.find(pair<int, int>(scene_id, parts_DEF))->second + KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+	int cppp = cpp_parts_index - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+	if (cpp_parts_map.find(cppp) != cpp_parts_map.end()) {
+		tet = cpp_parts_map.find(cppp)->second;
 	}
 	else {
 		CS::instance()->leave(CS_LOAD_CS, "cpppa");
-		throw new GameError(KTROBO::FATAL_ERROR, "cppppa error");
+		throw new GameError(KTROBO::FATAL_ERROR, "cppppa error in getCPPPartsRawIndex");
+	}
+
+	CS::instance()->leave(CS_LOAD_CS, "cpppa");
+	return tet;
+
+}
+int Gamen2::getCPPPartsIndex(int parts_DEF) {
+	CS::instance()->enter(CS_LOAD_CS, "cpppa");
+	volatile int tet = 0;
+	if (cpp_parts_map.find(parts_DEF) != cpp_parts_map.end()) {
+		tet = parts_DEF + /*cpp_parts_map.find(pair<int, int>(scene_id, parts_DEF))->second +*/ KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+	}
+	else {
+		CS::instance()->leave(CS_LOAD_CS, "cpppa");
+		throw new GameError(KTROBO::FATAL_ERROR, "cppppa error in getCPPPartsIndex");
 	}
 
 	CS::instance()->leave(CS_LOAD_CS, "cpppa");
@@ -491,7 +517,7 @@ void Gamen2_part::setIsWorkAndRender(bool t)
 	is_render = t;
 }
 
-void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* all_parts, vector<Gamen2_part*>* cpp_parts) {
+void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(Gamen2* gamen, vector<Gamen2_part*>* all_parts, vector<Gamen2_part*>* cpp_parts) {
 	int asize = all_parts->size();
 	int cppsize = cpp_parts->size();
 	for (int i = 0; i < asize; i++) {
@@ -510,15 +536,17 @@ void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* al
 			pg->setIsWork(false);
 		}
 		else if (inde >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET) {
-			int cppinde = inde - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
-			if ((cppinde >= 0) && (cppinde < cppsize)) {
-				Gamen2_part* pp = (*cpp_parts)[cppinde];
+			//int parts_def = inde - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+			//int cppinde = 
+			//int cppinde = inde - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+			//if ((cppinde >= 0) && (cppinde < cppsize)) {
+			Gamen2_part* pp = gamen->getGamen2Part(inde);// (*cpp_parts)[cppinde];
 				pp->setIsWorkAndRender(true);
 				pp->setIsWork(false);
-			}
+			/*}
 			else {
 				mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
-			}
+			}*/
 		}
 		else {
 			mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
@@ -536,14 +564,16 @@ void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(vector<Gamen2_part*>* al
 				pg->setIsWorkAndRender(true);
 			}
 			else if ((group_index >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET)) {
-				int cppindex = group_index - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
-				if ((cppindex >= 0) && (cppindex < cppsize)) {
-					Gamen2_part* pp = (*cpp_parts)[cppindex];
-					pp->setIsWorkAndRender(true);
-				}
-				else {
-					mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
-				}
+				//int cppindex = group_index - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+				//if ((cppindex >= 0) && (cppindex < cppsize)) {
+				//	Gamen2_part* pp = (*cpp_parts)[cppindex];
+				//	pp->setIsWorkAndRender(true);
+				//}
+				//else {
+				//	mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
+				//}
+				Gamen2_part* pp = gamen->getGamen2Part(group_index);
+				pp->setIsWorkAndRender(true);
 			}
 			else {
 				mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
@@ -567,7 +597,7 @@ void Gamen2::setSonotokiNowSonotoki(int scene_id, int gamen_id) { // rock load l
 
 			// is_render ‚Æ is_work ‚Ì˜b‚à‚ ‚é only render ‚É‚ ‚é‚à‚Ì‚Í@setis_workandrender ‚Ì‚ ‚Æ‚É@iswork‚ðfalse‚É‚·‚é
 			now_sonotoki = sonotokis[inde];
-			now_sonotoki->setIsWorkAndRenderWhenNowSonotoki(&all_parts, &cpp_parts);
+			now_sonotoki->setIsWorkAndRenderWhenNowSonotoki(this, &all_parts, &cpp_parts);
 
 			char now_str[1024];
 			memset(now_str, 0, 1024);
@@ -791,7 +821,8 @@ void Gamen2::setPartsGroupMoveTo(int group_index, int x, int y, int width, int h
 		pg->moveTo(&rec, time);
 	}
 	else if ((group_index >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET)) {
-		int cpp_index = group_index - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+		//int parts_def = group_index - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+		int cpp_index = this->getCPPPartsRawIndex(group_index);
 		int csize = cpp_parts.size();
 		if ((cpp_index >= 0) && (cpp_index < csize)) {
 			Gamen2_part* pp = cpp_parts[cpp_index];

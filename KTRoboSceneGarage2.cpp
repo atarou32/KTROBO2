@@ -98,12 +98,15 @@ bool ShopParts_Garage2::buyParts(int all_index, Game* g) {
 
 
 	if (all_index >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET) {
-		int inde = all_index - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
-		if (sp && (inde >= 0) && (inde < this->sp->getPartsSize())) {
-			RoboParts* rp = sp->getRoboParts(inde);
-			UserData* uu = g->getUserData();
-			bool t = uu->buyItemInShop(rp, sp->category);
-			return t;
+		if (sp) {
+
+			int raw_index = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsRawIndex(all_index);
+			if ((raw_index >= 0) && (raw_index < sp->getPartsSize())) {
+				RoboParts* rp = sp->getRoboParts(raw_index);
+				UserData* uu = g->getUserData();
+				bool t = uu->buyItemInShop(rp, sp->category);
+				return t;
+			}
 		}
 	}
 
@@ -222,7 +225,7 @@ void Garage2::setCursorTexPosToCursorPos(Texture* tex1, Texture* tex2, Game* gam
 	if (sono) {
 		try {
 			int focused_group_all_index = sono->getCursorGroup();
-			Gamen2_part* focused_part = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(focused_group_all_index);
+			Gamen2_part* focused_part = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part( focused_group_all_index);
 			if (focused_part) {
 
 				tex2->setRenderTexPos(cursor_tex, focused_part->getRect()->left - 70, focused_part->getRect()->top);
@@ -637,11 +640,17 @@ void ShopParts_Garage2::render(Garage2* gg2,MyRobo_Garage2* robop,Texture* tex1,
 		int cgi = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotokiCursorGroup();
 		
 		if (cgi >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET) {
-			int start_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsIndex(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START);
-			int end_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsIndex(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
-			if ((start_inde <= cgi) && (end_inde >= cgi)) {
+			int start_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsIndex(KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START);
+			int end_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsIndex(KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
+			int raw_start_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsRawIndex(start_inde);
+			int raw_end_inde = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsRawIndex(end_inde);
+			int raw_cgi = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getCPPPartsRawIndex(cgi);
+
+
+			
+			if ((raw_start_inde <= raw_cgi) && (raw_end_inde >= raw_cgi)) {
 				
-				int ato_parts_index = cgi - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
+				int ato_parts_index = raw_cgi;
 				if (ato_parts_index != parts_index) {
 					parts_index = ato_parts_index;
 					changeTexPartsDayo(gg2,robop, g, tex1, tex2);				}
@@ -883,20 +892,16 @@ void ShopParts_Garage2::makeTexDayo(Garage2* gg2, MyRobo_Garage2* parts, Graphic
 
 			if (siz == 1) {
 				// END ‚Æ START ‚ª“¯‚¶‚Å‚à@“ñ‚Â“o˜^‚·‚é
-				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GAMEN2_SCENE_ID_GARAGE
-					, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
+				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
 			
-				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GAMEN2_SCENE_ID_GARAGE
-					, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START);
+				MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START);
 
 			} else {
 				if (i == siz - 1) {
-					MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GAMEN2_SCENE_ID_GARAGE
-						, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
+					MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_END);
 				}
 				else {
-					MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GAMEN2_SCENE_ID_GARAGE
-						, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START + i);
+					MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(gg, KTROBO_GARAGE2_CPPPARTS_PARTS_TEX_PARTSDEF_START + i);
 				}
 			}
 		}
@@ -916,9 +921,9 @@ void ShopParts_Garage2::makeTexDayo(Garage2* gg2, MyRobo_Garage2* parts, Graphic
 	re.top = 450;
 	re.bottom = 450 + 200;
 	this->setRect(&re);
-	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(this, KTROBO_GAMEN2_SCENE_ID_GARAGE
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(this
 		, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYSHOPPARTS);
-	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(parts, KTROBO_GAMEN2_SCENE_ID_GARAGE
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(parts
 		, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO);
 	
 
@@ -1089,7 +1094,7 @@ void Garage2::mouse_clicked_up(MyTextureLoader* loader, Texture* tex, Texture* t
 	Gamen2_Sonotoki* sono = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getNowSonotoki();
 	if (sono) {
 		int focused_group_all_index = sono->getCursorGroup();
-		Gamen2_part* focused_part = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(focused_group_all_index);
+		Gamen2_part* focused_part = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part( focused_group_all_index);
 		if (focused_part && focused_part->selected(x, y)) {
 			// lua ƒtƒ@ƒCƒ‹‚ðŒÄ‚Ô
 			MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->pauseWork();
@@ -1162,7 +1167,7 @@ void Garage2::load(Game* gg, Graphics* g, AtariHantei* hantei, Texture* tex, Tex
 	stex_g->load(g, tex, tex2, loader, hantei);
 	*/
 
-	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(robog, KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO);
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(robog, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO);
 
 	MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(KTROBO_GARAGE2_INIT_LUA_FILEPATH);
 		
@@ -1890,7 +1895,7 @@ void Garage2::modoru(Texture* tex, Texture* tex2, Game* game) {
 	//	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->makeHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_HENSUU_ID_SHOP_BUY_PARTS, KTROBO_GARAGE2_HENSUU_IS_LOAD_PARTS_NO);
 	
 		MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->clearCPPParts(KTROBO_GAMEN2_SCENE_ID_GARAGE);
-		MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(robog, KTROBO_GAMEN2_SCENE_ID_GARAGE, KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO);
+		MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->setCPPParts(robog,  KTROBO_GARAGE2_CPPPARTS_PARTSDEF_MYROBO);
 		MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/garage/modoru.lua");
 		MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->doAndCoDoExecByKey(1);
 	}
@@ -1968,7 +1973,7 @@ void Garage2::pressed_button_up(Texture* tex1, Texture* tex2, Game* game) {
 		sono->setCursorY(sono->getCursorY() - 1);
 		int all_inde = sono->getCursorGroup();
 		Gamen2_part* pp = 0;
-		pp = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(all_inde);
+		pp = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part( all_inde);
 		if (pp && pp->getIsWork()) {
 			if (focused_part != pp) {
 				focused_part = pp;
@@ -2064,7 +2069,7 @@ void Garage2::pressed_button_right(Texture* tex1, Texture* tex2, Game* game) {
 		sono->setCursorX(sono->getCursorX() - 1);
 		int all_inde = sono->getCursorGroup();
 		Gamen2_part* pp = 0;
-		pp =MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part(all_inde);
+		pp =MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getGamen2Part( all_inde);
 		if (pp && pp->getIsWork()) {
 			if (focused_part != pp) {
 				focused_part = pp;
