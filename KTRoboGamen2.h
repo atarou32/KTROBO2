@@ -184,8 +184,8 @@ public:
 		bool getIsWork() { return is_work; };
 
 		const MYRECT * getRect() { return &nowRect; }
-		virtual int getGroupIndex() { return 0; };
-		virtual int getAllIndex() { return 0; };
+	//	virtual int getGroupIndex() { return 0; };
+	//	virtual int getAllIndex() { return 0; };
 		virtual void setRect(MYRECT* re) {
 			rect = *re;
 			nowRect = *re;
@@ -289,10 +289,10 @@ public:
 
 	class Gamen2_partGroup : public Gamen2_part {
 	public:
-		Gamen2_partGroup(int scene_id,int all_index, int group_index, Texture* tex, Texture* tex2) : Gamen2_part() {
+		Gamen2_partGroup(int scene_id/*,int all_index, int group_index,*/, Texture* tex, Texture* tex2) : Gamen2_part() {
 			this->scene_id = scene_id;
-			this->group_index = group_index;
-			this->all_index = all_index;
+		//	this->group_index = group_index;
+		//	this->all_index = all_index;
 			is_use = true;
 			help_text = KTROBO_GAMEN2_LUA_FILENAME_NO_LUA;
 			selected_lua = KTROBO_GAMEN2_LUA_FILENAME_NO_LUA;
@@ -307,17 +307,19 @@ public:
 		void cleardayo(Texture* tex, Texture* tex2); // texやtextの内容などをlightdeleteする vectorもクリアする
 		int setText(int text_index, bool is_tex2,IN_ int* recto);
 		int setTex(int tex_index, bool is_tex2, IN_ int* recto);
-		int getAllIndex() { return all_index; };
-	private:
+		//int getAllIndex() { return all_index; };
+	protected:
 		Texture* tex;
 		Texture* tex2;
+	private:
 		bool is_use;
 		int scene_id;
-		int all_index;
-		int group_index;
+		//int all_index;
+		//int group_index;
 		vector<MYRECT> now_rects; // これにマウスの動きのフォーカス判定にも使用する
 		vector<MYRECT> dest_rects;
 		vector<MYRECT> rects;
+	protected:
 		vector<GAMEN2_PARTGROUPSTRUCT> tex_or_textindexs;
 
 		// rects および　textindexs help_text に関しては　外部からロードされる可能性があるので使うときは CS_LOAD_CS のロックをかける
@@ -345,7 +347,7 @@ public:
 		bool moveLoop(float dt); // 動き終わったらtrueを返す
 		void tenmetu(float time, float tenmetu_kankaku);
 		bool tenmetuLoop(float dt);
-		int getGroupIndex() { return group_index; };
+		//int getGroupIndex() { return group_index; };
 		vector<GAMEN2_PARTGROUPSTRUCT>* getTexOrTextIndexs() { return &tex_or_textindexs; };
 	};
 

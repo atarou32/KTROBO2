@@ -15,9 +15,9 @@ public:
 	Loadable2();
 	~Loadable2();
 private:
-
+public:
 	bool getIsLoaded();
-
+private:
 	void setLoopThread();
 	bool getIsLoadedForLoopThread();
 	void setLoadedForLoopThread();

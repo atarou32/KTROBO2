@@ -4,7 +4,7 @@ tex2 = Texture:getIS(0,1)
 tex_index = tex:getTexture(KTROBO_GARAGE2_IMG_PATH, 4096)
 tex_index2 = tex2:getTexture(KTROBO_GARAGE2_IMG_PATH,4096)
 
-button_str = [[購入に成功しました]]
+button_str = [[機体構成のロードに成功]]
 x = 500
 y = 350
 offdayo = 5
@@ -56,3 +56,5 @@ end
 for key, value in pairs(g_texsunk) do
 tex2:lightdeleteRenderTex(value)
 end
+
+

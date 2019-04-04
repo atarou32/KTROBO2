@@ -315,6 +315,7 @@ int Gamen2::getCPPPartsIndex(int parts_DEF) {
 
 void Gamen2::makeSonotoki(int scene_id, int gamen_id, char* lua_filename) {
 	// rock load
+	CS::instance()->enter(CS_MESSAGE_CS, "enter");
 	CS::instance()->enter(CS_LOAD_CS, "makesonotoki");
 	volatile int inde = sonotokis.size();
 	if ((inde <=0) || (sonotokis_map.find(pair<int, int>(scene_id, gamen_id)) == sonotokis_map.end())) {
@@ -327,6 +328,7 @@ void Gamen2::makeSonotoki(int scene_id, int gamen_id, char* lua_filename) {
 		sonotokis[sonotokis_map.find(pair<int, int>(scene_id, gamen_id))->second]->setLuaStr(lua_filename);
 	}
 	CS::instance()->leave(CS_LOAD_CS, "make sonotoki");
+	CS::instance()->leave(CS_MESSAGE_CS, "enter");
 
 }
 
@@ -500,6 +502,7 @@ int Gamen2::getSonotokiCursorGroup(int scene_id, int gamen_id) {
 	
 int Gamen2::getPartsGroupgetAllIndexFromGroupIndex(int group_index) {
 	// group “à‚Ìindex‚ð•Ô‚·
+	/*
 	CS::instance()->enter(CS_LOAD_CS, "gamen2 settexs");
 	volatile int ans = 0;
 	volatile int all_index = grouped_parts.size();
@@ -509,7 +512,11 @@ int Gamen2::getPartsGroupgetAllIndexFromGroupIndex(int group_index) {
 	}
 	CS::instance()->leave(CS_LOAD_CS, "gamen2 settexs");
 	return ans;
+	*/
 
+	//–¢Žg—p
+
+	return 0;
 }
 
 void Gamen2_part::setIsWorkAndRender(bool t)
@@ -542,9 +549,10 @@ void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(Gamen2* gamen, vector<Ga
 			//int cppinde = inde - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
 			//if ((cppinde >= 0) && (cppinde < cppsize)) {
 			Gamen2_part* pp = gamen->getGamen2Part(inde);// (*cpp_parts)[cppinde];
+			if (pp) {
 				pp->setIsWorkAndRender(true);
 				pp->setIsWork(false);
-			/*}
+			}/*}
 			else {
 				mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
 			}*/
@@ -574,7 +582,9 @@ void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(Gamen2* gamen, vector<Ga
 				//	mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
 				//}
 				Gamen2_part* pp = gamen->getGamen2Part(group_index);
-				pp->setIsWorkAndRender(true);
+				if (pp) {
+					pp->setIsWorkAndRender(true);
+				}
 			}
 			else {
 				mylog::writelog(KTROBO::WARNING, "group index okasiiin sonotoki\n");
@@ -653,7 +663,7 @@ int Gamen2::makePartsGroup(int scene_id, char* help_text, char* lua_file_when_fo
 	if (all_index >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET) {
 		mylog::writelog(KTROBO::WARNING, "cppparts offset index koeru");
 	}
-	Gamen2_partGroup* pg = new Gamen2_partGroup(scene_id, all_index, group_index,tex,tex2);
+	Gamen2_partGroup* pg = new Gamen2_partGroup(scene_id/*, all_index, group_index*/,tex,tex2);
 	pg->setString(help_text, lua_file_when_focused, lua_file_when_selected);
 	all_parts.push_back(pg);
 	grouped_parts.push_back(pg);

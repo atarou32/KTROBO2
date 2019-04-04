@@ -4,7 +4,7 @@ tex2 = Texture:getIS(0,1)
 tex_index = tex:getTexture(KTROBO_GARAGE2_IMG_PATH, 4096)
 tex_index2 = tex2:getTexture(KTROBO_GARAGE2_IMG_PATH,4096)
 
-button_str = "çwì¸Ç…é∏îsÇµÇ‹ÇµÇΩ"
+button_str = [[çwì¸Ç…é∏îsÇµÇ‹ÇµÇΩ]]
 x = 500
 y = 350
 offdayo = 5
@@ -15,33 +15,44 @@ tex2:setRenderTextIsRender(texeddd,true)
 tex2:setRenderTextColor(texeddd,0xFF000000)
 texe2ddd = tex2:getRenderTex(tex_index2, 0xFFFFFFFF, x, y, width, 54, 68, 376, 238-68, 54)
 
-tex2:setRenderTextIsRender(texeddd,false)
-tex2:setRenderTexIsRender(texe2ddd,false)
+local g_texsunk = g_texsunk or {}
+local g_textsunk = g_textsunk or {}
+g_texsunk[texe2ddd] = texe2ddd
+g_textsunk[texeddd] = texeddd
+
+for key, value in pairs(g_textsunk) do
+tex2:setRenderTextIsRender(value,true)
+end
+for key, value in pairs(g_texsunk) do
+tex2:setRenderTexIsRender(value,true)
+end
+
+celd(0)
+
+
+for key, value in pairs(g_textsunk) do
+tex2:setRenderTextIsRender(value,false)
+end
+for key, value in pairs(g_texsunk) do
+tex2:setRenderTexIsRender(value,false)
+end
 
 celd(1)
-tex2:setRenderTextIsRender(texeddd,true)
-tex2:setRenderTexIsRender(texe2ddd,true)
+
+
+for key, value in pairs(g_textsunk) do
+tex2:setRenderTextIsRender(value,true)
+end
+for key, value in pairs(g_texsunk) do
+tex2:setRenderTexIsRender(value,true)
+end
 
 celd(2)
-tex2:setRenderTextIsRender(texeddd,false)
-tex2:setRenderTexIsRender(texe2ddd,false)
-
-celd(3)
-tex2:setRenderTextIsRender(texeddd,true)
-tex2:setRenderTexIsRender(texe2ddd,true)
-
-celd(4)
-tex2:setRenderTextIsRender(texeddd,false)
-tex2:setRenderTexIsRender(texe2ddd,false)
-
-celd(3)
-tex2:setRenderTextIsRender(texeddd,true)
-tex2:setRenderTexIsRender(texe2ddd,true)
-
-celd(4)
-tex2:setRenderTextIsRender(texeddd,false)
-tex2:setRenderTexIsRender(texe2ddd,false)
 
 
-tex2:lightdeleteRenderText(texeddd)
-tex2:lightdeleteRenderTex(texe2ddd)
+for key, value in pairs(g_textsunk) do
+tex2:lightdeleteRenderText(value)
+end
+for key, value in pairs(g_texsunk) do
+tex2:lightdeleteRenderTex(value)
+end

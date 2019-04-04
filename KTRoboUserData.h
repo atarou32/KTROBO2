@@ -8,12 +8,13 @@
 namespace KTROBO {
 
 #define KTROBO_USERDATA_ASMBODY_MAX 16
+#define KTROBO_USERDATA_ASMBODY_NOW_ASM_INDEX 0
 #define KTROBO_USERDATA_ITEM_MAX 512
 #define KTROBO_USERDATA_EMPTYITEM_METADATA_FILENAME "resrc/ktrobo/info/metadata/ktroboemptypartsmetadata.txt"
 
 class ItemWithCategory;
 	// AsmRobo では　Item* の　デストラクタは呼ばない
-class AsmRobo {
+class AsmRobo : public Loadable2{
 	private:
 
 		ItemWithCategory* head;
@@ -29,11 +30,11 @@ class AsmRobo {
 		ItemWithCategory* lshoulder_weapon;
 		ItemWithCategory* inside_weapon;
 public:
-		Robo* robo;
+		//Robo* robo;
 
 	public:
 		AsmRobo() {
-			robo = new Robo();
+		//	robo = new Robo();
 			head = 0;
 			body = 0;
 			arm = 0;
@@ -48,18 +49,23 @@ public:
 			inside_weapon = 0;
 		};
 		~AsmRobo() {
-			if (robo) {
+			/*if (robo) {
 				robo->release();
 				delete robo;
 				robo = 0;
-			}
+			}*/
 		};
 		void initRobo(Graphics* g, MyTextureLoader* loader) {
-			robo->initWithOutLoadingParts(g, loader);
+		//	robo->initWithOutLoadingParts(g, loader);
 		}
 		void setItemWithCategory(ItemWithCategory* i);
-		bool hanneiItemToRobo(Graphics* g , MyTextureLoader* tex_loader); // ロボにメッシュまでを反映させる　できなかったらfalseを返す
+		bool hanneiItemToRobo(Robo* robo, Graphics* g , MyTextureLoader* tex_loader); // ロボにメッシュまでを反映させる　できなかったらfalseを返す
 		void saveToFile(const char* filename);
+		void loadItems(Graphics* g, MyTextureLoader* loader);
+
+		void changeToThisAsm(AsmRobo* srca);
+		
+
 };
 
 class AsmBody : public Loadable2 {
@@ -106,8 +112,37 @@ private:
 	
 	string hyouka_name;
 public:
+	string getKidouRank();
+	string getSougouRank();
+	string getSoukouRank();
+	string getAttackRank();
+	const char* getRankString(AsmRank rank) {
+		if (rank == AsmRank::S) {
+			return "S";
+		}
+		if (rank == AsmRank::A) {
+			return "A";
+		}
+		if (rank == AsmRank::B) {
+			return "B";
+		}
+		if (rank == AsmRank::C) {
+			return "C";
+		}
+		if (rank == AsmRank::D) {
+			return "D";
+		}
+		if (rank == AsmRank::E) {
+			return "E";
+		}
+		if (rank == AsmRank::F) {
+			return "F";
+		}
+		return "不明";
+
+	}
 	void init(Graphics* g, MyTextureLoader* loader);
-	bool calc(Graphics* g, MyTextureLoader* loader);
+	bool calc(Robo* robo, Graphics* g, MyTextureLoader* loader);
 private:
 	void setHyoukaName();
 
@@ -126,6 +161,7 @@ public:
 	~AsmBody() {};
 	void saveToFile(const char* filename);
 	string getHyoukaName() { return hyouka_name; };
+	void changeToThisAsm(AsmBody* src);
 };
 
 
@@ -170,7 +206,7 @@ public:
 		}
 		//parts_id = 0;
 	};
-	virtual void equip(Robo* robo, Graphics* g, MyTextureLoader* loader);
+	virtual bool equip(Robo* robo, Graphics* g, MyTextureLoader* loader);
 	virtual void loadRoboParts(Graphics* g, MyTextureLoader* loader);
 	virtual RoboParts* getLoadedParts();
 
@@ -199,8 +235,8 @@ public:
 		}
 	};
 
-	virtual void equip(Robo* robo, Graphics* g, MyTextureLoader* loader) {};
-	virtual void loadRoboParts(Graphics* g, MyTextureLoader* loader) {};
+	virtual bool equip(Robo* robo, Graphics* g, MyTextureLoader* loader) { return true; };
+	virtual void loadRoboParts(Graphics* g, MyTextureLoader* loader) { setLoaded(); };
 	virtual RoboParts* getLoadedParts() {
 		return empty;
 	};
@@ -442,7 +478,7 @@ public:
 
 	bool isThisItemUsedInAllAsmBody(int item_id, Item* i) {};
 	bool isThisItemUsedInNowAsmBody(int item_id, Item* i) {};
-
+	AsmBody* getAsmBody(int asm_id);
 
 };
 

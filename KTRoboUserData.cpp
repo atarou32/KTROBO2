@@ -134,52 +134,65 @@ void UserData::loadAsmBodyFile(int file_id) {
 				asms[file_id].arobo.setItemWithCategory(
 					
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "body") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "arm") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "leg") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "booster") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "fcs") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "engine") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "rarm") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "larm") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "rkata") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "lkata") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 			else if (strcmp(ma.Toke(), "inside") == 0) {
 				asms[file_id].arobo.setItemWithCategory(
 					myitem[item_id_to_index_map.find(ma.GetIntToken())->second]);
+				ma.GetIntToken();
 			}
 		}
+		ma.deletedayo();
 	}
 
 }
@@ -190,46 +203,46 @@ void AsmBody::saveToFile(const char* filename) {
 }
 void AsmRobo::saveToFile(const char* filename) {
 	if (head) {
-		mylog::writelog(filename, "head=%d;\n", head->item->getItemId());
+		mylog::writelog(filename, "head=%d;%d;\n", head->item->getItemId(), head->item->getPartsId());
 	}
 	if (body) {
-		mylog::writelog(filename, "body=%d;\n", body->item->getItemId());
+		mylog::writelog(filename, "body=%d;%d;\n", body->item->getItemId(), body->item->getPartsId());
 	}
 	if (leg) {
-		mylog::writelog(filename, "leg=%d;\n", leg->item->getItemId());
+		mylog::writelog(filename, "leg=%d;%d;\n", leg->item->getItemId(), leg->item->getPartsId());
 	}
 	if (arm) {
-		mylog::writelog(filename, "arm=%d;\n", arm->item->getItemId());
+		mylog::writelog(filename, "arm=%d;%d;\n", arm->item->getItemId(), arm->item->getPartsId());
 	}
 
 	if (booster) {
-		mylog::writelog(filename, "booster=%d;\n", booster->item->getItemId());
+		mylog::writelog(filename, "booster=%d;%d;\n", booster->item->getItemId(), booster->item->getPartsId());
 	}
 
 	if (engine) {
-		mylog::writelog(filename, "engine=%d;\n", engine->item->getItemId());
+		mylog::writelog(filename, "engine=%d;%d;\n", engine->item->getItemId(), engine->item->getPartsId());
 	}
 	if (fcs) {
-		mylog::writelog(filename, "fcs=%d;\n", fcs->item->getItemId());
+		mylog::writelog(filename, "fcs=%d;%d;\n", fcs->item->getItemId(), fcs->item->getPartsId());
 	}
 
 	if (rarm_weapon) {
-		mylog::writelog(filename, "rarm=%d;\n", rarm_weapon->item->getItemId());
+		mylog::writelog(filename, "rarm=%d;%d;\n", rarm_weapon->item->getItemId(), rarm_weapon->item->getPartsId());
 	}
 	if (larm_weapon) {
-		mylog::writelog(filename, "larm=%d;\n", larm_weapon->item->getItemId());
+		mylog::writelog(filename, "larm=%d;%d;\n", larm_weapon->item->getItemId(), larm_weapon->item->getPartsId());
 	}
 
 	if (rshoulder_weapon) {
-		mylog::writelog(filename, "rkata=%d;\n", rshoulder_weapon->item->getItemId());
+		mylog::writelog(filename, "rkata=%d;%d;\n", rshoulder_weapon->item->getItemId(), rshoulder_weapon->item->getPartsId());
 	}
 
 	if (lshoulder_weapon) {
-		mylog::writelog(filename, "lkata=%d;\n", lshoulder_weapon->item->getItemId());
+		mylog::writelog(filename, "lkata=%d;%d;\n", lshoulder_weapon->item->getItemId(), lshoulder_weapon->item->getPartsId());
 	}
 
 	if (inside_weapon) {
-		mylog::writelog(filename, "inside=%d;\n", inside_weapon->item->getItemId());
+		mylog::writelog(filename, "inside=%d;%d;\n", inside_weapon->item->getItemId(),inside_weapon->item->getPartsId());
 	}
 
 
@@ -361,10 +374,31 @@ void UserData::loadItemFile() {
 		item_max_id++;
 	}
 }
+void AsmRobo::changeToThisAsm(AsmRobo* srca) {
+	this->arm = srca->arm;
+	this->body = srca->body;
+	this->booster = srca->booster;
+	this->engine = srca->engine;
+	this->fcs = srca->fcs;
+	this->head = srca->head;
+	this->leg = srca->leg;
+	this->inside_weapon = srca->inside_weapon;
+	this->rarm_weapon = srca->rarm_weapon;
+	this->rshoulder_weapon = srca->rshoulder_weapon;
+	this->lshoulder_weapon = srca->lshoulder_weapon;
+	this->larm_weapon = srca->larm_weapon;
+	reset();
+}
+void AsmBody::changeToThisAsm(AsmBody* src) {
+	if (src) {
+		this->arobo.changeToThisAsm(&src->arobo);
+		this->is_use = src->is_use;
+		reset();
+	}
+}
 
-
-bool AsmBody::calc(Graphics* g, MyTextureLoader* loader) {
-	bool t  = arobo.hanneiItemToRobo(g, loader);
+bool AsmBody::calc(Robo* robo, Graphics* g, MyTextureLoader* loader) {
+	bool t  = arobo.hanneiItemToRobo(robo,g, loader);
 	if (!t) return false;
 
 	// rank 付けの仕方については　パラメータ調整をしてから考える
@@ -376,6 +410,7 @@ bool AsmBody::calc(Graphics* g, MyTextureLoader* loader) {
 
 
 	setHyoukaName();
+	setLoaded();
 	return true;
 
 
@@ -1091,22 +1126,26 @@ RoboParts* Item::getLoadedParts() {
 	return 0;
 
 }
-void Item::equip(Robo* robo, Graphics* g, MyTextureLoader* loader) {
+bool Item::equip(Robo* robo, Graphics* g, MyTextureLoader* loader) {
 	if (part) {
-		if (this->hasLoaded()) {
+		if (part->hasMeshLoaded()) {
 			part->equipRobo(robo, g, loader);
+			return true;
 		}
 		else {
 			mylog::writelog(KTROBO::WARNING, "there is yet loaded part in item equip\n");
+			return false;
 		}
 	}
 	else {
 		mylog::writelog(KTROBO::WARNING, "there is no part in item equip\n");
+		return false;
 	}
 }
 void Item::loadRoboParts(Graphics* g, MyTextureLoader* loader) {
 	if (part) {
 		if (!hasLoaded()) {
+			//Sleep(2000);
 			part->loadMesh(g, loader);
 		}
 		setLoaded();
@@ -1119,6 +1158,9 @@ void Item::loadRoboParts(Graphics* g, MyTextureLoader* loader) {
 
 void AsmRobo::setItemWithCategory(ItemWithCategory* i) {
 	if (!i) return;
+	if (i->item && i->item->isEmpty()) return;
+	if (!i->item) return;
+
 	switch (i->category) {
 	case ShopParts::PartsListCategory::ARM:
 		arm = i;
@@ -1159,10 +1201,123 @@ void AsmRobo::setItemWithCategory(ItemWithCategory* i) {
 		}
 
 	}
+	reset(); // loadedのフラグをリセットする
 
 }
+void AsmRobo::loadItems(Graphics* g, MyTextureLoader* loader) {
+	if (hasLoaded()) return;
+	if (head && head->item) {
+		if (!head->hasLoaded()) {
+			head->loadRoboParts(g, loader);
 
-bool AsmRobo::hanneiItemToRobo(Graphics* g, MyTextureLoader* loader) {
+		}
+		if (!head->item->hasLoaded()) {
+			head->item->loadRoboParts(g, loader);
+		}
+	}
+
+	if (body && body->item) {
+		if (!body->hasLoaded()) {
+			body->loadRoboParts(g, loader);
+		}
+		if (!body->item->hasLoaded()) {
+			body->item->loadRoboParts(g, loader);
+		}
+	}
+
+	if (arm && arm->item) {
+		if (!arm->hasLoaded()) {
+			arm->loadRoboParts(g, loader);
+		}
+		if (!arm->item->hasLoaded()) {
+			arm->item->loadRoboParts(g, loader);
+		}
+	}
+
+	if (leg && leg->item) {
+		if (!leg->hasLoaded()) {
+			leg->loadRoboParts(g, loader);
+		}
+		if (!leg->item->hasLoaded()) {
+			leg->item->loadRoboParts(g, loader);
+		}
+	}
+
+	if (this->booster && booster->item) {
+		if (!booster->hasLoaded()) {
+			booster->loadRoboParts(g, loader);
+		}
+		if (!booster->item->hasLoaded()) {
+			booster->item->loadRoboParts(g, loader);
+		}
+	}
+
+	if (engine && engine->item) {
+		if (!engine->hasLoaded()) {
+			engine->loadRoboParts(g, loader);
+		}
+		if (!engine->item->hasLoaded()) {
+			engine->item->loadRoboParts(g, loader);
+		}
+	}
+
+	if (fcs && fcs->item) {
+		if (!fcs->hasLoaded()) {
+			fcs->loadRoboParts(g, loader);
+		}
+		if (!fcs->item->hasLoaded()) {
+			fcs->item->loadRoboParts(g, loader);
+		}
+	}
+
+	if (rarm_weapon && rarm_weapon->item) {
+		if (!rarm_weapon->hasLoaded()) {
+			rarm_weapon->loadRoboParts(g, loader);
+		}
+		if (!rarm_weapon->item->hasLoaded()) {
+			rarm_weapon->item->loadRoboParts(g, loader);
+		}
+	}
+	if (larm_weapon && larm_weapon->item) {
+		if (!larm_weapon->hasLoaded()) {
+			larm_weapon->loadRoboParts(g, loader);
+		}
+		if (!larm_weapon->item->hasLoaded()) {
+			larm_weapon->item->loadRoboParts(g, loader);
+		}
+	}
+
+	if (lshoulder_weapon && lshoulder_weapon->item) {
+		if (!lshoulder_weapon->hasLoaded()) {
+			lshoulder_weapon->loadRoboParts(g, loader);
+		}
+		if (!lshoulder_weapon->item->hasLoaded()) {
+			lshoulder_weapon->item->loadRoboParts(g, loader);
+		}
+	}
+	if (rshoulder_weapon && rshoulder_weapon->item) {
+		if (!rshoulder_weapon->hasLoaded()) {
+			rshoulder_weapon->loadRoboParts(g, loader);
+		}
+		if (!rshoulder_weapon->item->hasLoaded()) {
+			rshoulder_weapon->item->loadRoboParts(g, loader);
+		}
+
+	}
+
+	if (inside_weapon) {
+		if (!inside_weapon->hasLoaded()) {
+			inside_weapon->loadRoboParts(g, loader);
+		}
+		if (!inside_weapon->item->hasLoaded()) {
+			inside_weapon->item->loadRoboParts(g, loader);
+		}
+
+	}
+
+	setLoaded();
+}
+bool AsmRobo::hanneiItemToRobo(Robo* robo, Graphics* g, MyTextureLoader* loader) {
 	if (robo) {
 		// inside rarm larm rkata lkata のみ　0になってるときに外す
 		// ほかの部位に関しては　元のままにする
@@ -1247,16 +1402,25 @@ bool AsmRobo::hanneiItemToRobo(Graphics* g, MyTextureLoader* loader) {
 			if (fcs->hasLoaded()) {
 				fcs->item->equip(robo, g, loader);
 			}
+			else {
+				return false;
+			}
 		}
 
 		if (rarm_weapon) {
 			if (rarm_weapon->hasLoaded()) {
 				rarm_weapon->item->equip(robo, g, loader);
 			}
+			else {
+				return false;
+			}
 		}
 		if (larm_weapon) {
 			if (larm_weapon->hasLoaded()) {
 				larm_weapon->item->equip(robo, g, loader);
+			}
+			else {
+				return false;
 			}
 		}
 
@@ -1264,16 +1428,25 @@ bool AsmRobo::hanneiItemToRobo(Graphics* g, MyTextureLoader* loader) {
 			if (lshoulder_weapon->hasLoaded()) {
 				lshoulder_weapon->item->equip(robo, g, loader);
 			}
+			else {
+				return false;
+			}
 		}
 		if (rshoulder_weapon) {
 			if (rshoulder_weapon->hasLoaded()) {
 				rshoulder_weapon->item->equip(robo, g, loader);
+			}
+			else {
+				return false;
 			}
 		}
 
 		if (inside_weapon) {
 			if (inside_weapon->hasLoaded()) {
 				inside_weapon->item->equip(robo, g, loader);
+			}
+			else {
+				return false;
 			}
 		}
 
@@ -1302,3 +1475,24 @@ void UserData::setItemWithCategoryToVector(vector<ItemWithCategory*>* outdayo, S
 	}
 }
 
+AsmBody* UserData::getAsmBody(int asm_id) {
+	if ((asm_id >= 0) && (asm_id < KTROBO_USERDATA_ASMBODY_MAX)) {
+		return &asms[asm_id];
+	}
+	return 0;
+}
+
+
+string AsmBody::getKidouRank() {
+	return string("機動：") + getRankString(kidou_rank);
+}
+
+string AsmBody::getSougouRank() {
+	return string("総合：") + getRankString(sougou_rank);
+}
+string AsmBody::getSoukouRank() {
+	return string("装甲：") + getRankString(soukou_rank);
+}
+string AsmBody::getAttackRank() {
+	return string("攻撃：") + getRankString(attack_rank);
+}

@@ -453,6 +453,7 @@ bool Game::Init(HWND hwnd) {
 	//Sleep(1000);
     L = luaL_newstate();
     luaopen_base(L);
+	luaopen_table(L);
 	luaopen_coroutine(L);
 //	guis = new GUIs();
 

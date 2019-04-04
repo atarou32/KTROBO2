@@ -37,6 +37,7 @@ public:
 	};
 	
 };
+class AsmBody;
 class Garage2;
 class MyRobo_Garage2 : public Loadable2 , public Gamen2_part{
 private:
@@ -45,6 +46,8 @@ private:
 	bool toggle_render;
 	int robo_parts_tex[32];
 	int robo_parts_text[32];
+	AsmBody* now_asm;
+	bool asm_hanneied;
 public:
 	Robo* robo;
 private:
@@ -54,6 +57,9 @@ public:
 	MyRobo_Garage2();
 	~MyRobo_Garage2();
 	void render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX* proj);
+	void setAsm(AsmBody* asme);// { now_asm = asme; };
+	void atoload(Garage2* gg, Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
+	void makeRoboPartTex(Garage2* gg, Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
 
 	void load(Garage2* gg,Graphics* g, Texture* tex1, Texture* tex2, MyTextureLoader* loader, AtariHantei* hantei); // user/MyRobo.robodat を開いて該当のパーツのロボを作る
 
@@ -129,7 +135,7 @@ public:
 	void Del(Texture* tex, Texture* tex2);
 	
 	bool purgeParts(int all_index, Game* g);
-	bool assembleParts(int all_index, Game* g);
+	bool assembleParts(Garage2* gg, int all_index, Game* game, Graphics* g);
 	bool sellParts(int all_index, Game* g);
 	const char* getHelpString() {
 		return "選択しているパーツの外見です。ゴージャス！";
@@ -182,6 +188,99 @@ public:
 	}
 };
 
+class AsmBody;
+
+class AsmSaveLoadPartsGroup_Garage2 : public Loadable2, public Gamen2_partGroup {
+private:
+	AsmBody* now_asm;
+	AsmBody* asmb;
+	Garage2* gg2;
+	MyRobo_Garage2* roboparts;
+	//Graphics* g;
+	Game* gg;
+	bool for_load;
+	Robo* robo;
+	MyTextureLoader * loader;
+	int file_index;
+public:
+
+	AsmSaveLoadPartsGroup_Garage2(int file_index, MyTextureLoader * loader, AsmBody* now_asm, bool for_load,Robo* robo,Game* gg,Garage2* gg2, MyRobo_Garage2* parts, Graphics* g, AsmBody* asmb, int scene_id, Texture* tex, Texture* tex2) :Gamen2_partGroup(scene_id,tex, tex2) {
+		this->asmb = asmb;
+		this->gg2 = gg2;
+		this->roboparts = parts;
+		this->loader = loader;
+		//this->g = g;
+		this->gg = gg;
+		this->for_load = for_load;
+		this->robo = robo;
+		this->file_index = file_index;
+		this->now_asm = now_asm;
+		int tex_index2 = tex->getTexture(KTROBO_GARAGE2_IMG_PATH);
+		int tee = tex->getRenderTex(tex_index2, 0x000000FF,
+			400, 300 , 300, 30, 18, 390, 1, 1);
+		int textee = tex->getRenderText("計算中です・・・", 400, 300, 22, 300, 30);
+		tex->setRenderTextIsRender(textee, true);
+		int recto[4];
+		recto[0] = 400;
+		recto[1] = 400 + 300;
+		recto[2] = 300;
+		recto[3] = 300 + 30;
+
+		this->setTex(tee, false, recto);
+		this->setText(textee, false, recto);
+		MYRECT rec;
+		rec.left = 400;
+		rec.right = 400 + 300;
+		rec.top = 300;
+		rec.bottom = 300 + 30;
+		this->setRect(&rec);
+
+	};
+
+	~AsmSaveLoadPartsGroup_Garage2() {};
+
+	void focusExe();
+	bool exeSelectKondokoso(int file_inde, Graphics* g);
+
+	void selectExe();
+	void load(Graphics* g);
+
+};
+
+
+class AsmSaveLoadParts_Garage2 : public Loadable2, Gamen2_part {
+private:
+	Robo* robo;
+	//vector<AsmBody*> asms;// [KTROBO_USERDATA_ASMBODY_MAX];
+	MyTextureLoader* loader;
+	vector<AsmSaveLoadPartsGroup_Garage2*> pgs;
+	int parts_index;
+	bool for_load;
+	int parts_category;
+	int parts_category2;
+	Texture* tex1;
+	Texture* tex2;
+public:
+	AsmSaveLoadParts_Garage2(int p, int p2, MyTextureLoader* loaer, bool for_lor, Texture* tex, Texture* tex2) :Gamen2_part() {
+		parts_category = p;
+		parts_category2 = p2;
+		loader = loaer;
+		for_load = for_lor;
+		parts_index = 0;
+		robo = 0;
+		this->tex1 = tex;
+		this->tex2 = tex2;
+
+	}
+	~AsmSaveLoadParts_Garage2();
+
+	//void render(Garage2* gg2, MyRobo_Garage2* robop, Texture* tex1, Texture* tex2, Graphics* g, MYMATRIX* view, MYMATRIX* proj, float dt);
+	void load(Garage2* gg2, MyRobo_Garage2* myrobob, Texture* tex, Texture* tex2, Game* gg, Graphics* g);
+	void atoload(Graphics* g);
+	void doLoadSave(int file_index, Graphics* g);
+
+};
+
 
 class Garage2 : public Loadable2, Gamen2_part{
 private:
@@ -209,6 +308,9 @@ private:
 
 	vector<AssembleParts_Garage2*> destruct_assembles;
 	AssembleParts_Garage2* assembles_g;
+
+	vector<AsmSaveLoadParts_Garage2*> destruct_asmsls;
+	AsmSaveLoadParts_Garage2* asmsls_g;
 
 public:
 	Garage2();
@@ -249,6 +351,7 @@ public:
 	void setCursorTexPosToCursorPos(Texture* tex1, Texture* tex2, Game* game);
 	void getMessageFromLua(Graphics* g,Texture* tex1, Texture* tex2, Game* game);
 	void getSuutiChara(int suuti, char* chara);
+	void setAsmToRoboG(AsmBody* asme);
 };
 class SceneGarage2 : public Scene, public INPUTSHORICLASS {
 

@@ -20,20 +20,20 @@ gamen2:setPartsGroupMoveTo(end_index2,1200,150,(238-68)*2+100,27,"500.0")
 if (selected_group_inde ~= end_index2) then
 
 if ((selected_group_inde > start_index) and (selected_group_inde <= end_index)) then
-gamen2:setPartsGroupMoveTo(selected_group_inde-1,700,40,(238-68)*2+100,27,"500.0")
+gamen2:setPartsGroupMoveTo(selected_group_inde-1,600,400,(238-68)*2+100,27,"500.0")
 
 end
 if (selected_group_inde < end_index) then
-gamen2:setPartsGroupMoveTo(selected_group_inde+1,700,120,(238-68)*2+100,27,"500.0")
+gamen2:setPartsGroupMoveTo(selected_group_inde+1,600,600,(238-68)*2+100,27,"500.0")
 end
 
 end
 
 if (selected_group_inde == end_index2) then
-gamen2:setPartsGroupMoveTo(end_index,700,40,(238-68)*2+100,27,"500.0")
+gamen2:setPartsGroupMoveTo(end_index,600,400,(238-68)*2+100,27,"500.0")
 end
 if (selected_group_inde == end_index) then
-gamen2:setPartsGroupMoveTo(end_index2,700,120,(238-68)*2+100,27,"500.0")
+gamen2:setPartsGroupMoveTo(end_index2,600,600,(238-68)*2+100,27,"500.0")
 end
 
-gamen2:setPartsGroupMoveTo(selected_group_inde,600,80,(238-68)*2+100,27,"500.0")
+gamen2:setPartsGroupMoveTo(selected_group_inde,550,500,(238-68)*2+100,27,"500.0")
