@@ -548,6 +548,7 @@ bool Game::Init(HWND hwnd) {
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponpulsegun.lua");
 */
 	WeaponEffect::Init(weapon_effect_manager);
+	lua_ets->getInstance(0)->setAITask(task_threads[TASKTHREADS_AIDECISION]);
 
 	effect_suuji = new EffectSuuji(TASKTHREADS_UPDATEMAINRENDER,effect_managers->getInstance(0));
 

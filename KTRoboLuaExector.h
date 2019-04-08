@@ -10,6 +10,7 @@ using namespace std;
 #include <vector>
 
 namespace KTROBO {
+class Task;
 
 interface ILuaExector {
 
@@ -70,13 +71,17 @@ private:
 	lua_State* L;
 	long now_timestamp;
 	LuaExec tasks[KTROBO_LUA_EXECTOR_TASK_MAX]; 
+	Task* ai_task;
+
 	bool is_donow;
 	// 256しかないので　即実行でないまたは繰り返してｃ＋＋で呼んでもらうファイルはなるべく少なくする　lua側でまとめる
 	//setexecしなくていいdonowはロックをかけない？ いちおうかけておこう donowもいったんタスクに設定してから呼ぶ
 public:
 	LuaExector(lua_State* L);
 	~LuaExector();
-
+	void setAITask(Task* ai) {
+		ai_task = ai;
+	}
 	
 private:
 	
@@ -93,7 +98,9 @@ public:
 	void setExecCoDoUntilTime(char* lua_filename, int second_delay);
 	// 初めに実行されるのがsecond_delay後でそのあとはsecond_delay後ごとに呼ばれる
 	void setExecCoDoUntilKey(char* lua_filename, int key);
-
+public:
+	void doAndCoDoExecByKeyHonto(int key);
+public:
 	void doAndCoDoExecByKey(int key); // codoでも 登録しているタスクから実行させる
 	void resetAllLuaTask();
 	void doLoop(long timestamp); // 一秒ごとに呼ばれる もし実行されるタスクがある場合はすぐに実行される

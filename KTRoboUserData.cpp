@@ -396,7 +396,12 @@ void AsmBody::changeToThisAsm(AsmBody* src) {
 		reset();
 	}
 }
-
+ShopParts::PartsListCategory AsmRobo::getLegCategory() {
+	if (leg) {
+		return leg->category;
+	}
+	return ShopParts::PartsListCategory::UNKNOWN;
+}
 bool AsmBody::calc(Robo* robo, Graphics* g, MyTextureLoader* loader) {
 	bool t  = arobo.hanneiItemToRobo(robo,g, loader);
 	if (!t) return false;
@@ -407,7 +412,31 @@ bool AsmBody::calc(Robo* robo, Graphics* g, MyTextureLoader* loader) {
 	soukou_rank = A;
 	attack_rank = C;
 
+	ShopParts::PartsListCategory cc = arobo.getLegCategory();
+	switch (cc) {
+	case ShopParts::PartsListCategory::LEG_j2:
+			leg = LEG_J2;
+			break;
+	case ShopParts::PartsListCategory::LEG_k2:
+		leg = LEG_K2;
+		break;
+	case ShopParts::PartsListCategory::LEG_t2:
+		leg = LEG_T2;
+		break;
+	case ShopParts::PartsListCategory::LEG_4:
+		leg = LEG_4;
+		break;
+	case ShopParts::PartsListCategory::LEG_REVERSE:
+		leg = LEG_REVERSE;
+		break;
+	case ShopParts::PartsListCategory::LEG_tank:
+		leg = LEG_TANK;
+		break;
+	default:
+		leg = LEG_K2;
 
+
+	}
 
 	setHyoukaName();
 	setLoaded();
@@ -1469,7 +1498,7 @@ void UserData::setItemWithCategoryToVector(vector<ItemWithCategory*>* outdayo, S
 
 	int siz = myitem.size();
 	for (int i = 0; i < siz; i++) {
-		if (myitem[i]->category == category) {
+		if ((myitem[i]->category == category) && !myitem[i]->is_erased()) {
 			outdayo->push_back(myitem[i]);
 		}
 	}
@@ -1495,4 +1524,146 @@ string AsmBody::getSoukouRank() {
 }
 string AsmBody::getAttackRank() {
 	return string("UŒ‚F") + getRankString(attack_rank);
+}
+
+
+void AsmRobo::emptyItem(ShopParts::PartsListCategory category) {
+	if (category == ShopParts::PartsListCategory::INSIDE_WEAPON) {
+		inside_weapon = 0;
+	}
+	if ((category >= ShopParts::PartsListCategory::LARMWEAPON_START) && (category <= ShopParts::PartsListCategory::LARMWEAPON_END)) {
+		larm_weapon = 0;
+	}
+	if ((category >= ShopParts::PartsListCategory::RARMWEAPON_START) && (category <= ShopParts::PartsListCategory::RARMWEAPON_END)) {
+		rarm_weapon = 0;
+	}
+	if ((category >= ShopParts::PartsListCategory::LKATAWEAPON_START) && (category <= ShopParts::PartsListCategory::LKATAWEAPON_END)) {
+		lshoulder_weapon = 0;
+	}
+	if ((category >= ShopParts::PartsListCategory::RKATAWEAPON_START) && (category <= ShopParts::PartsListCategory::RKATAWEAPON_END)) {
+		rshoulder_weapon = 0;
+	}
+	// ‚Ù‚©‚Ì•”ˆÊ‚ÍŠO‚¹‚È‚¢
+}
+
+
+bool UserData::sellItemInShop(int item_id, ItemWithCategory* i) {
+	// AsmBodyfile‚ÉŽg‚Á‚Ä‚¢‚é‚à‚Ì‚Å‚ ‚ê‚ÎÁ‚³‚¹‚È‚¢
+	if (i && i->item && !i->item->isEmpty()&& !i->is_erased()) {
+		if (i->item->getItemId() == item_id) {
+
+			if (this->isThisItemUsedInAllAsmBody(item_id, i)) {
+				return false;
+			}
+
+			if (item_id_to_index_map.find(item_id) != item_id_to_index_map.end()) {
+				myitem[item_id_to_index_map.find(item_id)->second]->erase();
+				this->gold += myitem[item_id_to_index_map.find(item_id)->second]->item->getLoadedParts()->data->getData("PRICE")->int_data;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool AsmRobo::containsThisItem(int item_id, ItemWithCategory* c) {
+	if (!c) return false;
+
+	if ((c == head) && head->item) {
+		if (item_id == head->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == body) && body->item) {
+		if (item_id == body->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == arm) && arm->item) {
+		if (item_id == arm->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == leg) && leg->item) {
+		if (item_id == leg->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == fcs) && fcs->item) {
+		if (item_id == fcs->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == engine) && engine->item) {
+		if (item_id == engine->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == booster) && booster->item) {
+		if (item_id == booster->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == rarm_weapon) && rarm_weapon->item) {
+		if (item_id == rarm_weapon->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == larm_weapon) && larm_weapon->item) {
+		if (item_id == larm_weapon->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == rshoulder_weapon) && rshoulder_weapon->item) {
+		if (item_id == rshoulder_weapon->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == lshoulder_weapon) && lshoulder_weapon->item) {
+		if (item_id == lshoulder_weapon->item->getItemId()) {
+			return true;
+		}
+	}
+
+	if ((c == inside_weapon) && inside_weapon->item) {
+		if (item_id == inside_weapon->item->getItemId()) {
+			return true;
+		}
+	}
+
+
+	return false;
+
+}
+
+bool UserData::isThisItemUsedInAllAsmBody(int item_id, ItemWithCategory* i) {
+
+	if (i && i->item && !i->item->isEmpty()) {
+
+		for (int k = 0; k < KTROBO_USERDATA_ASMBODY_MAX; k++) {
+			if (asms[k].getIsUse()) {
+				if (asms[k].arobo.containsThisItem(item_id, i)) {
+					return true;
+				}
+
+			}
+		}
+
+		return false;
+	}
+
+	mylog::writelog(KTROBO::WARNING, "itemusedinallasmbody okasii\n");
+	return false;
+
 }

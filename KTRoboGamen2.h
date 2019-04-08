@@ -302,7 +302,7 @@ public:
 
 		};
 		~Gamen2_partGroup() {};
-		bool getIsUse(){ return is_use; }; // 外部でCS_LOAD_CSをロックすること
+		//bool getIsUse(){ return is_use; }; // 外部でCS_LOAD_CSをロックすること
 		void setString(char* help_text, char* focused_lua, char* selected_lua);
 		void cleardayo(Texture* tex, Texture* tex2); // texやtextの内容などをlightdeleteする vectorもクリアする
 		int setText(int text_index, bool is_tex2,IN_ int* recto);
@@ -428,7 +428,7 @@ public:
 		Gamen2_Sonotoki* now_sonotoki;
 		vector<Gamen2_event*> events;
 		map<int, int> events_map; // scene_id とindex
-
+		bool is_paused;
 		
 	public:
 		void pauseWork(); // moveToの動きは実行されるが　クリックやセレクトをしても反応しないようにする 
@@ -447,7 +447,7 @@ public:
 		void setSonotokiMakeKo(int scene_id, int gamen_id); // rock load
 		void setSonotokiSetGroupOnlyRenderGroup(int scene_id, int gamen_id, int all_index); // rock load
 		void setSonotokiSetGroupOnlyRenderGroupFromNowSonotokiIsRender(int scene_id, int gamen_id);
-
+		bool getPaused();
 		void setSonotokiSetGroupGroup(int scene_id, int gamen_id, int all_index, int cursor_x); // rock load
 		int getSonotokiCursorGroup(int scene_id, int gamen_id); // rock load
 		void setSonotokiNowSonotoki(int scene_id, int gamen_id); // rock load lua_filenameが呼ばれる

@@ -203,7 +203,7 @@ public:
 	virtual void Release()=0;
 	virtual RoboParts* myNew()=0;
 	bool hasMeshLoaded() {return mesh_loaded;}
-	virtual void equipRobo(Robo* robo, Graphics* g, MyTextureLoader* tex_loader){ return;}; // clone ‚ð‘•”õ‚³‚¹‚é
+	virtual void equipRobo(Robo* robo, Graphics* g, MyTextureLoader* tex_loader) = 0;// { return; }; // clone ‚ð‘•”õ‚³‚¹‚é
 	virtual bool isEmpty() {return false;}
 	virtual void init(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data, Graphics* g, MyTextureLoader* tex_loader, bool is_load_mesh=true) = 0;
 };
@@ -228,6 +228,7 @@ public:
 	RoboParts* myNew() {
 		return new RoboPartsEmpty();
 	}
+	virtual void equipRobo(Robo* robo, Graphics* g, MyTextureLoader* tex_loader) { return; }// { return; }; // clone ‚ð‘•”õ‚³‚¹‚é
 
 	bool isEmpty() {return true;}
 

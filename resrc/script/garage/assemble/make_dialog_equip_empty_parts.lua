@@ -6,7 +6,7 @@ tex_index = tex:getTexture(KTROBO_GARAGE2_IMG_PATH,4096)
 tex_index2 = tex2:getTexture(KTROBO_GARAGE2_IMG_PATH,4096)
 next_gamen_id_now = gamen_id_now + 1
 
-local_parts_index_dayo = g_parts_indexdayo
+local local_parts_index_dayo = g_parts_indexdayo
 
 -- まず変数を持ってきて　外せる種類のパーツだったら外す
 pg = gamen2:getHensuu(KTROBO_GAMEN2_SCENE_ID_GARAGE,KTROBO_GARAGE2_HENSUU_ID_PARTSCATEGORY) 

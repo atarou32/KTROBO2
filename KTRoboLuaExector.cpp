@@ -3,6 +3,7 @@
 #include "KTRoboCS.h"
 #include "KTRoboLog.h"
 #include "tolua_glue/tolua_glue.h"
+#include "KTRoboTask.h"
 
 using namespace KTROBO;
 
@@ -62,6 +63,7 @@ LuaExector::LuaExector(lua_State* L)
 	this->L = L;
 	now_timestamp = 0;
 	is_donow = false;
+	ai_task = 0;
 }
 
 
@@ -282,9 +284,7 @@ void LuaExector::cododayo(LuaExec* task) {
 	}
 
 }
-
-void LuaExector::doAndCoDoExecByKey(int key) {
-
+void LuaExector::doAndCoDoExecByKeyHonto(int key) {
 	CS::instance()->enter(CS_LUAEXE_CS, "test");
 	try {
 		for (int i = 0; i < KTROBO_LUA_EXECTOR_TASK_MAX; i++) {
@@ -313,6 +313,26 @@ void LuaExector::doAndCoDoExecByKey(int key) {
 		throw new GameError(KTROBO::FATAL_ERROR, "unknown error in dokeylua\n");
 	}
 	CS::instance()->leave(CS_LUAEXE_CS, "test");
+}
+
+void doExecByKeyTCB(TCB* thisTCB) {
+	((LuaExector*)(thisTCB->data))->doAndCoDoExecByKeyHonto(thisTCB->Work[0]);
+	((Task*)(thisTCB->Work[1]))->kill(thisTCB);
+
+}
+void LuaExector::doAndCoDoExecByKey(int key) {
+	if (ai_task) {
+		unsigned long work[TASK_WORK_SIZE];
+		memset(work, 0, sizeof(work));
+		work[0] = key;
+		work[1] = (unsigned long)(ai_task);
+		ai_task->make(doExecByKeyTCB, this, work, 0x0000FFFF);
+		return;
+	}
+	else {
+		mylog::writelog(KTROBO::FATAL_ERROR, "no ai task in luaexector\n");
+	}
+	
 }
 void LuaExector::setExecDoNow(char* lua_filename) {
 	LuaExec* le  = setExecTask(LuaExec::LUAEXEC_EXEC_TYPE::DONOW, lua_filename, 0, 0);

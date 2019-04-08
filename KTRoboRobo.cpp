@@ -2718,7 +2718,7 @@ void LShoulderWeapon::equipRobo(Robo* robo, Graphics* g, MyTextureLoader* tex_lo
 	new_parts->init(this);
 	if (robo->lsweapon) {
 		robo->lsweapon->Release();
-		delete robo->rsweapon;
+		delete robo->lsweapon;
 		robo->lsweapon  = 0;
 	}
 	robo->lsweapon = new_parts;

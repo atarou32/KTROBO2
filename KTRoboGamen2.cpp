@@ -11,6 +11,7 @@ Gamen2::Gamen2(Texture* tex, Texture* tex2)
 	now_sonotoki = 0;
 	this->tex = tex;
 	this->tex2 = tex2;
+	is_paused = true;
 }
 
 
@@ -193,7 +194,7 @@ void Gamen2_partGroup::cleardayo(Texture* tex, Texture* tex2) {
 	tex_or_textindexs.clear();
 
 
-	is_use = false;
+	//is_use = false;
 	
 	CS::instance()->leave(CS_LOAD_CS, "gamen2partgroup");
 	CS::instance()->leave(CS_MESSAGE_CS, "gamen2partgroup");
@@ -250,7 +251,7 @@ void Gamen2::pauseWork() {
 		it++;
 	}
 
-
+	is_paused = true;
 	CS::instance()->leave(CS_LOAD_CS, "enterpause");
 
 
@@ -598,6 +599,18 @@ void Gamen2_Sonotoki::setIsWorkAndRenderWhenNowSonotoki(Gamen2* gamen, vector<Ga
 
 
 }
+
+
+bool Gamen2::getPaused() {
+	volatile bool ise = true;
+	CS::instance()->enter(CS_LOAD_CS, "enter");
+	ise = is_paused;
+
+	CS::instance()->leave(CS_LOAD_CS, "enter");
+	return ise;
+}
+
+
 void Gamen2::setSonotokiNowSonotoki(int scene_id, int gamen_id) { // rock load lua_filename‚ªŒÄ‚Î‚ê‚é
 	CS::instance()->enter(CS_LOAD_CS, "nowsonotoki");
 	if (sonotokis_map.find(pair<int, int>(scene_id, gamen_id)) != sonotokis_map.end()) {
@@ -626,6 +639,7 @@ void Gamen2::setSonotokiNowSonotoki(int scene_id, int gamen_id) { // rock load l
 		CS::instance()->leave(CS_LOAD_CS, "now_sonotoki");
 		throw new GameError(KTROBO::FATAL_ERROR, "now sonotoki cant find sonotoki");
 	}
+	is_paused = false;
 	CS::instance()->leave(CS_LOAD_CS, "now sonotoki");
 }
 
@@ -833,15 +847,20 @@ void Gamen2::setPartsGroupMoveTo(int group_index, int x, int y, int width, int h
 	}
 	else if ((group_index >= KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET)) {
 		//int parts_def = group_index - KTROBO_GAMEN2_CPPPARTS_INDEX_OFFSET;
-		int cpp_index = this->getCPPPartsRawIndex(group_index);
-		int csize = cpp_parts.size();
-		if ((cpp_index >= 0) && (cpp_index < csize)) {
-			Gamen2_part* pp = cpp_parts[cpp_index];
-			rec.left = x;
-			rec.top = y;
-			rec.bottom = y + height;
-			rec.right = x + width;
-			pp->moveTo(&rec, time);
+		try {
+			int cpp_index = this->getCPPPartsRawIndex(group_index);
+			int csize = cpp_parts.size();
+			if ((cpp_index >= 0) && (cpp_index < csize)) {
+				Gamen2_part* pp = cpp_parts[cpp_index];
+				rec.left = x;
+				rec.top = y;
+				rec.bottom = y + height;
+				rec.right = x + width;
+				pp->moveTo(&rec, time);
+			}
+		}
+		catch (GameError* err) {
+			delete err;
 		}
 	}
 	CS::instance()->leave(CS_LOAD_CS, "gamen2 moveto");
