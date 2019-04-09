@@ -1182,6 +1182,25 @@ void Gamen2_partGroup::tenmetu(float time, float tenmetu_kankaku) {
 	this->tenmetu_kankaku = tenmetu_kankaku;
 	this->tenmetu_time = time;
 }
+
+void Gamen2_partGroup::changeText(char* t, Texture* tex, Texture* tex2) {
+
+	int siz = tex_or_textindexs.size();
+	for (int i = 0; i < siz; i++) {
+		if (tex_or_textindexs[i].is_text) {
+			if (tex_or_textindexs[i].is_tex2) {
+				tex2->setRenderTextChangeText(tex_or_textindexs[i].index, t);
+				tex2->setRenderTextIsRender(tex_or_textindexs[i].index, true);
+				return;
+			}
+			else {
+				tex->setRenderTextChangeText(tex_or_textindexs[i].index, t);
+				tex->setRenderTextIsRender(tex_or_textindexs[i].index, true);
+				return;
+			}
+		}
+	}
+}
 bool Gamen2_partGroup::tenmetuLoop(float dt) {
 	if (!is_tenmetu) return true;
 	if (dt < 0.0001) {

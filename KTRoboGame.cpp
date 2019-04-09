@@ -9,7 +9,7 @@
 #include "KTRoboSceneGarage.h"
 #include "KTROBOMission.h"
 #include "KTRoboSceneGarage2.h"
-
+#include "KTRoboSceneGamePadConfig.h"
 
 using namespace KTROBO;
 
@@ -392,7 +392,7 @@ bool Game::Init(HWND hwnd) {
 	Mesh::Init(g);
 	MyTokenAnalyzer::Init();
 
-	
+	Input::loadGamePadRule();
 	c = new Clock(0,0,0);
 	Text::Init(g, demo->font);
 
@@ -587,7 +587,8 @@ bool Game::Init(HWND hwnd) {
 	//SceneGarage* sg = new SceneGarage(g, hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 
 	
-	SceneGarage2* sg = new SceneGarage2(hantei,  texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
+//	SceneGarage2* sg = new SceneGarage2(hantei,  texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
+	SceneGamePadConfig* sg = new SceneGamePadConfig(texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 
 	//Game_SCENE* gs = new Game_SCENE(g,hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 	this->setScene(sg);

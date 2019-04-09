@@ -85,6 +85,133 @@ public:
 #define KTROBO_MOUSESTATE_R_DOWN 0x04
 #define KTROBO_MOUSESTATE_R_UP 0x08
 
+#define KTROBO_GAMEPAD_BUTTON_MAX 16
+#define KTROBO_GAMEPAD_BUTTON_NOUSE 15
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_MAX  12
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_X_AXIS 0
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_Y_AXIS 1
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_Z_AXIS 2
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_X_ROT 3
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_Y_ROT 4
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_Z_ROT 5
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_SLIDER_0 6
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_SLIDER_1 7
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START 8
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_0 8
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_1 9
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_2 10
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_3 11
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END 11
+#define KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_DEFAULT -1 // これは間違ってるかもしれない
+
+#define KTROBO_GAMEPAD_CONFIG_STATE_MAX 32
+#define KTROBO_GAMEPAD_CONFIG_STATE_NEUTRAL_OR_NO_PRESSED 0
+//#define KTROBO_GAMEPAD_CONFIG_STATE_BUTTON_PRESSED 0x0001
+//#define KTROBO_GAMEPAD_CONFIG_STATE_BUTTON_DOWN 0x0010    KTROBO_INPUT_BUTTON_PRESSEDなどを使う
+//#define KTROBO_GAMEPAD_CONFIG_STATE_BUTTON_UP 0x0100
+#define KTROBO_GAMEPAD_CONFIG_STATE_AXISROT_OFFSET 600
+
+// GAMENのCPPPARTSDEFと値をそろえること
+
+#define KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD 0
+#define KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD 1
+#define KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT 2
+#define KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT 3
+#define KTROBO_GAMEPAD_CONFIG_STATE_TURN_LEFT 4
+#define KTROBO_GAMEPAD_CONFIG_STATE_TURN_RIGHT 5
+#define KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP 6
+#define KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN 7
+#define KTROBO_GAMEPAD_CONFIG_STATE_ONOFF_BOOST 8
+#define KTROBO_GAMEPAD_CONFIG_STATE_JUMP 9
+#define KTROBO_GAMEPAD_CONFIG_STATE_BOOST_MOVE 10
+#define KTROBO_GAMEPAD_CONFIG_STATE_FIRE_RARM 11
+#define KTROBO_GAMEPAD_CONFIG_STATE_FIRE_LARM 12
+#define KTROBO_GAMEPAD_CONFIG_STATE_FIRE_RKATA 13
+#define KTROBO_GAMEPAD_CONFIG_STATE_FIRE_LKATA 14
+#define KTROBO_GAMEPAD_CONFIG_STATE_FIRE_INSIDE 15
+#define KTROBO_GAMEPAD_CONFIG_STATE_BUTTON_SELECT 16
+#define KTROBO_GAMEPAD_CONFIG_STATE_BUTTON_BACK 17
+#define KTROBO_GAMEPAD_CONFIG_STATE_INDEX_NOUSE 31
+
+struct GAMEPAD_STATE {
+public:
+
+	long axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_MAX];
+	unsigned char button[KTROBO_GAMEPAD_BUTTON_MAX];
+	long config_state[KTROBO_GAMEPAD_CONFIG_STATE_MAX];
+
+	GAMEPAD_STATE() {
+		for (int i = 0; i < KTROBO_GAMEPAD_AXISROTSLIDERPOV_MAX; i++) {
+			axisrotsliderpov[i] = 0;
+		}
+		for (int i = 0; i < KTROBO_GAMEPAD_BUTTON_MAX; i++) {
+			button[i] = 0;
+		}
+
+		for (int i = 0; i < KTROBO_GAMEPAD_CONFIG_STATE_MAX; i++) {
+			config_state[i] = KTROBO_GAMEPAD_CONFIG_STATE_NEUTRAL_OR_NO_PRESSED;
+		}
+
+	}
+
+	struct GAMEPAD_STATE_CONFIG_RULE {
+		bool is_button;
+		int index;
+		int pov_value;
+		bool is_minus;
+		GAMEPAD_STATE_CONFIG_RULE() {
+			is_button = true;
+			is_minus = false;
+			index = KTROBO_GAMEPAD_BUTTON_NOUSE;
+			pov_value = KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_DEFAULT;
+		}
+		GAMEPAD_STATE_CONFIG_RULE& operator=(GAMEPAD_STATE_CONFIG_RULE& value) {
+			this->is_button = value.is_button;
+			this->index = value.index;
+			this->pov_value = value.pov_value;
+			this->is_minus = value.is_minus;
+			return *this;
+		}
+	};
+	GAMEPAD_STATE_CONFIG_RULE rules[KTROBO_GAMEPAD_CONFIG_STATE_MAX];
+
+	void setRule(bool is_button, bool is_minus,int index, int config_state_index, int pov_value) {
+		if ((config_state_index >= 0) && (config_state_index < KTROBO_GAMEPAD_CONFIG_STATE_MAX)) {
+			rules[config_state_index].is_button = is_button;
+			rules[config_state_index].index;
+			rules[config_state_index].pov_value = pov_value;
+			rules[config_state_index].is_minus = is_minus;
+		}
+
+	}
+
+
+
+
+
+	GAMEPAD_STATE& operator=(GAMEPAD_STATE& value) {
+//		this->mouse_dx = value.mouse_dx;
+
+		for (int i = 0; i < KTROBO_GAMEPAD_AXISROTSLIDERPOV_MAX; i++) {
+			this->axisrotsliderpov[i] = value.axisrotsliderpov[i];
+		}
+		for (int i = 0; i < KTROBO_GAMEPAD_BUTTON_MAX; i++) {
+			this->button[i] = value.button[i];
+		}
+
+		for (int i = 0; i < KTROBO_GAMEPAD_CONFIG_STATE_MAX; i++) {
+			this->config_state[i] = value.config_state[i];
+			this->rules[i] = value.rules[i];
+		}
+		return *this;
+	}
+
+
+
+
+};
+
+
 struct MOUSE_STATE {
 public:
 //	unsigned char mouse_r_button;
@@ -174,6 +301,8 @@ class MYMESSAGESTRUCT;
 #define KTROBO_INPUT_MESSAGE_ID_KEYDOWN 4
 #define KTROBO_INPUT_MESSAGE_ID_MOUSEMOVE 5
 #define KTROBO_INPUT_MESSAGE_ID_MOUSERAWSTATE 6 // ボタンの状態変更もここに入る
+#define KTROBO_INPUT_MESSAGE_ID_GAMEPAD 7
+
 class MYMESSAGESTRUCT {
 public:
 	int msg_id;
@@ -217,6 +346,7 @@ public:
 	float DY;
 	unsigned char keystate[256];
 	MOUSE_STATE mousestate;
+	GAMEPAD_STATE gamepadstate;
 	MYINPUTMESSAGESTRUCT() : MYMESSAGESTRUCT() {
 		X = 0;
 		Y = 0;
@@ -244,8 +374,8 @@ public:
 			keystate[i]=y[i];
 		}
 	}
-	void setMOUSESTATE(MOUSE_STATE* m) {mousestate=*m;}
-
+	void setMOUSESTATE(MOUSE_STATE* m) { mousestate = *m; };
+	void setGAMEPADSTATE(GAMEPAD_STATE* m) { gamepadstate = *m; };
 };
 
 
@@ -377,7 +507,7 @@ public:
 	static void messageDispatch();
 	static void messageMake();
 	static INPUTGETBYMESSAGESTRUCT* getRootInputGetStruct() {return rootinputget;}
-
+	static void messageMakeGamePad(int i, DWORD time);
 	static void messageMakeButtonDown(int i, DWORD ntime);
 	static void messageMakeButtonUp(int i, DWORD ntime);
 	static void messageMakeMouseMove(DWORD n_time);
@@ -512,6 +642,11 @@ public:
 	static MOUSE_STATE mouse_state;
 	static volatile unsigned char b_keystate[256];
 	static MOUSE_STATE b_mousestate;
+
+	static GAMEPAD_STATE gamepad_state;
+	static GAMEPAD_STATE b_gamepad_state;
+
+
 	static volatile unsigned char nagaosi_keycode;// 最後に押されたボタンの仮想キーコード // inputtext用
 	static volatile DWORD nagaosi_start_time; // 押され始めた時間
 	static volatile DWORD nagaosi_time;// 押されてからたった時間 // inputtext用
@@ -532,6 +667,18 @@ public:
 		}
 	}
 
+	static void setGamePadRule(bool is_button, bool is_minus, int index, int config_state_index, int pov_value) {
+		if ((config_state_index >= 0) && (config_state_index < KTROBO_GAMEPAD_CONFIG_STATE_MAX)) {
+			Input::gamepad_state.rules[config_state_index].is_button = is_button;
+			Input::gamepad_state.rules[config_state_index].index = index;
+			Input::gamepad_state.rules[config_state_index].pov_value = pov_value;
+			Input::gamepad_state.rules[config_state_index].is_minus = is_minus;
+		}
+	} 
+	static void saveGamePadRule();
+	static void loadGamePadRule();
+
+	static void Del();
 	static LRESULT CALLBACK myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam );
 };
 

@@ -3,6 +3,9 @@
 #include "windowsx.h"
 
 #include "KTRoboCS.h"
+#include "KTRoboInputGamePad.h"
+#include "KTRoboLog.h"
+#include "MyTokenAnalyzer.h"
 
 using namespace KTROBO;
 
@@ -66,9 +69,19 @@ void Input::Init(HWND hwnd) {
     Rid[0].hwndTarget = hwnd;
     RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
 
+	HRESULT hr = InputGamePad::getInstance()->InitDirectInput(hwnd);
+	if (FAILED(hr)) throw GameError(KTROBO::FATAL_ERROR, "no gamepad");
+
+
 
 }
+void Input::Del() {
 
+	InputGamePad::getInstance()->FreeDirectInput();
+
+
+
+}
 LRESULT CALLBACK Input::myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) {
 
    PAINTSTRUCT ps;
@@ -79,6 +92,100 @@ LRESULT CALLBACK Input::myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARA
    static int ek_len = 4;
     switch( message )
     {
+	case WM_CREATE:
+		SetTimer(hWnd, 0, 1000 / 30, NULL);
+		break;
+
+
+
+
+
+	case WM_ACTIVATE:
+		if (WA_INACTIVE != wParam)
+		{
+			// Make sure the device is acquired, if we are gaining focus.
+			InputGamePad::getInstance()->acquire();
+		}
+		break;
+
+	case WM_TIMER:
+		// Update the input device every timer message
+		CS::instance()->enter(CS_MESSAGE_CS, "enter message make");
+		if (FAILED(InputGamePad::getInstance()->UpdateInputState(hWnd)))
+		{
+	//		KillTimer(hDlg, 0);
+	//		MessageBox(NULL, TEXT("Error Reading Input State. ") \
+				TEXT("The sample will now exit."), TEXT("DirectInput Sample"),
+	//			MB_ICONERROR | MB_OK);
+	//		EndDialog(hDlg, TRUE);
+			mylog::writelog(KTROBO::INFO, "update input gamepad failed\n");
+
+		}
+		for (int i = 0; i < KTROBO_GAMEPAD_BUTTON_MAX; i++) {
+			BYTE state = InputGamePad::getInstance()->js.rgbButtons[i];
+
+			if ((state & 0x80)) {
+				// 押されている
+				Input::gamepad_state.button[i] |= KTROBO_INPUT_BUTTON_PRESSED;
+			}
+			if ((state & 0x80) && !(b_gamepad_state.button[i] & KTROBO_INPUT_BUTTON_PRESSED)) {
+				// 押された瞬間
+				Input::gamepad_state.button[i] |= KTROBO_INPUT_BUTTON_DOWN;
+
+			}
+			if (!(state & 0x80) && (b_gamepad_state.button[i] & KTROBO_INPUT_BUTTON_PRESSED)) {
+				Input::gamepad_state.button[i] |= KTROBO_INPUT_BUTTON_UP;
+				Input::gamepad_state.button[i] &= ~KTROBO_INPUT_BUTTON_PRESSED;
+			}
+		}
+		
+		
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_X_AXIS]  = (int)InputGamePad::getInstance()->js.lX;
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_Y_AXIS] = (int)InputGamePad::getInstance()->js.lY;
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_Z_AXIS] = (int)InputGamePad::getInstance()->js.lZ;
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_X_ROT] = (int)InputGamePad::getInstance()->js.lRx;
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_Y_ROT] = (int)InputGamePad::getInstance()->js.lRy;
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_Z_ROT] = (int)InputGamePad::getInstance()->js.lRz;
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_SLIDER_0] = (int)InputGamePad::getInstance()->js.rglSlider[0];// lY;
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_SLIDER_1] = (int)InputGamePad::getInstance()->js.rglSlider[1];
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_0] = (int)InputGamePad::getInstance()->js.rgdwPOV[0];
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_1] = (int)InputGamePad::getInstance()->js.rgdwPOV[1];
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_2] = (int)InputGamePad::getInstance()->js.rgdwPOV[2];
+		Input::gamepad_state.axisrotsliderpov[KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_3] = (int)InputGamePad::getInstance()->js.rgdwPOV[3];
+
+		for (int i = 0; i < KTROBO_GAMEPAD_CONFIG_STATE_MAX; i++) {
+			if ((Input::gamepad_state.rules[i].is_button == true) && (Input::gamepad_state.rules[i].index == KTROBO_GAMEPAD_BUTTON_NOUSE)) continue;
+			if (Input::gamepad_state.rules[i].is_button) {
+				Input::gamepad_state.config_state[i] = Input::gamepad_state.button[Input::gamepad_state.rules[i].index];
+			} else {
+				if ((Input::gamepad_state.rules[i].index >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) && (Input::gamepad_state.rules[i].index <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+				// pov なら　valueと一致したときに　セットする
+					if (Input::gamepad_state.rules[i].pov_value == Input::gamepad_state.axisrotsliderpov[Input::gamepad_state.rules[i].index]) {
+						Input::gamepad_state.config_state[i] = Input::gamepad_state.rules[i].pov_value;
+					}
+					else {
+						// 違ったら反応してたのを消す
+						Input::gamepad_state.config_state[i] = KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_DEFAULT;
+					}
+				
+				
+				}
+				else {
+					Input::gamepad_state.config_state[i] = Input::gamepad_state.axisrotsliderpov[Input::gamepad_state.rules[i].index];
+				}
+			}
+		}
+
+		CS::instance()->leave(CS_MESSAGE_CS, "enter message make");
+		InputMessageDispatcher::messageMake();
+
+		break;
+
+
+
+
+
+
 		case WM_IME_SETCONTEXT:
 		case WM_IME_STARTCOMPOSITION:
 		case WM_IME_COMPOSITION:
@@ -220,6 +327,7 @@ LRESULT CALLBACK Input::myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARA
 			break;
 			
         case WM_DESTROY:
+			KillTimer(hWnd, 0);
             PostQuitMessage( 0 );
             break;
 
@@ -297,6 +405,7 @@ void InputMessageDispatcher::messageMakeMouseRawStateChanged(DWORD n_time) {
 	s->setTIME(n_time);
 	s->setKEYSTATE(Input::keystate);
 	s->setMOUSESTATE(&Input::mouse_state);
+	s->setGAMEPADSTATE(&Input::gamepad_state);
 	s->setISUSE(true);
 	Input::b_mousestate.mouse_dx = 0;
 	Input::b_mousestate.mouse_dy = 0;
@@ -388,6 +497,7 @@ void InputMessageDispatcher::commandMake(DWORD time) {
 							s->setTIME(time);
 							s->setKEYSTATE(Input::keystate);
 							s->setMOUSESTATE(&Input::mouse_state);
+							s->setGAMEPADSTATE(&Input::gamepad_state);
 							s->setISUSE(true);
 							InputMessageDispatcher::now_message_index = (InputMessageDispatcher::now_message_index +1) % KTROBO_INPUTMESSAGESTRUCT_SIZE;
 							return;
@@ -407,8 +517,24 @@ void InputMessageDispatcher::messageMakeButtonDown(int i, DWORD time) {
 	s->setTIME(time);
 	s->setKEYSTATE(Input::keystate);
 	s->setMOUSESTATE(&Input::mouse_state);
+	s->setGAMEPADSTATE(&Input::gamepad_state);
 	s->setISUSE(true);
 	InputMessageDispatcher::now_message_index = (InputMessageDispatcher::now_message_index +1) % KTROBO_INPUTMESSAGESTRUCT_SIZE;
+
+}
+
+
+void InputMessageDispatcher::messageMakeGamePad(int i, DWORD time) {
+
+	MYINPUTMESSAGESTRUCT* s = &InputMessageDispatcher::message_structs[now_message_index];
+	s->setSENDER(KTROBO_INPUT_MESSAGE_SENDER_INPUTSYSTEM);
+	s->setMSGID(KTROBO_INPUT_MESSAGE_ID_GAMEPAD);
+	s->setTIME(time);
+	s->setKEYSTATE(Input::keystate);
+	s->setMOUSESTATE(&Input::mouse_state);
+	s->setGAMEPADSTATE(&Input::gamepad_state);
+	s->setISUSE(true);
+	InputMessageDispatcher::now_message_index = (InputMessageDispatcher::now_message_index + 1) % KTROBO_INPUTMESSAGESTRUCT_SIZE;
 
 }
 
@@ -421,6 +547,7 @@ void InputMessageDispatcher::messageMakeButtonUp(int i, DWORD time) {
 	s->setTIME(time);
 	s->setKEYSTATE(Input::keystate);
 	s->setMOUSESTATE(&Input::mouse_state);
+	s->setGAMEPADSTATE(&Input::gamepad_state);
 	s->setISUSE(true);
 	InputMessageDispatcher::now_message_index = (InputMessageDispatcher::now_message_index +1) % KTROBO_INPUTMESSAGESTRUCT_SIZE;
 
@@ -435,6 +562,7 @@ void InputMessageDispatcher::messageMakeMouseMove(DWORD n_time) {
 	s->setTIME(n_time);
 	s->setKEYSTATE(Input::keystate);
 	s->setMOUSESTATE(&Input::mouse_state);
+	s->setGAMEPADSTATE(&Input::gamepad_state);
 	s->setISUSE(true);
 	Input::mouse_state.mouse_dx = 0;
 	Input::mouse_state.mouse_dy = 0;
@@ -485,6 +613,48 @@ void InputMessageDispatcher::messageMake() {
 		}
 	}
 
+	
+	bool gamepad_maked = false;
+	for (int i = 0; i < KTROBO_GAMEPAD_BUTTON_MAX; i++) {
+		if (Input::gamepad_state.button[i]) {
+
+			messageMakeGamePad(i, n_time);
+			gamepad_maked = true;
+			if (Input::gamepad_state.button[i] & KTROBO_INPUT_BUTTON_DOWN) {
+
+				Input::gamepad_state.button[i] &= ~KTROBO_INPUT_BUTTON_DOWN;
+			}
+			if (Input::gamepad_state.button[i] & KTROBO_INPUT_BUTTON_UP) {
+				Input::gamepad_state.button[i] &= ~KTROBO_INPUT_BUTTON_PRESSED;
+				Input::gamepad_state.button[i] &= ~KTROBO_INPUT_BUTTON_UP;
+			}
+			
+			break;
+		}
+	}
+
+	if (!gamepad_maked) {
+		for (int i = 0; i < KTROBO_GAMEPAD_AXISROTSLIDERPOV_MAX; i++) {
+			if ((i >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) && (i <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+				// default じゃなかったら　メッセージを作る　default の値が違っていたら・・・　コンフィグの際に困ったことになる
+				// コンフィグの際に既に登録されている　キーは重複して登録させないようにすれば大丈夫かもしれない
+				// またループで最後のほうで登録するようにすればダイジョブかも
+				if (Input::gamepad_state.axisrotsliderpov[i] != KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_DEFAULT) {
+
+					messageMakeGamePad(i, n_time);
+					break;
+				}
+
+			}
+			else {
+				if (abs(Input::gamepad_state.axisrotsliderpov[i]) >= KTROBO_GAMEPAD_CONFIG_STATE_AXISROT_OFFSET) {
+					messageMakeGamePad(i, n_time);
+					break;
+				}
+
+			}
+		}
+	}
 	// 現在のinput_jyoutai_indexのフラグを調べる
 	for (int i=0;i<256;i++) {
 		/*if (Input::keystate[i] & KTROBO_INPUT_BUTTON_PRESSED) {
@@ -693,6 +863,8 @@ void InputMessageDispatcher::messageMake() {
 		//Input::keystate[i] = 0;
 	}
 	Input::b_mousestate = Input::mouse_state;
+	Input::b_gamepad_state = Input::gamepad_state;
+
 	//Input::mouse_state.mouse_button =0;
 	/*
 	Input::mouse_state.mouse_dx = 0;
@@ -790,6 +962,11 @@ volatile unsigned char Input::keystate[256];
 MOUSE_STATE Input::mouse_state;
 volatile unsigned char Input::b_keystate[256];
 MOUSE_STATE Input::b_mousestate;
+
+GAMEPAD_STATE Input::gamepad_state;
+GAMEPAD_STATE Input::b_gamepad_state;
+
+
 volatile unsigned char Input::nagaosi_keycode;// 最後に押されたボタンの仮想キーコード
 volatile DWORD Input::nagaosi_time;// 押されてからたった時間 
 
@@ -825,4 +1002,92 @@ void InputMessageDispatcher::setCommand(MyCommand* coms, int len) {
 		throw new GameError(KTROBO::FATAL_ERROR, "too many commands");
 	}
 
+}
+
+
+
+void Input::saveGamePadRule() {
+	FILE* file;
+
+	string filename = string("userdata/gamepad.myconfig");
+	
+	CS::instance()->enter(CS_LOG_CS, "saveasm");
+		if (0 != fopen_s(&file, filename.c_str(), "w")) {
+			CS::instance()->leave(CS_LOG_CS, "saveasm");
+			return;
+		}
+
+		fclose(file);
+
+
+		for (int i = 0; i < KTROBO_GAMEPAD_CONFIG_STATE_MAX; i++) {
+
+			int bool_is_button=0;
+			int bool_is_minus=0;
+			if (gamepad_state.rules[i].is_button) {
+				bool_is_button = 1;
+			}
+			if (gamepad_state.rules[i].is_minus) {
+				bool_is_minus = 1;
+			}
+			if ((bool_is_button) && (gamepad_state.rules[i].index == KTROBO_GAMEPAD_BUTTON_NOUSE)) {
+			} else {
+				mylog::writelog(filename.c_str(), "{ %d; %d; %d; %d; %d;}\n", bool_is_button, bool_is_minus,
+					i, gamepad_state.rules[i].index, gamepad_state.rules[i].pov_value);
+
+			}
+
+		}
+
+
+	CS::instance()->leave(CS_LOG_CS, "loaditem");
+	
+
+
+
+}
+void Input::loadGamePadRule() {
+
+	// もしゲームパッドがあれば
+	if (InputGamePad::getInstance()->getPJOYSTICK()) {
+
+		FILE* fi;
+		const char* filename = "userdata/gamepad.myconfig";
+		CS::instance()->enter(CS_LOG_CS, "log");
+		if (0 != fopen_s(&fi, filename, "r")) {
+			KTROBO::mylog::writelog(KTROBO::INFO, "%s の読み込みに失敗", filename);
+			CS::instance()->leave(CS_LOG_CS, "log");
+			//throw new KTROBO::GameError(KTROBO::FATAL_ERROR, filename);
+			return;
+		}
+		fclose(fi);
+		CS::instance()->leave(CS_LOG_CS, "log");
+		MyTokenAnalyzer ma;
+		if (ma.load(filename)) {
+			while (!ma.enddayo()) {
+				ma.GetToken("{");
+				int bool_is_button = ma.GetIntToken();
+				int bool_is_minus = ma.GetIntToken();
+				int i = ma.GetIntToken();
+				int index = ma.GetIntToken();
+				int pov_value = ma.GetIntToken();
+				bool is_button = false;
+				if (bool_is_button) {
+					is_button = true;
+				}
+				bool is_minus = false;
+				if (bool_is_minus) {
+					is_minus = true;
+				}
+				if (ma.enddayo()) break;
+				Input::setGamePadRule(is_button, is_minus, index, i, pov_value);
+				ma.GetToken("}");
+			}
+
+
+
+
+			ma.deletedayo();
+		}
+	}
 }

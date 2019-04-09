@@ -62,6 +62,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLi
 	if (AnotherInstance()) {
 		return 0;
 	}
+	
 	input = new Input();
 	MSG msg = {0};
 	try {
@@ -126,10 +127,12 @@ ktrobo_error:
 	ClearMainWindow(hInstance);
 
 	if (input) {
+		Input::Del();
 		delete input;
 		input = 0;
 	}
 	
+
 	if (game) {
 
 		//KTROBO::mylog::writelog(KTROBO::INFO, "start game del");

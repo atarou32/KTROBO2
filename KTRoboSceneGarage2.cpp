@@ -347,6 +347,8 @@ void SceneGarage2::leave() {
 
 	Scene::leave();
 
+	MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->Del();
+
 	if (tex) {
 		tex->deleteAll();
 	}

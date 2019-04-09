@@ -1,0 +1,1 @@
+gamen2:setSonotokiNowSonotoki(KTROBO_GAMEN2_SCENE_ID_GAMEPAD,gamen_id_now)
