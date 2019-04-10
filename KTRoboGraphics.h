@@ -16,6 +16,7 @@
 
 class MyTextureLoader;
 
+
 namespace KTROBO {
 
 class MYSHADERSTRUCT {

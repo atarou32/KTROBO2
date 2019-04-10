@@ -6,6 +6,7 @@
 #include "KTRoboGame.h"
 #include "KTRoboTexture.h"
 #include "KTRoboWeapon.h"
+#include "KTRoboInputGamePad.h"
 
 using namespace KTROBO;
 Robo::Robo(void)
@@ -1018,7 +1019,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 	if (abs(dt) < 20) {
 			dt = 25;
 	}
-	else if (abs(dt) > 30 && abs(dt) < 90) {
+	else if (abs(dt) > 30 && abs(dt) < 190) {
 		dt = 25;
 	}
 
@@ -1028,9 +1029,9 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 	moveturn_state->exec(g, this, dt, stamp);
 	if (move_state->isBoosterHi()) {
 
-		if (abs(dt) < 50) {
+		if (abs(dt) < 250) {
 			MYVECTOR3 xyz = atarihan->v * dt;
-			atarihan->setXYZD(atarihan->x + xyz.float3.x, atarihan->y + xyz.float3.y, atarihan->z + xyz.float3.z, 0.52f);
+			atarihan->setXYZD(atarihan->x + xyz.float3.x, atarihan->y + xyz.float3.y, atarihan->z + xyz.float3.z, 2.52f);
 		}
 
 
@@ -1152,7 +1153,167 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 			}
 		}
 	}
+	atari_num = hantei->getAns(ans, atarihan, NULL, 1024);
+	if (atari_num > 0) {
+		float dx=0;
+		float dy=0;
+		float dz=0;
+		for (int i = 0; i < atari_num; i++) {
+			if (ans[i].aite_type == AtariUnit::AtariType::ATARI_TIKEI) {
+				MYVECTOR3 kouten_housen = ans[i].ans->kouten_housen;
+				MYVECTOR3 kouten_jyusin = ans[i].ans->kouten_jyusin;
+				MYVECTOR3 robo_center = MYVECTOR3(atarihan->x, atarihan->y, atarihan->z);
+				// robo_center を　vの長さ分だけ前にする
+				robo_center = robo_center - atarihan->v * dt;
 
+				//UMesh* atari_umesh = ans[i].my_umesh;
+				//for (int k = 0; k < KTROBO_MESH_BONE_MAX; k++) {
+				//
+				//}
+				MYVECTOR3 up(0, 0, 1);
+				MYVECTOR3 down(0, 0, -1);
+
+				float updot = MyVec3Dot(up, kouten_housen);
+				float downdot = MyVec3Dot(down, kouten_housen);
+				if (updot > 0.8) continue; // 地面と考える
+				if (downdot > 0.8) {
+					// 天井と考えて
+					
+					if ((move_state->isJump() || move_state->isJumpKABE()) && (this->pressed_space_count > 10)) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+
+					
+					settenjyou_state->leave(this, &settenjyou, settenjyou_state);
+					settenjyou.enter(this, &settenjyou, settenjyou_state);
+					settenjyou_state = &settenjyou;
+					MYVECTOR3 cc;
+					MyVec3Subtract(cc, robo_center, kouten_jyusin);
+					float ddd = MyVec3Dot(cc, kouten_housen);
+					if (ddd * downdot > 0) {
+						MYVECTOR3 ddvec;
+						MyVec3Normalize(ddvec, kouten_housen);
+						ddvec = ddvec * 0.1f;
+						dx += ddvec.float3.x;
+						dy += ddvec.float3.y;
+						dz += ddvec.float3.z;
+					}
+					vdayo = 0;
+					continue;
+				}
+
+				// 壁と考える
+				
+
+				
+				// headとbodyに関して考えてみて　交点の重心がbone_obbの中にないものは処理を行わない
+				bool do_shori = false;
+				for (int k = 0; k < KTROBO_MESH_BONE_MAX; k++) {
+					if (atari_head->is_bone_obbs_use[k]) {
+						OBB obkaku = atari_head->bone_obbs[k];
+						obkaku.e = obkaku.e * 3.2f;
+						obkaku.c = obkaku.c - atarihan->v* dt;
+						if (majiwaruPointOBB(&kouten_jyusin, &obkaku)) {
+							do_shori = true;
+							break;
+						}
+					}
+					if (atari_head2->is_bone_obbs_use[k]) {
+						OBB obkaku = atari_head2->bone_obbs[k];
+						obkaku.e = obkaku.e * 3.2f;
+						obkaku.c = obkaku.c - atarihan->v* dt;
+						if (majiwaruPointOBB(&kouten_jyusin, &obkaku)) {
+							do_shori = true;
+							break;
+						}
+					}
+					if (atari_head3->is_bone_obbs_use[k]) {
+						OBB obkaku = atari_head3->bone_obbs[k];
+						obkaku.e = obkaku.e * 3.2f;
+						obkaku.c = obkaku.c - atarihan->v* dt;
+						if (majiwaruPointOBB(&kouten_jyusin, &obkaku)) {
+							do_shori = true;
+							break;
+						}
+					}
+
+					if (atari_core->is_bone_obbs_use[k]) {
+						OBB obkaku = atari_core->bone_obbs[k];
+						obkaku.e = obkaku.e * 1.2f;
+						if (majiwaruPointOBB(&kouten_jyusin, &obkaku)) {
+							do_shori = true;
+							break;
+						}
+					}
+
+
+				}
+
+
+				if (do_shori) {
+
+					setkabedayo = true;
+					//if ((move_state->isJump() || move_state->isJumpKABE()) && (this->pressed_space_count > 10)) {
+					//	move_state->leave(this, &movestop, move_state);
+					//	movestop.enter(this, &movestop, move_state);
+					//	move_state = &movestop;
+					//}
+
+					setkabe_state->leave(this, &setkabe, setkabe_state);
+					setkabe.enter(this, &setkabe, setkabe_state);
+					setkabe_state = &setkabe;
+					MYVECTOR3 cc;
+					MyVec3Subtract(cc, robo_center, kouten_jyusin);
+					float ddd = MyVec3Dot(cc, kouten_housen);
+					MYVECTOR3 vnor;
+					MyVec3Normalize(vnor, atarihan->v);
+					float dddd = MyVec3Dot(vnor, kouten_housen);
+					float dddbairitu = 1;
+					float vlen = MyVec3Length(atarihan->v);
+					if ((dddd < -0.3) && (vlen > 0.01)) {
+						// 正面衝突
+					//	move_state->leave(this, &movestop, move_state);
+					//	movestop.enter(this, &movestop, move_state);
+					//	move_state = &movestop;
+						// vの成分を逆分増やすようにしてみる
+						MYVECTOR3 sinv = atarihan->v;
+						sinv = sinv + kouten_housen * MyVec3Length(atarihan->v) * 0.501;
+						atarihan->setV(&sinv);
+						dddbairitu = 4;
+					}
+
+					if (ddd > -0.4) {
+						MYVECTOR3 ddvec;
+						MyVec3Normalize(ddvec, kouten_housen);
+						
+						float ddd = 1;
+						if (vlen < 0.001) {
+							ddd = 0.03 * dddbairitu;
+						}
+						else {
+							ddd = (MyVec3Length(atarihan->v) * 1 * MyVec3Length(atarihan->v) + 0.03)* dddbairitu;
+						}
+						ddvec = ddvec * ddd *dt;
+						dx += ddvec.float3.x;
+						dy += ddvec.float3.y;
+						dz += ddvec.float3.z;
+					}
+					vdayo = 0;
+				}
+			}
+		}
+		if (setdayo) {
+			atarihan->setXYZ(atarihan->x + dx, atarihan->y + dy, atarihan->z);
+		
+		}
+		else {
+			atarihan->setXYZ(atarihan->x + dx, atarihan->y + dy, atarihan->z + dz);
+			
+		}
+	}
+	/*
 	atari_num = hantei->getAns(ans, atarihan, NULL, 1024);
 	if ((atari_num > 0)) {
 		for (int i = 0; i < atari_num; i++) {
@@ -1263,8 +1424,8 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 							temp_atari->is_bone_obbs_atatta[k] = true;
 							setkabe_state = &setkabe;
 							setkabedayo = true;
-							if (((uedot > 0.8) || (uedot2 > 0.9f))/* || (sitadot > 0.8)*/) {
-								float unko = 0;
+		//					if (((uedot > 0.8) || (uedot2 > 0.9f))/* || (sitadot > 0.8)*///) {
+		/*						float unko = 0;
 								f2 = (f2 + min(abs(MyVec3Length(a3) - r3), min(MyVec3Length(ob->e), MyVec3Length(a)))) / 2;
 								if (f2 < 0.01) {
 									f2 = 0;
@@ -1327,7 +1488,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 
 									//if (majiwaruPointOBB(&ans[i].ans->kouten_jyusin,&obda2)) {
 									//if (setti_state == &setti) {
-								atarihan->setXYZD(atarihan->x + ans[i].ans->kouten_housen.float3.x * 1.02f*f2*f2,
+		/*						atarihan->setXYZD(atarihan->x + ans[i].ans->kouten_housen.float3.x * 1.02f*f2*f2,
 									atarihan->y + ans[i].ans->kouten_housen.float3.y * 1.02f*f2*f2,
 									atarihan->z + ans[i].ans->kouten_housen.float3.z * 1.01f*f2*f2 + unko, myspeed);
 								//}
@@ -1348,7 +1509,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 								vdayo = 0;
 							}*/
 
-
+/*
 							if (((uedot < 0.7) || uedot2 < 0.7) && (sitadot < 0.7)) {
 								kabe_housen = ans[i].ans->kouten_housen;
 							}
@@ -1366,9 +1527,9 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 							}
 						}
 
-						if (MyVec3Dot(a, uedayo/*ans[i].ans->kouten_housen*/) > 0.5f) {//-0.3
+	//					if (MyVec3Dot(a, uedayo/*ans[i].ans->kouten_housen*///)// > 0.5f) {//-0.3
 						//	if (!setdayo) {
-							atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + abs(ans[i].ans->kouten_housen.float3.z) * 1.02f*f*f, myspeed / 100.0f);
+/*							atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + abs(ans[i].ans->kouten_housen.float3.z) * 1.02f*f*f, myspeed / 100.0f);
 							setti_state = &setti;//
 							//setkabe_state = &kuutyuu;//
 							//setkabedayo = false;
@@ -1393,7 +1554,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 			}
 		}
 	}
-
+*/
 
 	//atari_num = hantei->getAns(ans,atarihan,NULL,1024);
 	if ((atari_num > 0)) {
@@ -1540,12 +1701,12 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 		}
 
 
-			if (dt < 50) {
+			if (dt < 250) {
 				MYVECTOR3 xyz = atarihan->v * dt;
 				atarihan->setXYZD(atarihan->x+xyz.float3.x , atarihan->y + xyz.float3.y , atarihan->z + xyz.float3.z,0.52f);
 			}
-
-		*/
+			*/
+		
 	} else if (setdayo == false) {
 
 		// 空中にいる
@@ -3875,91 +4036,121 @@ void RoboAnimeLoop::animate(UMesh* umesh, bool calculateoffsetmatrix) {
 
 
 bool Robo::handleMessage(int msg, void* data, DWORD time) {
-	
-/*	if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
-		MYINPUTMESSAGESTRUCT* input = (MYINPUTMESSAGESTRUCT*) data;
-		if (input->getKEYSTATE()[VK_DOWN] & KTROBO_INPUT_BUTTON_DOWN) {
 
-			CS::instance()->enter(CS_SOUND_CS, "enter");
-			sound->stopCue(yumes[sound_index]);
-			sound_index =(sound_index+1) % 6;
-			sound->playCue(yumes[sound_index]);
-			CS::instance()->leave(CS_SOUND_CS, "leave");
+	/*	if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
+			MYINPUTMESSAGESTRUCT* input = (MYINPUTMESSAGESTRUCT*) data;
+			if (input->getKEYSTATE()[VK_DOWN] & KTROBO_INPUT_BUTTON_DOWN) {
+
+				CS::instance()->enter(CS_SOUND_CS, "enter");
+				sound->stopCue(yumes[sound_index]);
+				sound_index =(sound_index+1) % 6;
+				sound->playCue(yumes[sound_index]);
+				CS::instance()->leave(CS_SOUND_CS, "leave");
+			}
+
+
 		}
+	*/
 
-
-	}
-*/
-	
 
 	//if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
-		MYINPUTMESSAGESTRUCT* input = (MYINPUTMESSAGESTRUCT*) data;
-		float x = input->getMOUSESTATE()->mouse_x;
-		float y = input->getMOUSESTATE()->mouse_y;
-		CS::instance()->enter(CS_MESSAGE_CS, "enter");
+	MYINPUTMESSAGESTRUCT* input = (MYINPUTMESSAGESTRUCT*)data;
+	float x = input->getMOUSESTATE()->mouse_x;
+	float y = input->getMOUSESTATE()->mouse_y;
+	CS::instance()->enter(CS_MESSAGE_CS, "enter");
+	if (!InputGamePad::getInstance()->getPJOYSTICK()) {
 		if (move_state->isBoosterHi() && !move_state->isCanMoveWhenBoost(this)) {
 			// ハイブースト中なので何もできない
-				if (input->getKEYSTATE()['T'] & KTROBO_INPUT_BUTTON_DOWN) {
+			if (input->getKEYSTATE()['T'] & KTROBO_INPUT_BUTTON_PRESSED) {
 				is_fireraweapon = true;
-			} else {
+			}
+			else {
 				is_fireraweapon = false;
 			}
 			if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
-			if (input->getKEYSTATE()['F'] & KTROBO_INPUT_BUTTON_DOWN) {
-				if (booster_state == &boostoff) {
-					booster_state->leave(this, &boostoff, &boostontaiki);
-					boostontaiki.enter(this,&boostoff, &boostontaiki);
-					booster_state = &boostontaiki;
-				} else if( booster_state == &boostontaiki) {
-					booster_state->leave(this, &boostontaiki, &boostoff);
-					boostoff.enter(this, &boostontaiki, &boostoff);
-					booster_state = &boostoff;
-					if (move_state->isBoosterHi()) {
+				if (input->getKEYSTATE()['F'] & KTROBO_INPUT_BUTTON_DOWN) {
+					if (booster_state == &boostoff) {
+						booster_state->leave(this, &boostoff, &boostontaiki);
+						boostontaiki.enter(this, &boostoff, &boostontaiki);
+						booster_state = &boostontaiki;
+					}
+					else if (booster_state == &boostontaiki) {
+						booster_state->leave(this, &boostontaiki, &boostoff);
+						boostoff.enter(this, &boostontaiki, &boostoff);
+						booster_state = &boostoff;
+						if (move_state->isBoosterHi()) {
+							move_state->leave(this, &movestop, move_state);
+							movestop.enter(this, &movestop, move_state);
+							move_state = &movestop;
+						}
+					}
+				}
+			}
+
+			if (input->getMOUSESTATE()->mouse_l_button_pressed) {
+				if ((moveturn_state != &moveleftturn)) {
+					moveturn_state->leave(this, &moveleftturn, moveturn_state);
+					moveleftturn.enter(this, &moveleftturn, moveturn_state);
+					moveturn_state = &moveleftturn;
+					if (move_state->isJump()) {
 						move_state->leave(this, &movestop, move_state);
 						movestop.enter(this, &movestop, move_state);
 						move_state = &movestop;
 					}
 				}
 			}
-			}
-
-			if(input->getMOUSESTATE()->mouse_l_button_pressed) {
-				if ((moveturn_state != &moveleftturn)) {
-					moveturn_state->leave(this, &moveleftturn, moveturn_state);
-					moveleftturn.enter(this, &moveleftturn, moveturn_state);
-					moveturn_state = &moveleftturn;
-					if (move_state->isJump()) {
-						move_state->leave(this,&movestop,move_state);
-						movestop.enter(this,&movestop,move_state);
-						move_state = &movestop;
-					}
-				}
-			} else if(input->getMOUSESTATE()->mouse_r_button_pressed) {
+			else if (input->getMOUSESTATE()->mouse_r_button_pressed) {
 				if ((moveturn_state != &moverightturn)) {
 					moveturn_state->leave(this, &moverightturn, moveturn_state);
 					moveleftturn.enter(this, &moverightturn, moveturn_state);
 					moveturn_state = &moverightturn;
 					if (move_state->isJump()) {
-						move_state->leave(this,&movestop,move_state);
-						movestop.enter(this,&movestop,move_state);
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
 						move_state = &movestop;
 					}
 				}
-			} else {
+			}
+			if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_TURN_LEFT) & KTROBO_INPUT_BUTTON_PRESSED) {
+				if ((moveturn_state != &moveleftturn)) {
+					moveturn_state->leave(this, &moveleftturn, moveturn_state);
+					moveleftturn.enter(this, &moveleftturn, moveturn_state);
+					moveturn_state = &moveleftturn;
+					if (move_state->isJump()) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+				}
+			}
+			else if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_TURN_RIGHT) & KTROBO_INPUT_BUTTON_PRESSED) {
+				if ((moveturn_state != &moverightturn)) {
+					moveturn_state->leave(this, &moverightturn, moveturn_state);
+					moveleftturn.enter(this, &moverightturn, moveturn_state);
+					moveturn_state = &moverightturn;
+					if (move_state->isJump()) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+				}
+			}
+			else {
 				if ((moveturn_state != &movestop)) {
 					moveturn_state->leave(this, &movestop, moveturn_state);
 					movestop.enter(this, &movestop, moveturn_state);
 					moveturn_state = &movestop;
 					if (move_state->isJump()) {
-						move_state->leave(this,&movestop,move_state);
-						movestop.enter(this,&movestop,move_state);
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
 						move_state = &movestop;
 					}
 				}
 			}
 
 			//Sleep(1);
-		} else {
+		}
+		else {
 
 			if (move_state->isCanBoost(this)) {
 				if (input->getKEYSTATE()[VK_SPACE] & KTROBO_INPUT_BUTTON_PRESSED) {
@@ -3980,37 +4171,41 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 						if (input->getKEYSTATE()['W'] & KTROBO_INPUT_BUTTON_PRESSED) {
 							if ((booster_state == &boostontaiki) && (move_state != &boostforward)) {
 								move_state->leave(this, &boostforward, move_state);
-								boostforward.enter(this,&boostforward, move_state);
+								boostforward.enter(this, &boostforward, move_state);
 								move_state = &boostforward;
-									CS::instance()->leave(CS_MESSAGE_CS, "leave");
+								CS::instance()->leave(CS_MESSAGE_CS, "leave");
 								return true;
 							}
-						} else if((input->getKEYSTATE()['A'] & KTROBO_INPUT_BUTTON_PRESSED)) {
+						}
+						else if ((input->getKEYSTATE()['A'] & KTROBO_INPUT_BUTTON_PRESSED)) {
 							if ((booster_state == &boostontaiki) && (move_state != &boostleft)) {
 								move_state->leave(this, &boostleft, move_state);
-								boostleft.enter(this,&boostleft, move_state);
+								boostleft.enter(this, &boostleft, move_state);
 								move_state = &boostleft;
 								CS::instance()->leave(CS_MESSAGE_CS, "leave");
 								return true;
 							}
-						} else if (input->getKEYSTATE()['S'] & KTROBO_INPUT_BUTTON_PRESSED) {
+						}
+						else if (input->getKEYSTATE()['S'] & KTROBO_INPUT_BUTTON_PRESSED) {
 							if ((booster_state == &boostontaiki) && (move_state != &boostback)) {
 								move_state->leave(this, &boostback, move_state);
-								boostback.enter(this,&boostback, move_state);
+								boostback.enter(this, &boostback, move_state);
 								move_state = &boostback;
 								CS::instance()->leave(CS_MESSAGE_CS, "leave");
 								return true;
 							}
-						} else if (input->getKEYSTATE()['D'] & KTROBO_INPUT_BUTTON_PRESSED) {
+						}
+						else if (input->getKEYSTATE()['D'] & KTROBO_INPUT_BUTTON_PRESSED) {
 							if ((booster_state == &boostontaiki) && (move_state != &boostright)) {
 								move_state->leave(this, &boostright, move_state);
-								boostright.enter(this,&boostright, move_state);
+								boostright.enter(this, &boostright, move_state);
 								move_state = &boostright;
 								CS::instance()->leave(CS_MESSAGE_CS, "leave");
 								return true;
 							}
-						} else {
-							if ((booster_state == &boostontaiki) && ( move_state != &boostup) ) {
+						}
+						else {
+							if ((booster_state == &boostontaiki) && (move_state != &boostup)) {
 								move_state->leave(this, &boostup, move_state);
 								boostup.enter(this, &boostup, move_state);
 								move_state = &boostup;
@@ -4024,37 +4219,64 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 
 
 
-			if(input->getMOUSESTATE()->mouse_l_button_pressed) {
+			if (input->getMOUSESTATE()->mouse_l_button_pressed) {
 				if ((moveturn_state != &moveleftturn)) {
 					moveturn_state->leave(this, &moveleftturn, moveturn_state);
 					moveleftturn.enter(this, &moveleftturn, moveturn_state);
 					moveturn_state = &moveleftturn;
 					if (move_state->isJump()) {
-						move_state->leave(this,&movestop,move_state);
-						movestop.enter(this,&movestop,move_state);
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
 						move_state = &movestop;
 					}
-					
+
 				}
-			} else if(input->getMOUSESTATE()->mouse_r_button_pressed) {
+			}
+			else if (input->getMOUSESTATE()->mouse_r_button_pressed) {
 				if ((moveturn_state != &moverightturn)) {
 					moveturn_state->leave(this, &moverightturn, moveturn_state);
 					moveleftturn.enter(this, &moverightturn, moveturn_state);
 					moveturn_state = &moverightturn;
 					if (move_state->isJump()) {
-						move_state->leave(this,&movestop,move_state);
-						movestop.enter(this,&movestop,move_state);
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
 						move_state = &movestop;
 					}
 				}
-			} else {
+			}
+			else if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_TURN_LEFT) & KTROBO_INPUT_BUTTON_PRESSED) {
+				if ((moveturn_state != &moveleftturn)) {
+					moveturn_state->leave(this, &moveleftturn, moveturn_state);
+					moveleftturn.enter(this, &moveleftturn, moveturn_state);
+					moveturn_state = &moveleftturn;
+					if (move_state->isJump()) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+				}
+			}
+			else if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_TURN_RIGHT) & KTROBO_INPUT_BUTTON_PRESSED) {
+				if ((moveturn_state != &moverightturn)) {
+					moveturn_state->leave(this, &moverightturn, moveturn_state);
+					moveleftturn.enter(this, &moverightturn, moveturn_state);
+					moveturn_state = &moverightturn;
+					if (move_state->isJump()) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+				}
+			}
+
+			else {
 				if ((moveturn_state != &movestop)) {
 					moveturn_state->leave(this, &movestop, moveturn_state);
 					movestop.enter(this, &movestop, moveturn_state);
 					moveturn_state = &movestop;
 					if (move_state->isJump()) {
-						move_state->leave(this,&movestop,move_state);
-						movestop.enter(this,&movestop,move_state);
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
 						move_state = &movestop;
 					}
 				}
@@ -4064,42 +4286,45 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 
 				if (input->getKEYSTATE()[VK_SPACE] & KTROBO_INPUT_BUTTON_PRESSED) {
 
-					if ((move_state != &movejumpforward) && !move_state->isJumpKABE() &&  (setti_state != &kuutyuu)) {
+					if ((move_state != &movejumpforward) && !move_state->isJumpKABE() && (setti_state != &kuutyuu)) {
 						move_state->leave(this, &movejumpforward, move_state);
 						movejumpforward.enter(this, &movejumpforward, move_state);
 						move_state = &movejumpforward;
 					}
-					
+
 					if (!move_state->isJump() && !move_state->isJumpKABE() && (setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
 						resetSetKabe();
 						move_state->leave(this, &movejumpforwardkabe, move_state);
- 						movejumpforwardkabe.enter(this, &movejumpforwardkabe, move_state);
+						movejumpforwardkabe.enter(this, &movejumpforwardkabe, move_state);
 						move_state = &movejumpforwardkabe;
-						
+
 					}
 
 
 
-			
 
-				} else {
+
+				}
+				else {
 
 
 					if (input->getKEYSTATE()['A'] & KTROBO_INPUT_BUTTON_PRESSED) {
-						if ((move_state != &moveleftforward) && ( move_state != &movejumpforward) && (move_state != &movejumpleft)) {
-							move_state->leave(this,&moveleftforward, move_state);
+						if ((move_state != &moveleftforward) && (move_state != &movejumpforward) && (move_state != &movejumpleft)) {
+							move_state->leave(this, &moveleftforward, move_state);
 							moveleftforward.enter(this, &moveleftforward, move_state);
 							move_state = &moveleftforward;
 						}
-					} else if( input->getKEYSTATE()['D'] & KTROBO_INPUT_BUTTON_PRESSED) {
-						if ((move_state != &moverightforward) && ( move_state != &movejumpforward) && (move_state != &movejumpright)) {
-							move_state->leave(this,&moverightforward, move_state);
+					}
+					else if (input->getKEYSTATE()['D'] & KTROBO_INPUT_BUTTON_PRESSED) {
+						if ((move_state != &moverightforward) && (move_state != &movejumpforward) && (move_state != &movejumpright)) {
+							move_state->leave(this, &moverightforward, move_state);
 							moveleftforward.enter(this, &moverightforward, move_state);
 							move_state = &moverightforward;
 						}
-					} else {
+					}
+					else {
 
-						if ((move_state != &moveforward) && ((move_state != &movejumpforward) 
+						if ((move_state != &moveforward) && ((move_state != &movejumpforward)
 							)
 							) {
 							move_state->leave(this, &moveforward, move_state);
@@ -4108,7 +4333,8 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 						}
 					}
 				}
-			} else if(input->getKEYSTATE()['A'] & KTROBO_INPUT_BUTTON_PRESSED) {
+			}
+			else if (input->getKEYSTATE()['A'] & KTROBO_INPUT_BUTTON_PRESSED) {
 				if (input->getKEYSTATE()[VK_SPACE] & KTROBO_INPUT_BUTTON_PRESSED) {
 
 					if ((move_state != &movejumpleft) && (setti_state != &kuutyuu)) {
@@ -4116,32 +4342,35 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 						movejumpleft.enter(this, &movejumpleft, move_state);
 						move_state = &movejumpleft;
 					}
-					
-					if (!move_state->isJump() && !move_state->isJumpKABE() &&(setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
+
+					if (!move_state->isJump() && !move_state->isJumpKABE() && (setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
 						resetSetKabe();
 						move_state->leave(this, &movejumpleftkabe, move_state);
 						movejumpleftkabe.enter(this, &movejumpleftkabe, move_state);
 						move_state = &movejumpleftkabe;
 					}
 
-				} else {
+				}
+				else {
 					if (input->getKEYSTATE()['S'] & KTROBO_INPUT_BUTTON_PRESSED) {
-						if ((move_state != &moveleftback) && ( move_state != &movejumpback) && (move_state != &movejumpleft)) {
-							move_state->leave(this,&moveleftback, move_state);
+						if ((move_state != &moveleftback) && (move_state != &movejumpback) && (move_state != &movejumpleft)) {
+							move_state->leave(this, &moveleftback, move_state);
 							moveleftforward.enter(this, &moveleftback, move_state);
 							move_state = &moveleftback;
 						}
-					} else {
+					}
+					else {
 						if ((move_state != &moveleft) && ((move_state != &movejumpleft)
 							)) {
-					
+
 							move_state->leave(this, &moveleft, move_state);
 							moveleft.enter(this, &moveleft, move_state);
 							move_state = &moveleft;
 						}
 					}
 				}
-			} else if(input->getKEYSTATE()['D'] & KTROBO_INPUT_BUTTON_PRESSED) {
+			}
+			else if (input->getKEYSTATE()['D'] & KTROBO_INPUT_BUTTON_PRESSED) {
 				if (input->getKEYSTATE()[VK_SPACE] & KTROBO_INPUT_BUTTON_PRESSED) {
 
 					if ((move_state != &movejumpright) && (setti_state != &kuutyuu)) {
@@ -4149,111 +4378,454 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 						movejumpright.enter(this, &movejumpright, move_state);
 						move_state = &movejumpright;
 					}
-					if (!move_state->isJump() && !move_state->isJumpKABE() &&(setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
+					if (!move_state->isJump() && !move_state->isJumpKABE() && (setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
 						resetSetKabe();
 						move_state->leave(this, &movejumprightkabe, move_state);
 						movejumprightkabe.enter(this, &movejumprightkabe, move_state);
 						move_state = &movejumprightkabe;
 					}
 
-				} else {
+				}
+				else {
 					if (input->getKEYSTATE()['S'] & KTROBO_INPUT_BUTTON_PRESSED) {
-						if ((move_state != &moverightback) && ( move_state != &movejumpback) && (move_state != &movejumpright)) {
-							move_state->leave(this,&moverightback, move_state);
+						if ((move_state != &moverightback) && (move_state != &movejumpback) && (move_state != &movejumpright)) {
+							move_state->leave(this, &moverightback, move_state);
 							moveleftforward.enter(this, &moverightback, move_state);
 							move_state = &moverightback;
 						}
-					} else {
+					}
+					else {
 						if ((move_state != &moveright) && (move_state != &movejumpright)
 							) {
-					
-					
-					
-					
+
+
+
+
 							move_state->leave(this, &moveright, move_state);
 							moveright.enter(this, &moveright, move_state);
 							move_state = &moveright;
 						}
 					}
 				}
-			} else if(input->getKEYSTATE()['S'] & KTROBO_INPUT_BUTTON_PRESSED) {
+			}
+			else if (input->getKEYSTATE()['S'] & KTROBO_INPUT_BUTTON_PRESSED) {
 				if (input->getKEYSTATE()[VK_SPACE] & KTROBO_INPUT_BUTTON_PRESSED) {
 
-					if ((move_state != &movejumpback)  && !move_state->isJumpKABE() && (setti_state != &kuutyuu)) {
+					if ((move_state != &movejumpback) && !move_state->isJumpKABE() && (setti_state != &kuutyuu)) {
 						move_state->leave(this, &movejumpback, move_state);
 						movejumpback.enter(this, &movejumpback, move_state);
 						move_state = &movejumpback;
 					}
-					
-					if (!move_state->isJump() && !move_state->isJumpKABE() &&(setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
+
+					if (!move_state->isJump() && !move_state->isJumpKABE() && (setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
 						resetSetKabe();
 						move_state->leave(this, &movejumpbackkabe, move_state);
 						movejumpbackkabe.enter(this, &movejumpbackkabe, move_state);
 						move_state = &movejumpbackkabe;
 					}
 
-				} else {
-				if ((move_state != &moveback) && (move_state != &movejumpback)
-					)
-						 {
-					
-					move_state->leave(this, &moveback, move_state);
-					moveback.enter(this, &moveback, move_state);
-					move_state = &moveback;
 				}
+				else {
+					if ((move_state != &moveback) && (move_state != &movejumpback)
+						)
+					{
+
+						move_state->leave(this, &moveback, move_state);
+						moveback.enter(this, &moveback, move_state);
+						move_state = &moveback;
+					}
 				}
-			} else if(input->getKEYSTATE()[VK_SPACE] & KTROBO_INPUT_BUTTON_PRESSED) {
+			}
+			else if (input->getKEYSTATE()[VK_SPACE] & KTROBO_INPUT_BUTTON_PRESSED) {
 				if (((move_state != &movejump) && (move_state != &movejumpforward) &&
 					(move_state != &movejumpback) && (move_state != &movejumpleft) &&
-					(move_state != &movejumpright))  && (setti_state != &kuutyuu)) {
+					(move_state != &movejumpright)) && (setti_state != &kuutyuu)) {
 					move_state->leave(this, &movejump, move_state);
 					movejump.enter(this, &movejump, move_state);
 					move_state = &movejump;
-				} else if ((!move_state->isJumpKABE()) && (setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
+				}
+				else if ((!move_state->isJumpKABE()) && (setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
 					resetSetKabe();
 					move_state->leave(this, &movejumpkabe, move_state);
 					movejumpkabe.enter(this, &movejumpkabe, move_state);
 					move_state = &movejumpkabe;
 				}
-			} else {
+			}
+			else {
 				if ((move_state != &movestop)) {
 					move_state->leave(this, &movestop, move_state);
 					movestop.enter(this, &movestop, move_state);
 					move_state = &movestop;
 				}
 			}
-				
+
 			this->upDownMuki(input->getMOUSESTATE()->mouse_y, input->getMOUSESTATE()->mouse_dy);
-				
 
-		
 
-			
-			if (input->getKEYSTATE()['T'] & KTROBO_INPUT_BUTTON_DOWN) {
+
+
+
+			if (input->getKEYSTATE()['T'] & KTROBO_INPUT_BUTTON_PRESSED) {
 				is_fireraweapon = true;
-			} else {
+			}
+			else {
 				is_fireraweapon = false;
 			}
 			if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
-			if (input->getKEYSTATE()['F'] & KTROBO_INPUT_BUTTON_DOWN) {
-				if (booster_state == &boostoff) {
-					booster_state->leave(this, &boostoff, &boostontaiki);
-					boostontaiki.enter(this,&boostoff, &boostontaiki);
-					booster_state = &boostontaiki;
-				} else if( booster_state == &boostontaiki) {
-					booster_state->leave(this, &boostontaiki, &boostoff);
-					boostoff.enter(this, &boostontaiki, &boostoff);
-					booster_state = &boostoff;
-					if (move_state->isBoosterHi()) {
+				if (input->getKEYSTATE()['F'] & KTROBO_INPUT_BUTTON_DOWN) {
+					if (booster_state == &boostoff) {
+						booster_state->leave(this, &boostoff, &boostontaiki);
+						boostontaiki.enter(this, &boostoff, &boostontaiki);
+						booster_state = &boostontaiki;
+					}
+					else if (booster_state == &boostontaiki) {
+						booster_state->leave(this, &boostontaiki, &boostoff);
+						boostoff.enter(this, &boostontaiki, &boostoff);
+						booster_state = &boostoff;
+						if (move_state->isBoosterHi()) {
+							move_state->leave(this, &movestop, move_state);
+							movestop.enter(this, &movestop, move_state);
+							move_state = &movestop;
+						}
+					}
+				}
+			}
+
+		}
+	}
+
+
+	if ((input->getMSGID() == KTROBO_INPUT_MESSAGE_ID_GAMEPAD)|| (input->getMSGID() == KTROBO_INPUT_MESSAGE_ID_GAMEPAD_BUTTON)) {
+
+		if (move_state->isBoosterHi() && !move_state->isCanMoveWhenBoost(this)) {
+			// ハイブースト中なので何もできない
+			if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_FIRE_RARM) & KTROBO_INPUT_BUTTON_DOWN) {
+				is_fireraweapon = true;
+			}
+			else {
+				is_fireraweapon = false;
+			}
+			
+			if (input->getMSGID() == KTROBO_INPUT_MESSAGE_ID_GAMEPAD_BUTTON) {
+				if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_ONOFF_BOOST) & KTROBO_INPUT_BUTTON_DOWN) {
+					if (booster_state == &boostoff) {
+						booster_state->leave(this, &boostoff, &boostontaiki);
+						boostontaiki.enter(this, &boostoff, &boostontaiki);
+						booster_state = &boostontaiki;
+					}
+					else if (booster_state == &boostontaiki) {
+						booster_state->leave(this, &boostontaiki, &boostoff);
+						boostoff.enter(this, &boostontaiki, &boostoff);
+						booster_state = &boostoff;
+						if (move_state->isBoosterHi()) {
+							move_state->leave(this, &movestop, move_state);
+							movestop.enter(this, &movestop, move_state);
+							move_state = &movestop;
+						}
+					}
+				}
+			}
+
+			if (input->getMOUSESTATE()->mouse_l_button_pressed) {
+				if ((moveturn_state != &moveleftturn)) {
+					moveturn_state->leave(this, &moveleftturn, moveturn_state);
+					moveleftturn.enter(this, &moveleftturn, moveturn_state);
+					moveturn_state = &moveleftturn;
+					if (move_state->isJump()) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+
+				}
+			}
+			else if (input->getMOUSESTATE()->mouse_r_button_pressed) {
+				if ((moveturn_state != &moverightturn)) {
+					moveturn_state->leave(this, &moverightturn, moveturn_state);
+					moveleftturn.enter(this, &moverightturn, moveturn_state);
+					moveturn_state = &moverightturn;
+					if (move_state->isJump()) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+				}
+			}else 
+			if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_TURN_LEFT) & KTROBO_INPUT_BUTTON_PRESSED) {
+				if ((moveturn_state != &moveleftturn)) {
+					moveturn_state->leave(this, &moveleftturn, moveturn_state);
+					moveleftturn.enter(this, &moveleftturn, moveturn_state);
+					moveturn_state = &moveleftturn;
+					if (move_state->isJump()) {
 						move_state->leave(this, &movestop, move_state);
 						movestop.enter(this, &movestop, move_state);
 						move_state = &movestop;
 					}
 				}
 			}
+			else if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_TURN_RIGHT) & KTROBO_INPUT_BUTTON_PRESSED) {
+				if ((moveturn_state != &moverightturn)) {
+					moveturn_state->leave(this, &moverightturn, moveturn_state);
+					moveleftturn.enter(this, &moverightturn, moveturn_state);
+					moveturn_state = &moverightturn;
+					if (move_state->isJump()) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+				}
+			}
+			else {
+				if ((moveturn_state != &movestop) && (move_state != &gamepad_boost)) {
+					moveturn_state->leave(this, &movestop, moveturn_state);
+					movestop.enter(this, &movestop, moveturn_state);
+					moveturn_state = &movestop;
+					if (move_state->isJump()) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+				}
 			}
 
+			//Sleep(1);
 		}
+		else {
+
+			if (move_state->isCanBoost(this)) {
+				if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_JUMP) & KTROBO_INPUT_BUTTON_PRESSED) {
+					incPressedSpaceCount();
+				}
+
+
+				if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_JUMP) & KTROBO_INPUT_BUTTON_UP) {
+					resetPressedSpaceCount();
+				}
+
+				if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_JUMP) & KTROBO_INPUT_BUTTON_DOWN) {
+					resetPressedSpaceCount();
+				}
+				if (input->getMSGID() == KTROBO_INPUT_MESSAGE_ID_GAMEPAD_BUTTON) {
+					if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_BOOST_MOVE) & KTROBO_INPUT_BUTTON_DOWN) {
+						float cco = input->gamepadstate.getMoveCos();
+						float sso = input->gamepadstate.getMoveSin();
+						if ((abs(cco) < 0.0001) && (abs(sso) < 0.0001)) {
+							if ((booster_state == &boostontaiki) && (move_state != &boostup)) {
+								move_state->leave(this, &boostup, move_state);
+								boostup.enter(this, &boostup, move_state);
+								move_state = &boostup;
+								CS::instance()->leave(CS_MESSAGE_CS, "leave");
+								return true;
+							}
+						}
+						else {
+							if ((booster_state == &boostontaiki) && (move_state != &gamepad_boost)) {
+								MYVECTOR3 muki(sso, -cco, 0);
+								MyVec3Normalize(muki, muki);
+								gamepad_boost.setMuki(&muki);
+								move_state->leave(this, &gamepad_boost, move_state);
+								gamepad_boost.enter(this, &gamepad_boost, move_state);
+								move_state = &gamepad_boost;
+								CS::instance()->leave(CS_MESSAGE_CS, "leave");
+								return true;
+							}
+						}
+					}
+				}
+			}
+
+			if (input->getMOUSESTATE()->mouse_l_button_pressed) {
+				if ((moveturn_state != &moveleftturn)) {
+					moveturn_state->leave(this, &moveleftturn, moveturn_state);
+					moveleftturn.enter(this, &moveleftturn, moveturn_state);
+					moveturn_state = &moveleftturn;
+					if (move_state->isJump()) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+
+				}
+			}
+			else if (input->getMOUSESTATE()->mouse_r_button_pressed) {
+				if ((moveturn_state != &moverightturn)) {
+					moveturn_state->leave(this, &moverightturn, moveturn_state);
+					moveleftturn.enter(this, &moverightturn, moveturn_state);
+					moveturn_state = &moverightturn;
+					if (move_state->isJump()) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+				}
+			}
+			else
+				if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_TURN_LEFT) & KTROBO_INPUT_BUTTON_PRESSED) {
+					if ((moveturn_state != &moveleftturn)) {
+						moveturn_state->leave(this, &moveleftturn, moveturn_state);
+						moveleftturn.enter(this, &moveleftturn, moveturn_state);
+						moveturn_state = &moveleftturn;
+						if (move_state->isJump()) {
+							move_state->leave(this, &movestop, move_state);
+							movestop.enter(this, &movestop, move_state);
+							move_state = &movestop;
+						}
+					}
+				}
+				else if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_TURN_RIGHT) & KTROBO_INPUT_BUTTON_PRESSED) {
+					if ((moveturn_state != &moverightturn)) {
+						moveturn_state->leave(this, &moverightturn, moveturn_state);
+						moveleftturn.enter(this, &moverightturn, moveturn_state);
+						moveturn_state = &moverightturn;
+						if (move_state->isJump()) {
+							move_state->leave(this, &movestop, move_state);
+							movestop.enter(this, &movestop, move_state);
+							move_state = &movestop;
+						}
+					}
+				}
+				else {
+					if ((moveturn_state != &movestop) && (move_state != &gamepad_boost) && (move_state != &boostup)) {
+						moveturn_state->leave(this, &movestop, moveturn_state);
+						movestop.enter(this, &movestop, moveturn_state);
+						moveturn_state = &movestop;
+						if (move_state->isJump()) {
+							move_state->leave(this, &movestop, move_state);
+							movestop.enter(this, &movestop, move_state);
+							move_state = &movestop;
+						}
+					}
+				}
+
+
+
+
+
+
+
+
+			//	if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD) & KTROBO_INPUT_BUTTON_PRESSED) {
+
+			if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_JUMP) & KTROBO_INPUT_BUTTON_PRESSED) {
+				float cco = input->gamepadstate.getMoveCos();
+				float sso = input->gamepadstate.getMoveSin();
+				MYVECTOR3 muki(sso, -cco, 0);
+				MyVec3Normalize(muki, muki);
+				if ((abs(cco) < 0.0001) && (abs(sso) < 0.0001)) {
+					if (((move_state != &movejump) && (move_state != &gamepad_jump) && (move_state != &gamepad_move) && (move_state != &movejumpforward) &&
+						(move_state != &movejumpback) && (move_state != &movejumpleft) &&
+						(move_state != &movejumpright)) && (setti_state != &kuutyuu)) {
+						gamepad_jump.setMuki(&muki);
+						move_state->leave(this, &gamepad_jump, move_state);
+						movejump.enter(this, &gamepad_jump, move_state);
+						move_state = &gamepad_jump;
+					}
+					else if ((!move_state->isJumpKABE()) && (setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
+						resetSetKabe();
+						gamepad_jumpkabe.setMuki(&muki);
+						move_state->leave(this, &gamepad_jumpkabe, move_state);
+						gamepad_jumpkabe.enter(this, &gamepad_jumpkabe, move_state);
+						move_state = &gamepad_jumpkabe;
+					}
+				}
+				else {
+					if ((move_state != &gamepad_jump/*movejumpforward*/) && !move_state->isJumpKABE() && (setti_state != &kuutyuu)) {
+						gamepad_jump.setMuki(&muki);
+						move_state->leave(this, &gamepad_jump/*movejumpforward*/, move_state);
+						gamepad_jump.enter(this, &gamepad_jump/*movejumpforward*/, move_state);
+						move_state = &gamepad_jump;
+					}
+
+					if (!move_state->isJump() && !move_state->isJumpKABE() && (setkabe_count < this->KTROBO_ROBO_JUMPKABE_COUNT)) {
+						resetSetKabe();
+						gamepad_jumpkabe.setMuki(&muki);
+						move_state->leave(this, &gamepad_jumpkabe, move_state);
+						gamepad_jumpkabe.enter(this, &gamepad_jumpkabe, move_state);
+						move_state = &gamepad_jumpkabe;
+
+					}
+
+				}
+
+
+
+
+			}
+			else {
+				float cco = input->gamepadstate.getMoveCos();
+				float sso = input->gamepadstate.getMoveSin();
+				if ((abs(cco) < 0.0001) && (abs(sso) < 0.0001)) {
+					if ((move_state != &movestop) && (move_state != &gamepad_boost) && (move_state != &boostup)) {
+						move_state->leave(this, &movestop, move_state);
+						movestop.enter(this, &movestop, move_state);
+						move_state = &movestop;
+					}
+				}
+				else {
+					MYVECTOR3 muki(sso, -cco, 0);
+					MyVec3Normalize(muki, muki);
+					gamepad_move.setMuki(&muki);
+					if ((move_state != &gamepad_move) && ((move_state != &gamepad_jump)
+						)
+						) {
+						move_state->leave(this, &gamepad_move, move_state);
+						gamepad_move.enter(this, &gamepad_move, move_state);
+						move_state = &gamepad_move;
+					}
+				}
+			}
+
+
+
+
+			this->upDownMuki(input->gamepadstate.getMouseYForUpDownMuki(), input->gamepadstate.getMouseDYForUpDownMuki());
+
+
+
+
+
+			if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_FIRE_RARM) & KTROBO_INPUT_BUTTON_DOWN) {
+				is_fireraweapon = true;
+			}
+			else {
+				is_fireraweapon = false;
+			}
+			if (input->getMSGID() == KTROBO_INPUT_MESSAGE_ID_GAMEPAD_BUTTON) {
+				//if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
+				if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_ONOFF_BOOST) & KTROBO_INPUT_BUTTON_DOWN) {
+					if (booster_state == &boostoff) {
+						booster_state->leave(this, &boostoff, &boostontaiki);
+						boostontaiki.enter(this, &boostoff, &boostontaiki);
+						booster_state = &boostontaiki;
+					}
+					else if (booster_state == &boostontaiki) {
+						booster_state->leave(this, &boostontaiki, &boostoff);
+						boostoff.enter(this, &boostontaiki, &boostoff);
+						booster_state = &boostoff;
+						if (move_state->isBoosterHi()) {
+							move_state->leave(this, &movestop, move_state);
+							movestop.enter(this, &movestop, move_state);
+							move_state = &movestop;
+						}
+					}
+				}
+			}
+		}
+		//				}
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
 
 			CS::instance()->leave(CS_MESSAGE_CS, "leave");
 			return true;
@@ -4310,6 +4882,11 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 #define KTROBO_ID_ROBOMOVINGSTATE_BACKJUMPKABE 30
 #define KTROBO_ID_ROBOMOVINGSTATE_LEFTJUMPKABE 31
 #define KTROBO_ID_ROBOMOVINGSTATE_RIGHTJUMPKABE 32
+
+#define KTROBO_ID_ROBOMOVINGSTATE_GAMEPAD_JUMP 33
+#define KTROBO_ID_ROBOMOVINGSTATE_GAMEPAD_JUMPKABE 34
+#define KTROBO_ID_ROBOMOVINGSTATE_GAMEPAD 35
+#define KTROBO_ID_ROBOBOOSTERSTATE_GAMEPAD_BOOST 36
 
 void RoboMovingState_STOP::enter(Robo* robo, RoboState* now_state, RoboState* before_state) {
 	RoboState::enter(robo,now_state,before_state);
@@ -5299,6 +5876,11 @@ void RoboBoosterState_BOOSTUP::enter(Robo* robo, RoboState* now_state, RoboState
 	t = 0;
 }
 void RoboBoosterState_BOOSTUP::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {
+
+
+	//
+
+
 }
 int RoboBoosterState_BOOSTUP::getStateID() {
 	return KTROBO_ID_ROBOBOOSTERSTATE_UP;
@@ -5335,6 +5917,10 @@ bool RoboState::isJump() {
 	if (id == KTROBO_ID_ROBOMOVINGSTATE_JUMP) {
 		return true;
 	}
+
+	if (id == KTROBO_ID_ROBOMOVINGSTATE_GAMEPAD_JUMP) {
+		return true;
+	}
 	return false;
 }
 
@@ -5355,6 +5941,9 @@ bool RoboState::isBoosterHi() {
 	}
 
 	if (id == KTROBO_ID_ROBOBOOSTERSTATE_UP) {
+		return true;
+	}
+	if (id == KTROBO_ID_ROBOBOOSTERSTATE_GAMEPAD_BOOST) {
 		return true;
 	}
 	return false;
@@ -5391,6 +5980,10 @@ bool RoboState::isJumpKABE() {
 	if (id == KTROBO_ID_ROBOMOVINGSTATE_JUMPKABE) {
 		return true;
 	}
+	if (id == KTROBO_ID_ROBOMOVINGSTATE_GAMEPAD_JUMPKABE) {
+		return true;
+	}
+
 	return false;
 }
 
@@ -5435,9 +6028,9 @@ RoboBoosterCalc::RoboBoosterCalc() {
 	this->robo = NULL;
 	this->booster = NULL;
 	this->energy_drain = 9000;
-	this->fudanspeed = 0.018f;
-	this->maxatospeed = 0.024f;
-	this->maxspeed = 0.045f;
+	this->fudanspeed = 0.38f;// 0.018f;
+	this->maxatospeed = 0.3234f;// 0.024f;
+	this->maxspeed = 0.325f;// 0.045f;
 	this->time_backto_fudan = 1000;
 	this->time_maxato_made = 700;
 	this->time_maxspeed_jizoku_made = 300;
@@ -5454,9 +6047,9 @@ void RoboBoosterCalc::Init(Robo* robo, RoboBooster* booster) {
 	this->robo = robo;
 	this->booster = booster;
 	this->energy_drain = 9000;
-	this->fudanspeed = 0.018f;
-	this->maxatospeed = 0.024f;
-	this->maxspeed = 0.025f;
+	this->fudanspeed = 0.38f;// 0.018f;
+	this->maxatospeed = 0.334f;// 0.024f;
+	this->maxspeed = 0.325f;// 0.025f;
 	this->time_backto_fudan = 1000;
 	this->time_maxato_made = 700;
 	this->time_maxspeed_jizoku_made = 300;
@@ -5583,6 +6176,22 @@ bool RoboBoosterState_BOOSTBACK::isCanMoveWhenBoost(Robo* robo) {
 		}
 		return false;
 }
+
+
+bool RoboBoosterState_GAMEPAD_BOOST::isCanBoost(Robo* robo) {
+	if (robo->roboparam.boostercalc.isCanReload(t)) {
+		return true;
+	}
+	return false;
+}
+bool RoboBoosterState_GAMEPAD_BOOST::isCanMoveWhenBoost(Robo* robo) {
+	if (robo->roboparam.boostercalc.isCanMove(t)) {
+		return true;
+	}
+	return false;
+}
+
+
 
 
 void RoboParts::loadData(MyTokenAnalyzer* ma, RoboDataMetaData* meta_data) {
@@ -5883,3 +6492,166 @@ char* RoboParam::getNameOfEngine() {
 }
 
 RoboDataPart RoboData::emptydata;
+
+
+
+
+
+void RoboMovingState_GAMEPAD::enter(Robo* robo, RoboState* now_state, RoboState* before_state) {
+	RoboState::enter(robo, now_state, before_state);
+	robo->anime_loop_leg.setAnime(10, 30, true);
+	robo->anime_loop_leg.setLock(true);
+}
+void RoboMovingState_GAMEPAD::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {
+	robo->anime_loop_leg.setLock(false);
+}
+void RoboMovingState_GAMEPAD::setMuki(MYVECTOR3* muki) {
+	this->muki = *muki;
+}
+int  RoboMovingState_GAMEPAD::getStateID() {
+	return KTROBO_ID_ROBOMOVINGSTATE_GAMEPAD;
+}
+void RoboMovingState_GAMEPAD::exec(Graphics* g, Robo* robo, float dsecond, int stamp) {
+	if (dsecond > 300) return;
+	if (robo->move_state->isBoosterHi()) return;
+	if ((robo->setti_state == &robo->setti) || (robo->booster_state == &robo->boostontaiki)) {
+		float speed = 0.018f;// 0.005f;
+		if (robo->booster_state == &robo->boostontaiki) {
+			speed *= 3.14f;
+		}
+
+		MYVECTOR3 mae = muki;
+		MyVec3TransformNormal(mae, mae, *robo->getWorldWithoutRotX());//robo->atarihan->world);
+		MyVec3Normalize(mae, mae);
+		mae = mae * speed;
+		//*dsecond;
+		if (robo->booster_state == &robo->boostoff) {
+			robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
+			robo->atarihan->setV(&MYVECTOR3(mae.float3.x, mae.float3.y, robo->atarihan->v.float3.z));
+		}
+
+		if (robo->booster_state == &robo->boostontaiki) {
+			MYVECTOR3 vec = robo->atarihan->v;
+			MYVECTOR3 vec2 = vec * 0.8 + mae * speed*0.2*dsecond;
+			float vec2len = MyVec3Length(vec2);
+			if (vec2len > speed) {
+				MyVec3Normalize(vec2, vec2);
+				vec2 = vec2 * speed;
+			}
+			robo->atarihan->setV(&vec2);
+
+		}
+	}
+}
+void RoboMovingState_GAMEPAD_JUMP::enter(Robo* robo, RoboState* now_state, RoboState* before_state) {
+	if (before_state->isJump()) return;
+	RoboState::enter(robo, now_state, before_state);
+	robo->anime_loop_leg.setAnime(105, 115, false);
+	MYVECTOR3 ve = muki;
+	MyVec3TransformNormal(ve, ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
+	MyVec3Normalize(ve, ve);
+	robo->atarihan->v = MYVECTOR3(0, 0, 0.019f) + ve * 0.02f;
+	robo->jump_f_z = 0.000019f;
+	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y, robo->atarihan->z + 0.01f);
+}
+void RoboMovingState_GAMEPAD_JUMP::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {
+	robo->jump_f_z = 0;
+	robo->setkabe_count = 10000000;
+}
+void RoboMovingState_GAMEPAD_JUMP::setMuki(MYVECTOR3* muki) {
+	this->muki = *muki;
+}
+int  RoboMovingState_GAMEPAD_JUMP::getStateID() {
+	return KTROBO_ID_ROBOMOVINGSTATE_GAMEPAD_JUMP;
+}
+void RoboMovingState_GAMEPAD_JUMP::exec(Graphics* g, Robo* robo, float dsecond, int stamp) {
+	if (dsecond > 200) return;
+	MYVECTOR3 pos(robo->atarihan->x, robo->atarihan->y, robo->atarihan->z);
+	MYVECTOR3 dpos = robo->atarihan->v * dsecond;
+	dpos.float3.z = 0; // z関係はあたり処理で
+	pos = pos + dpos;
+	robo->atarihan->setXYZ(pos.float3.x, pos.float3.y, pos.float3.z);
+	if (robo->setti_state == &robo->setti) {
+		robo->atarihan->v = robo->atarihan->v + MYVECTOR3(0, 0, robo->jump_f_z*dsecond);
+	}
+}
+
+void RoboMovingState_GAMEPAD_JUMPKABE::enter(Robo* robo, RoboState* now_state, RoboState* before_state) {
+	if (before_state->isJumpKABE()) return;
+	RoboState::enter(robo, now_state, before_state);
+	robo->resetSetKabe();
+	robo->anime_loop_leg.setAnime(105, 115, false);
+	MYVECTOR3 ve = muki;
+	MyVec3TransformNormal(ve, ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
+	MyVec3Normalize(ve, ve);
+	robo->atarihan->setV(&MYVECTOR3(0, 0, 0.02f));//&(ve * 0.02f));
+	robo->jump_f_z_kabe = 0.0019f;
+	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y, robo->atarihan->z + 0.01f);
+}
+void RoboMovingState_GAMEPAD_JUMPKABE::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {
+	//t = 0;
+	robo->jump_f_z_kabe = 0;
+	robo->resetSetKabe();
+	robo->setkabe_count = 50000000;
+}
+void RoboMovingState_GAMEPAD_JUMPKABE::setMuki(MYVECTOR3* muki) {
+	this->muki = *muki;
+}
+int  RoboMovingState_GAMEPAD_JUMPKABE::getStateID() {
+	return KTROBO_ID_ROBOMOVINGSTATE_GAMEPAD_JUMPKABE;
+}
+void RoboMovingState_GAMEPAD_JUMPKABE::exec(Graphics* g, Robo* robo, float dsecond, int stamp) {
+	if (dsecond > 200) return;
+	MYVECTOR3 pos(robo->atarihan->x, robo->atarihan->y, robo->atarihan->z);
+	MYVECTOR3 dpos = robo->atarihan->v * dsecond;
+	dpos.float3.z = 0; // z関係はあたり処理で
+	pos = pos + dpos;
+	if ((robo->setkabe_count > 0) && (robo->setkabe_count < robo->KTROBO_ROBO_JUMPKABE_COUNT) && (robo->getPressedSpaceCount() < robo->KTROBO_ROBO_JUMPKABE_COUNT / 2)) {
+		robo->atarihan->setXYZD(pos.float3.x, pos.float3.y, pos.float3.z, 0.02);
+
+		MYVECTOR3 ve = muki;
+		MyVec3TransformNormal(ve, ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
+		MyVec3Normalize(ve, ve);
+		ve = ve * 0.8 + robo->kabe_housen*0.2;
+		MyVec3Normalize(ve, ve);
+		robo->atarihan->setV(&(ve*0.002 + robo->atarihan->v + MYVECTOR3(0, 0, robo->jump_f_z_kabe*dsecond)));//robo->atarihan->v = robo->atarihan->v+ MYVECTOR3(0,0,robo->jump_f_z_kabe*dsecond);
+		robo->atarihan->setV(&(robo->atarihan->v / 1.4001));
+	}
+	else {
+		robo->atarihan->setV(&(robo->atarihan->v / 1.4001));
+	}
+}
+
+void RoboBoosterState_GAMEPAD_BOOST::enter(Robo* robo, RoboState* now_state, RoboState* before_state) {
+	t = 0;
+}
+void RoboBoosterState_GAMEPAD_BOOST::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {
+
+}
+void RoboBoosterState_GAMEPAD_BOOST::setMuki(MYVECTOR3* muki) {
+	this->muki = *muki;
+}
+int  RoboBoosterState_GAMEPAD_BOOST::getStateID() {
+	return KTROBO_ID_ROBOBOOSTERSTATE_GAMEPAD_BOOST;
+}
+void RoboBoosterState_GAMEPAD_BOOST::exec(Graphics* g, Robo* robo, float dsecond, int stamp) {
+	t += dsecond;
+
+	float te = robo->roboparam.boostercalc.getSpeed(t);
+	MYVECTOR3 ve = muki;
+	MyVec3TransformNormal(ve, ve, *robo->getWorldWithoutRotX()/*atarihan->world*/);
+	MyVec3Normalize(ve, ve);
+	MYVECTOR3 bdayo = ve * te;
+
+	robo->atarihan->setV(&bdayo);
+
+	if (robo->roboparam.boostercalc.isCanMove(t)) {
+		this->leave(robo, &robo->movestop, this);
+		robo->movestop.enter(robo, &robo->movestop, this);
+		robo->move_state = &robo->movestop;
+	}
+}
+
+
+
+

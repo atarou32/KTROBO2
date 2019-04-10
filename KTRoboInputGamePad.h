@@ -22,6 +22,8 @@
 #include <shellapi.h>
 #include <strsafe.h>
 
+#define KTROBO_INPUT_GAMEPAD_AXISMAX 1000
+#define KTROBO_INPUT_GAMEPAD_AXISMIN -1000
 
 namespace KTROBO {
 

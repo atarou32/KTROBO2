@@ -6,7 +6,8 @@
 #include "windows.h"
 #include "KTRoboClock.h"
 #include "winuser.h"
-
+#include "xnamath.h"
+//#include "MyDefine.h"
 
 namespace KTROBO {
 
@@ -153,6 +154,52 @@ public:
 		}
 
 	}
+
+	//	MYVECTOR3 getBoostMoveMuki();
+	//	{
+			// 
+	//	}
+	float getMoveCos();
+	float getMoveSin();
+	float getMouseYForUpDownMuki();
+	float getMouseDYForUpDownMuki();
+
+	unsigned char getStateAsButton(int CONFIG_INDEX) {
+		if ((CONFIG_INDEX >= 0) && (CONFIG_INDEX < KTROBO_GAMEPAD_CONFIG_STATE_MAX)) {
+			if (rules[CONFIG_INDEX].is_button && (rules[CONFIG_INDEX].index == KTROBO_GAMEPAD_BUTTON_NOUSE)) return 0;
+			if (rules[CONFIG_INDEX].is_button) {
+				return this->config_state[CONFIG_INDEX];
+			}
+			else {
+				if ((rules[CONFIG_INDEX].index >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) == (rules[CONFIG_INDEX].index <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+					if (this->config_state[CONFIG_INDEX] != KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_DEFAULT) {
+						return (KTROBO_INPUT_BUTTON_DOWN | KTROBO_INPUT_BUTTON_PRESSED);
+					}
+
+				}
+				else {
+					if (abs(this->config_state[CONFIG_INDEX]) >= KTROBO_GAMEPAD_CONFIG_STATE_AXISROT_OFFSET) {
+						if (rules[CONFIG_INDEX].is_minus) {
+							if (this->config_state[CONFIG_INDEX] < 0) {
+								return (KTROBO_INPUT_BUTTON_DOWN | KTROBO_INPUT_BUTTON_PRESSED);
+							}
+						}
+						else {
+							if (this->config_state[CONFIG_INDEX] >= 0) {
+
+								return (KTROBO_INPUT_BUTTON_DOWN | KTROBO_INPUT_BUTTON_PRESSED);
+							}
+						}
+					}
+				}
+			}
+			return 0;
+		}
+		else {
+			return 0;
+		}
+	}
+
 
 	struct GAMEPAD_STATE_CONFIG_RULE {
 		bool is_button;
@@ -302,7 +349,7 @@ class MYMESSAGESTRUCT;
 #define KTROBO_INPUT_MESSAGE_ID_MOUSEMOVE 5
 #define KTROBO_INPUT_MESSAGE_ID_MOUSERAWSTATE 6 // É{É^ÉìÇÃèÛë‘ïœçXÇ‡Ç±Ç±Ç…ì¸ÇÈ
 #define KTROBO_INPUT_MESSAGE_ID_GAMEPAD 7
-
+#define KTROBO_INPUT_MESSAGE_ID_GAMEPAD_BUTTON 8
 class MYMESSAGESTRUCT {
 public:
 	int msg_id;
@@ -508,6 +555,7 @@ public:
 	static void messageMake();
 	static INPUTGETBYMESSAGESTRUCT* getRootInputGetStruct() {return rootinputget;}
 	static void messageMakeGamePad(int i, DWORD time);
+	static void messageMakeGamePadButton(int i, DWORD time);
 	static void messageMakeButtonDown(int i, DWORD ntime);
 	static void messageMakeButtonUp(int i, DWORD ntime);
 	static void messageMakeMouseMove(DWORD n_time);

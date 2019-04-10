@@ -11,6 +11,7 @@
 
 using namespace std;
 
+
 void UMeshUnit::setXYZ(float x, float y, float z) {
 	this->x = x;
 	this->y = y;
@@ -245,12 +246,65 @@ void UMeshUnit::calcJyusinAndR(bool calcWorld) {
 	}
 	// dS‚ª‹‚Ü‚Á‚½‚Ì‚ÅŸ‚Í‚’
 	it = meshs.begin();
+	ans_r = 0;
+	float ddr = 0;
 	while(it != meshs.end()) {
 		UMesh* em = *it;
 
 		for (int i=0;i<KTROBO_MESH_BONE_MAX;i++) {
 
 			if (em->is_bone_obbs_use[i]) {
+			/*	MYVECTOR3 p1(10000, 10000, 10000);
+				MYVECTOR3 p2(10000, 10000, -10000);
+				MYVECTOR3 p3(10000, -10000, 10000);
+				MYVECTOR3 p4(10000, -10000, -10000);
+				MYVECTOR3 p5(-10000, 10000, 10000);
+				MYVECTOR3 p6(-10000, 10000, -10000);
+				MYVECTOR3 p7(-10000, -10000, 10000);
+				MYVECTOR3 p8(-10000, -10000, -10000);
+				MYVECTOR3 q1, q2, q3, q4, q5, q6, q7, q8;
+				ClosestPtPointOBB(&p1, &em->bone_obbs[i], &q1);
+				ClosestPtPointOBB(&p2, &em->bone_obbs[i], &q2);
+				ClosestPtPointOBB(&p3, &em->bone_obbs[i], &q3);
+				ClosestPtPointOBB(&p4, &em->bone_obbs[i], &q4);
+				ClosestPtPointOBB(&p5, &em->bone_obbs[i], &q5);
+				ClosestPtPointOBB(&p6, &em->bone_obbs[i], &q6);
+				ClosestPtPointOBB(&p7, &em->bone_obbs[i], &q7);
+				ClosestPtPointOBB(&p8, &em->bone_obbs[i], &q8);
+				MYVECTOR3 des1, des2, des3, des4, des5, des6, des7, des8;
+				MyVec3Subtract(des1, q1, ans_jyusin);
+				MyVec3Subtract(des2, q2, ans_jyusin);
+				MyVec3Subtract(des3, q3, ans_jyusin);
+				MyVec3Subtract(des4, q4, ans_jyusin);
+				MyVec3Subtract(des5, q5, ans_jyusin);
+				MyVec3Subtract(des6, q6, ans_jyusin);
+				MyVec3Subtract(des7, q7, ans_jyusin);
+				MyVec3Subtract(des8, q8, ans_jyusin);
+				float d1, d2, d3, d4, d5, d6, d7, d8;
+
+				d1 = MyVec3Dot(des1, des1);
+				d2 = MyVec3Dot(des2, des2);
+				d3 = MyVec3Dot(des3, des3);
+				d4 = MyVec3Dot(des4, des4);
+				d5 = MyVec3Dot(des5, des5);
+				d6 = MyVec3Dot(des6, des6);
+				d7 = MyVec3Dot(des7, des7);
+				d8 = MyVec3Dot(des8, des8);
+
+				float dd = max(d1, d2);
+				dd = max(dd, d3);
+				dd = max(dd, d4);
+				dd = max(dd, d5);
+				dd = max(dd, d6);
+				dd = max(dd, d7);
+				dd = max(dd, d8);
+
+				if (dd > ddr) {
+					ddr = dd;
+				}
+				*/
+
+				
 				MYVECTOR3 tmp;
 				float tempp=0;
 				tmp = em->bone_obbs[i].c - ans_jyusin;
@@ -260,20 +314,20 @@ void UMeshUnit::calcJyusinAndR(bool calcWorld) {
 				float ooo =	abs(MyVec3Length(tt2));
 				float ttt = max(ppp, ooo);
 				MYVECTOR3 tt3 = em->bone_obbs[i].u[2] * em->bone_obbs[i].e[2];
-				float ppp2 = MyVec3Length(tt3);				
+				float ppp2 = MyVec3Length(tt3);
 				ttt = max(ttt, ppp2);
 
 				tempp = MyVec3Length(tmp) + 1*MyVec3Dot(em->bone_obbs[i].e, em->bone_obbs[i].e);
 				if (tempp > ans_r) {
 					ans_r = tempp;
 				}
-
 			}
+			
 		}
 
 		it++;
 	}
-
+	//ans_r = sqrt(ddr);
 
 
 	r = ans_r;// +MyVec3Length(v) * dt; // ‚–‚Ì’·‚³‚Ì•ª‚¾‚¯”¼Œa‚ğ‘å‚«‚­‚·‚é

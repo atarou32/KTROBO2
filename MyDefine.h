@@ -145,5 +145,8 @@ extern const char* SOUND_BANK; //="resrc/audio/SoundBank.xsb";
 extern const char* WAVE_BANK; //= "resrc/audio/WaveBank.xwb";
 extern const char* yumes[6];// = {
 }
+
+
+
 #endif
 

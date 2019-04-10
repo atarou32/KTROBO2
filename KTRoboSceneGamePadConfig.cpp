@@ -19,6 +19,7 @@ SceneGamePadConfig::SceneGamePadConfig(Texture* tex, Texture* tex2, MyTextureLoa
 	focused_part = 0;
 	focused_rule_index = 0;
 	cursor_tex = 0;
+	is_gamepad = false;
 }
 
 
@@ -85,19 +86,28 @@ void SceneGamePadConfig::load(Graphics* g, Game* gg) {
 	strcpy_s(str, 512, "この画面ではゲームパッドでロボを操縦する場合のキーを設定します。");// gtex_g->getHelpString());
 	help_text = tex2->getRenderText(str, 50, g->getScreenHeight() - 55 + 11, 18, g->getScreenWidth(), 20);
 	tex2->setRenderTextIsRender(help_text, true);
-
-
-	//tex2->setRenderTextIsRender(help_text, false);
-
-
-
-
-	//setLoaded();
 	int tex_index2 = tex->getTexture(KTROBO_GARAGE2_IMG_PATH);
 	int tex_index22 = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
 	//cursor_tex = tex2->getRenderTex(tex_index22, 0xFFFFFFFF, 100, 100, 67, 490 - 437, 0, 437, 67, 490 - 437);
 
 	help_text_waku = tex->getRenderTex(tex_index2, 0x000000FF, 10, g->getScreenHeight() - 55 + 11, g->getScreenWidth() - 20, 20, 18, 390, 1, 1);
+
+
+	//tex2->setRenderTextIsRender(help_text, false);
+
+	if (!InputGamePad::getInstance()->getPJOYSTICK()) {
+		text_no_gamepad = tex->getRenderText(
+			"ゲームパッドが接続されていません。ゲームを再起動して！ ESCで戻ります。", 20, 100, 22, 900, 22);
+		int tex_index = tex->getTexture(KTROBO_SCENE_GAMEPAD_CONFIG_IMG_PATH);
+		tex_no_gamepad = tex->getRenderTex(tex_index, 0xFFFFFFFF, 20, 100, 900, 22, 30, 30, 1, 1);
+		tex->setRenderTextIsRender(text_no_gamepad, true);
+		setLoaded();
+		return;
+	}
+
+
+
+	//setLoaded();
 	//int tex_index22 = tex2->getTexture(KTROBO_GARAGE2_IMG_PATH);
 	cursor_tex = tex2->getRenderTex(tex_index22, 0xFFFFFFFF, 100, 100, 67, 490 - 437, 0, 437, 67, 490 - 437);
 	cursor2_text = tex2->getRenderText("調整中", 0, 0, 20, 60, 20);
@@ -140,16 +150,9 @@ void SceneGamePadConfig::load(Graphics* g, Game* gg) {
 	CS::instance()->leave(CS_LOAD_CS, "test");
 	CS::instance()->leave(CS_MESSAGE_CS, "test");
 
-	if (!InputGamePad::getInstance()->getPJOYSTICK()) {
-		text_no_gamepad = tex->getRenderText(
-			"ゲームパッドが接続されていません。ゲームを再起動して！ ESCで戻ります。", 20, 100, 22, 900, 22);
-		int tex_index = tex->getTexture(KTROBO_SCENE_GAMEPAD_CONFIG_IMG_PATH);
-		tex_no_gamepad = tex->getRenderTex(tex_index, 0xFFFFFFFF, 20, 100, 900, 22, 30, 30, 1, 1);
-		tex->setRenderTextIsRender(text_no_gamepad, true);
-	}
-	else {
-		MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(KTROBO_SCENE_GAMEPAD_CONFIG_INIT_LUA_FILEPATH);
-	}
+	
+	MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow(KTROBO_SCENE_GAMEPAD_CONFIG_INIT_LUA_FILEPATH);
+	is_gamepad = true;
 	setLoaded();
 }
 
@@ -267,8 +270,48 @@ bool SceneGamePadConfig::handleMessage(int msg, void* data, DWORD time) {
 	int y = input->getMOUSESTATE()->mouse_y;
 
 
+	if (!is_gamepad) {
+
+		if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
+			if (input->getKEYSTATE()[VK_ESCAPE] & KTROBO_INPUT_BUTTON_DOWN) {
+				//CS::instance()->leave(CS_MESSAGE_CS, "enter");
+				//modoru(tex, tex2, game);
+				CS::instance()->enter(CS_LOAD_CS, "tner");
+
+				Gamen2_event * ee = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getEvent(KTROBO_GAMEN2_SCENE_ID_GAMEPAD);
+				if (ee) {
+					int hensuu = ee->getHensuu(KTROBO_GAMEPAD_HENSUU_ID_BUTTON_SELECTED);
+					if (hensuu != KTROBO_GAMEPAD_HENSUU_BUTTON_SELECTED_MADA) {
+						tex2->setRenderTextIsRender(cursor2_text, false);
+
+
+
+
+						ee->setHensuu(KTROBO_GAMEPAD_HENSUU_ID_BUTTON_SELECTED, KTROBO_GAMEPAD_HENSUU_BUTTON_SELECTED_MADA);
+
+					}
+					else {
+						// modoru
+						MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/gamepad/modoru.lua");
+					}
+				}
+				else {
+					// modoru
+					MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/gamepad/modoru.lua");
+
+				}
+				CS::instance()->leave(CS_LOAD_CS, "tner");
+
+				return true;
+				//CS::instance()->enter(CS_MESSAGE_CS, "enter");
+			}
+		}
+
+	}
+
 	CS::instance()->enter(CS_LOAD_CS, "ee");
 	volatile bool t = MyLuaGlueSingleton::getInstance()->getColGamen2s(0)->getInstance(0)->getPaused();
+
 	CS::instance()->leave(CS_LOAD_CS, "ee");
 	if (t) return true;
 	//garage_impl->setCursorTexPosToCursorPos(tex, tex2, game);
@@ -314,6 +357,11 @@ bool SceneGamePadConfig::handleMessage(int msg, void* data, DWORD time) {
 					// modoru
 					MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/gamepad/modoru.lua");
 				}
+			}
+			else {
+				// modoru
+				MyLuaGlueSingleton::getInstance()->getColLuaExectors(0)->getInstance(0)->setExecDoNow("resrc/script/gamepad/modoru.lua");
+
 			}
 			CS::instance()->leave(CS_LOAD_CS, "tner");
 

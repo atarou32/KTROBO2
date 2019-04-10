@@ -45,8 +45,8 @@ BOOL CALLBACK    EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi, VOID*
 		diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER);
 		diprg.diph.dwHow = DIPH_BYID;
 		diprg.diph.dwObj = pdidoi->dwType; // Specify the enumerated axis
-		diprg.lMin = -1000;
-		diprg.lMax = +1000;
+		diprg.lMin = KTROBO_INPUT_GAMEPAD_AXISMIN;
+		diprg.lMax = KTROBO_INPUT_GAMEPAD_AXISMAX;
 		LPDIRECTINPUTDEVICE8 pj = InputGamePad::getInstance()->getPJOYSTICK();
 		// Set the range for the axis
 		if (FAILED(pj->SetProperty(DIPROP_RANGE, &diprg.diph)))

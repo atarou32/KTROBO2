@@ -1049,6 +1049,69 @@ public:
 	void exec(Graphics* g, Robo* robo, float dsecond, int stamp);
 };
 
+class RoboMovingState_GAMEPAD : public RoboState {
+private:
+	MYVECTOR3 muki;
+public:
+	RoboMovingState_GAMEPAD() {};
+	~RoboMovingState_GAMEPAD() {};
+	void enter(Robo* robo, RoboState* now_state, RoboState* before_state);
+	void leave(Robo* robo, RoboState* now_state, RoboState* before_state);
+	void setMuki(MYVECTOR3* muki);
+	int getStateID();
+	void exec(Graphics* g, Robo* robo, float dsecond, int stamp);
+
+};
+
+class RoboMovingState_GAMEPAD_JUMP : public RoboState {
+private:
+	MYVECTOR3 muki;
+public:
+	RoboMovingState_GAMEPAD_JUMP() {};
+	~RoboMovingState_GAMEPAD_JUMP() {};
+	void enter(Robo* robo, RoboState* now_state, RoboState* before_state);
+	void leave(Robo* robo, RoboState* now_state, RoboState* before_state);
+	void setMuki(MYVECTOR3* muki);
+	int getStateID();
+	void exec(Graphics* g, Robo* robo, float dsecond, int stamp);
+
+};
+
+
+class RoboMovingState_GAMEPAD_JUMPKABE : public RoboState { // enter Ç∑ÇÈëOÇ…Å@setmuki Ç∑ÇÈÇ±Ç∆
+private:
+	MYVECTOR3 muki;
+public:
+	RoboMovingState_GAMEPAD_JUMPKABE() {};
+	~RoboMovingState_GAMEPAD_JUMPKABE() {};
+	void enter(Robo* robo, RoboState* now_state, RoboState* before_state);
+	void leave(Robo* robo, RoboState* now_state, RoboState* before_state);
+	void setMuki(MYVECTOR3* muki);
+	int getStateID();
+	void exec(Graphics* g, Robo* robo, float dsecond, int stamp);
+
+};
+
+
+class RoboBoosterState_GAMEPAD_BOOST : public RoboState {
+private:
+	MYVECTOR3 muki;
+	float t;
+public:
+	RoboBoosterState_GAMEPAD_BOOST() { t = 0; };
+	~RoboBoosterState_GAMEPAD_BOOST() {};
+	void enter(Robo* robo, RoboState* now_state, RoboState* before_state);
+	void leave(Robo* robo, RoboState* now_state, RoboState* before_state);
+	void setMuki(MYVECTOR3* muki);
+	int getStateID();
+	void exec(Graphics* g, Robo* robo, float dsecond, int stamp);
+	bool isCanBoost(Robo* robo);
+	bool isCanMoveWhenBoost(Robo* robo);
+};
+
+
+
+
 class RoboMovingState_FORWARD : public RoboState {
 public:
 	RoboMovingState_FORWARD(){};
@@ -1711,6 +1774,14 @@ public:
 	RoboMovingState_STOP movestop;
 	RoboMovingState_LEFTTURN moveleftturn;
 	RoboMovingState_RIGHTTURN moverightturn;
+
+	RoboMovingState_GAMEPAD gamepad_move;
+	RoboMovingState_GAMEPAD_JUMP gamepad_jump;
+	RoboMovingState_GAMEPAD_JUMPKABE gamepad_jumpkabe;
+	RoboBoosterState_GAMEPAD_BOOST gamepad_boost;
+
+
+
 	float updown_muki;
 	int screen_height;
 	MYMATRIX world_without_rotx;

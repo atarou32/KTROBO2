@@ -17,6 +17,7 @@ namespace KTROBO {
 class SceneGamePadConfig : public Scene, public INPUTSHORICLASS, public Loadable2
 {
 private:
+	bool is_gamepad;
 	vector<Gamen2_partGroup*> parts_groups;
 	map<int, int> PARTSDEF_to_parts_group_index;
 	Gamen2_part* focused_part;

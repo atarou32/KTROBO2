@@ -512,7 +512,7 @@ bool Game::Init(HWND hwnd) {
 	
 	rmap->Init(hantei, mesh_instanceds);
 	
-//	RMapSetterExample(g, this, hantei, mesh_instanceds, demo->tex_loader, rmap);
+	RMapSetterExample(g, this, hantei, mesh_instanceds, demo->tex_loader, rmap);
 
 //	sap = new ShudouArmPositioner(robodayo, robodayo->ap);
 //	sap->Init(hwnd, texdayo->getInstance(0), L , g->getScreenWidth(),g->getScreenHeight());
@@ -539,14 +539,14 @@ bool Game::Init(HWND hwnd) {
 
 	
 	texdayo->getInstance(0)->setViewProj(g,&view,&proj,&from,&at);
-/*	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER,"resrc/script/effect/EFFECT_bakuhatu.lua");
+	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER,"resrc/script/effect/EFFECT_bakuhatu.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER,"resrc/script/effect/EFFECT_boosterhi.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER,"resrc/script/effect/EFFECT_boostertaiki.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponrifle.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponbazooka.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponlaserrifle.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponpulsegun.lua");
-*/
+
 	WeaponEffect::Init(weapon_effect_manager);
 	lua_ets->getInstance(0)->setAITask(task_threads[TASKTHREADS_AIDECISION]);
 
@@ -588,9 +588,9 @@ bool Game::Init(HWND hwnd) {
 
 	
 //	SceneGarage2* sg = new SceneGarage2(hantei,  texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
-	SceneGamePadConfig* sg = new SceneGamePadConfig(texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
+//	SceneGamePadConfig* sg = new SceneGamePadConfig(texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 
-	//Game_SCENE* gs = new Game_SCENE(g,hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
+	Game_SCENE* sg = new Game_SCENE(g,hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 	this->setScene(sg);
 
 	return true;

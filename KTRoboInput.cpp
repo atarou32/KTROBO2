@@ -6,6 +6,8 @@
 #include "KTRoboInputGamePad.h"
 #include "KTRoboLog.h"
 #include "MyTokenAnalyzer.h"
+#include "MyDefine.h""
+
 
 using namespace KTROBO;
 
@@ -93,7 +95,9 @@ LRESULT CALLBACK Input::myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARA
     switch( message )
     {
 	case WM_CREATE:
-		SetTimer(hWnd, 0, 1000 / 30, NULL);
+		//if (InputGamePad::getInstance()->getPJOYSTICK()) {
+			SetTimer(hWnd, 0, 1000 / 30, NULL);
+		//}
 		break;
 
 
@@ -118,7 +122,8 @@ LRESULT CALLBACK Input::myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARA
 				TEXT("The sample will now exit."), TEXT("DirectInput Sample"),
 	//			MB_ICONERROR | MB_OK);
 	//		EndDialog(hDlg, TRUE);
-			mylog::writelog(KTROBO::INFO, "update input gamepad failed\n");
+		//	mylog::writelog(KTROBO::INFO, "update input gamepad failed\n");
+			break;
 
 		}
 		for (int i = 0; i < KTROBO_GAMEPAD_BUTTON_MAX; i++) {
@@ -177,7 +182,9 @@ LRESULT CALLBACK Input::myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARA
 		}
 
 		CS::instance()->leave(CS_MESSAGE_CS, "enter message make");
-		InputMessageDispatcher::messageMake();
+		if (InputGamePad::getInstance()->getPJOYSTICK()) {
+			InputMessageDispatcher::messageMake();
+		}
 
 		break;
 
@@ -539,6 +546,20 @@ void InputMessageDispatcher::messageMakeGamePad(int i, DWORD time) {
 }
 
 
+void InputMessageDispatcher::messageMakeGamePadButton(int i, DWORD time) {
+
+	MYINPUTMESSAGESTRUCT* s = &InputMessageDispatcher::message_structs[now_message_index];
+	s->setSENDER(KTROBO_INPUT_MESSAGE_SENDER_INPUTSYSTEM);
+	s->setMSGID(KTROBO_INPUT_MESSAGE_ID_GAMEPAD_BUTTON);
+	s->setTIME(time);
+	s->setKEYSTATE(Input::keystate);
+	s->setMOUSESTATE(&Input::mouse_state);
+	s->setGAMEPADSTATE(&Input::gamepad_state);
+	s->setISUSE(true);
+	InputMessageDispatcher::now_message_index = (InputMessageDispatcher::now_message_index + 1) % KTROBO_INPUTMESSAGESTRUCT_SIZE;
+
+}
+
 void InputMessageDispatcher::messageMakeButtonUp(int i, DWORD time) {
 
 	MYINPUTMESSAGESTRUCT* s = &InputMessageDispatcher::message_structs[now_message_index];
@@ -618,21 +639,25 @@ void InputMessageDispatcher::messageMake() {
 	for (int i = 0; i < KTROBO_GAMEPAD_BUTTON_MAX; i++) {
 		if (Input::gamepad_state.button[i]) {
 
-			messageMakeGamePad(i, n_time);
-			gamepad_maked = true;
+			
 			if (Input::gamepad_state.button[i] & KTROBO_INPUT_BUTTON_DOWN) {
-
+				messageMakeGamePadButton(i, n_time);
+				gamepad_maked = true;
 				Input::gamepad_state.button[i] &= ~KTROBO_INPUT_BUTTON_DOWN;
+				break;
 			}
 			if (Input::gamepad_state.button[i] & KTROBO_INPUT_BUTTON_UP) {
+				messageMakeGamePadButton(i, n_time);
+				gamepad_maked = true;
 				Input::gamepad_state.button[i] &= ~KTROBO_INPUT_BUTTON_PRESSED;
 				Input::gamepad_state.button[i] &= ~KTROBO_INPUT_BUTTON_UP;
+				break;
 			}
 			
 			break;
 		}
 	}
-
+	/*
 	if (!gamepad_maked) {
 		for (int i = 0; i < KTROBO_GAMEPAD_AXISROTSLIDERPOV_MAX; i++) {
 			if ((i >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) && (i <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
@@ -654,7 +679,16 @@ void InputMessageDispatcher::messageMake() {
 
 			}
 		}
+	}*/
+
+	//if (!gamepad_maked) {
+		// àÍÇ¬ÇæÇØçÏÇÈ
+	if (!gamepad_maked) {
+		if (InputGamePad::getInstance()->getPJOYSTICK()) {
+			messageMakeGamePad(0, n_time);
+		}
 	}
+	//}
 	// åªç›ÇÃinput_jyoutai_indexÇÃÉtÉâÉOÇí≤Ç◊ÇÈ
 	for (int i=0;i<256;i++) {
 		/*if (Input::keystate[i] & KTROBO_INPUT_BUTTON_PRESSED) {
@@ -1090,4 +1124,276 @@ void Input::loadGamePadRule() {
 			ma.deletedayo();
 		}
 	}
+}
+
+
+
+//MYVECTOR3 GAMEPAD_STATE::getBoostMoveMuki() {
+//	MYVECTOR3 vec(0,-1,0);//
+
+//}
+
+float GAMEPAD_STATE::getMouseYForUpDownMuki() {
+	if (rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP].is_button) {
+		if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP) & KTROBO_INPUT_BUTTON_PRESSED) {
+			return MYDEFINE::GAME_HEIGHT / 8;
+		}
+	}
+	else {
+		if ((rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP].index >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) &&
+			(rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP].index <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+			if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP) & KTROBO_INPUT_BUTTON_PRESSED) {
+				return MYDEFINE::GAME_HEIGHT/8;
+			}
+		}
+		else {
+			int max = KTROBO_INPUT_GAMEPAD_AXISMAX;
+			if (rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP].is_minus) {
+				if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP] < 0) {
+					return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP]) / (float)max * MYDEFINE::GAME_HEIGHT / 8;;
+				}
+			}
+			else {
+				if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP] >= 0) {
+					return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP]) / (float)max * MYDEFINE::GAME_HEIGHT / 8;;
+				}
+			} 
+		}
+
+
+	}
+
+	if (rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN].is_button) {
+		if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN) & KTROBO_INPUT_BUTTON_PRESSED) {
+			return  MYDEFINE::GAME_HEIGHT/8*7;
+		}
+	}
+	else {
+		if ((rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN].index >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) &&
+			(rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN].index <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+			if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN) & KTROBO_INPUT_BUTTON_PRESSED) {
+				return  MYDEFINE::GAME_HEIGHT/8*7;
+			}
+		}
+		else {
+			int max = KTROBO_INPUT_GAMEPAD_AXISMAX;
+			if (rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN].is_minus) {
+				if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN] < 0) {
+					return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN]) / (float)max*MYDEFINE::GAME_HEIGHT * 7 / 8;;
+				}
+			}
+			else {
+				if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN] >= 0) {
+					return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN]) / (float)max*MYDEFINE::GAME_HEIGHT * 7 / 8;;
+				}
+			}
+			//return  ;
+		}
+
+
+	}
+
+	return MYDEFINE::GAME_HEIGHT/2;
+}
+float GAMEPAD_STATE::getMouseDYForUpDownMuki() {
+	if (rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP].is_button) {
+		if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP) & KTROBO_INPUT_BUTTON_PRESSED) {
+			return -0.4;
+		}
+	}
+	else {
+		if ((rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP].index >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) &&
+			(rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP].index <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+			if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP) & KTROBO_INPUT_BUTTON_PRESSED) {
+				return -0.4;
+			}
+		}
+		else {
+			int max = KTROBO_INPUT_GAMEPAD_AXISMAX;
+			if (rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP].is_minus) {
+				if ((abs(config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP]) >= KTROBO_GAMEPAD_CONFIG_STATE_AXISROT_OFFSET) && (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP] < 0)) {
+					return -abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP]) / (float)max * 0.4;
+				}
+			}
+			else {
+				if ((abs(config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP]) >= KTROBO_GAMEPAD_CONFIG_STATE_AXISROT_OFFSET) && this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP] >= 0) {
+					return -abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_UP]) / (float)max * 0.4;
+				}
+			}
+			
+		}
+
+
+	}
+
+	if (rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN].is_button) {
+		if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN) & KTROBO_INPUT_BUTTON_PRESSED) {
+			return 0.4;
+		}
+	}
+	else {
+		if ((rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN].index >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) &&
+			(rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN].index <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+			if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN) & KTROBO_INPUT_BUTTON_PRESSED) {
+				return 0.4;
+			}
+		}
+		else {
+			int max = KTROBO_INPUT_GAMEPAD_AXISMAX;
+			if (abs(config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN]) >= KTROBO_GAMEPAD_CONFIG_STATE_AXISROT_OFFSET) {
+				if (rules[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN].is_minus) {
+					if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN] < 0) {
+						return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN]) / (float)max * 0.4;
+					}
+				}
+				else {
+					if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN] >= 0) {
+						return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_LOOK_DOWN]) / (float)max * 0.4;
+					}
+				}
+			}
+		}
+
+
+	}
+
+	return 0;
+}
+float GAMEPAD_STATE::getMoveCos() {
+
+	if (rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD].is_button) {
+		if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD) & KTROBO_INPUT_BUTTON_PRESSED) {
+			return 1;
+		}
+	}
+	else {
+		if ((rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD].index >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) &&
+			(rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD].index <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+			if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD) & KTROBO_INPUT_BUTTON_PRESSED) {
+				return 1;
+			}
+		}
+		else {
+			int max = KTROBO_INPUT_GAMEPAD_AXISMAX;
+			if (abs(config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD]) >= KTROBO_GAMEPAD_CONFIG_STATE_AXISROT_OFFSET) {
+				if (rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD].is_minus) {
+					if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD] < 0) {
+						return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD]) / (float)max;
+					}
+				}
+				else {
+					if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD] >= 0) {
+						return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD]) / (float)max;
+					}
+				}
+
+			}
+			//return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_FORWARD]) / (float)max;
+		}
+
+
+	}
+
+	if (rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD].is_button) {
+		if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD) & KTROBO_INPUT_BUTTON_PRESSED) {
+			return -1;
+		}
+	}
+	else {
+		if ((rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD].index >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) &&
+			(rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD].index <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+			if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD) & KTROBO_INPUT_BUTTON_PRESSED) {
+				return -1;
+			}
+		}
+		else {
+			int max = KTROBO_INPUT_GAMEPAD_AXISMAX;
+			if (abs(config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD]) >= KTROBO_GAMEPAD_CONFIG_STATE_AXISROT_OFFSET) {
+				if (rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD].is_minus) {
+					if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD] < 0) {
+						return -abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD]) / (float)max;
+					}
+				}
+				else {
+					if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD] >= 0) {
+						return -abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_BACKWARD]) / (float)max;
+					}
+				}
+			}
+		}
+
+
+	}
+
+	return 0;
+}
+
+
+float GAMEPAD_STATE::getMoveSin() {
+
+	if (rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT].is_button) {
+		if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT) & KTROBO_INPUT_BUTTON_PRESSED) {
+			return 1;
+		}
+	}
+	else {
+		if ((rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT].index >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) &&
+			(rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT].index <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+			if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT) & KTROBO_INPUT_BUTTON_PRESSED) {
+				return 1;
+			}
+		}
+		else {
+			int max = KTROBO_INPUT_GAMEPAD_AXISMAX;
+			if (abs(config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT]) >= KTROBO_GAMEPAD_CONFIG_STATE_AXISROT_OFFSET) {
+				if (rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT].is_minus) {
+					if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT] < 0) {
+						return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT]) / (float)max;
+					}
+				}
+				else {
+					if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT] >= 0) {
+						return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT]) / (float)max;
+					}
+				}
+			}
+			//return abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_LEFT]) / (float)max;
+		}
+
+
+	}
+
+	if (rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT].is_button) {
+		if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT) & KTROBO_INPUT_BUTTON_PRESSED) {
+			return -1;
+		}
+	}
+	else {
+		if ((rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT].index >= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_START) &&
+			(rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT].index <= KTROBO_GAMEPAD_AXISROTSLIDERPOV_POV_END)) {
+			if (getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT) & KTROBO_INPUT_BUTTON_PRESSED) {
+				return -1;
+			}
+		}
+		else {
+			int max = KTROBO_INPUT_GAMEPAD_AXISMAX;
+			if (abs(config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT]) >= KTROBO_GAMEPAD_CONFIG_STATE_AXISROT_OFFSET) {
+				if (rules[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT].is_minus) {
+					if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT] < 0) {
+						return -abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT]) / (float)max;
+					}
+				}
+				else {
+					if (this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT] >= 0) {
+						return -abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT]) / (float)max;
+					}
+				}
+			}
+			//return -1 * abs(this->config_state[KTROBO_GAMEPAD_CONFIG_STATE_MOVE_RIGHT]) / (float)max;
+		}
+
+
+	}
+
+	return 0;
 }
