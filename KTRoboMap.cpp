@@ -407,7 +407,7 @@ hantei->setUMeshUnit(umesh_unit, AtariUnit::AtariType::ATARI_CHARA);
 	memset(animw, 0, sizeof(animw));
 
 
-
+	
 
 	MYMATRIX idenmat;
 	MyMatrixIdentity(idenmat);
@@ -431,11 +431,11 @@ hantei->setUMeshUnit(umesh_unit, AtariUnit::AtariType::ATARI_CHARA);
 	bool tyo_unko = true;
 	float frame_anime = 0;
 
-	//		umesh_unit->calcAnimeFrame(1,&frame_anime,&tyo_unko);
-	//		umesh_unit->calcJyusinAndR();
-	hantei->setUMeshUnit(umesh_unit, AtariUnit::AtariType::ATARI_TIKEI);
+			umesh_unit->calcAnimeFrame(1,&frame_anime,&tyo_unko);
+			umesh_unit->calcJyusinAndR();
+	//hantei->setUMeshUnit(umesh_unit, AtariUnit::AtariType::ATARI_TIKEI);
 	
-
+	
 
 
 

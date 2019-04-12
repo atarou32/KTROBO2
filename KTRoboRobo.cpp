@@ -1016,13 +1016,13 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 
 	static int sindou = 0;
 	sindou++;
-/*	if (abs(dt) < 20) {
-			dt = 15;
+	if (abs(dt) < 20) {
+			dt = 40;
 	}
 	else if (abs(dt) > 30 && abs(dt) < 190) {
-		dt = 15;
+		dt = 40;
 	}
-	*/
+	
 
 
 	
@@ -1160,6 +1160,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 		bool ato_setdayo = false;
 		bool is_tenjyou = false;
 		bool is_kabe = false;
+		bool no_z = false;
 		for (int i = 0; i < atari_num; i++) {
 			if (ans[i].aite_type == AtariUnit::AtariType::ATARI_TIKEI) {
 				MYVECTOR3 kouten_housen = ans[i].ans->kouten_housen;
@@ -1243,15 +1244,16 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 
 					if (do_shori) {
 
-						dz += min(0.8f, abs(sa.float3.z));
+						dz += min(0.08f, abs(sa.float3.z));
 						setdayo = false;
 						ato_setdayo = true;
 					}
 					else {
-						dz += min(0.5f, abs(sa.float3.z));
+						dz += min(0.05f, abs(sa.float3.z));
 						
 						//setdayo = false;
-						ato_setdayo = true;
+						//ato_setdayo = false;
+						no_z = true;
 					}
 					vdayo = 0;
 
@@ -1306,6 +1308,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 					//	atarihan->v = atarihan->v / 2;
 					}
 					is_tenjyou = true;
+					no_z = false;
 					vdayo = 0;
 					continue;
 				}
@@ -1380,9 +1383,9 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 					do_shori = true;
 					dbairitu = 0.5;
 					float dot = MyVec3Dot(atarihan->v, kouten_housen);
-					MYVECTOR3 vato = kouten_housen * dot*1.2f;
+					MYVECTOR3 vato = kouten_housen * (0.02+abs(dot)*0.7f);
 					MyVec3Subtract(vato, atarihan->v, vato);
-					atarihan->v = vato;
+					atarihan->setV(&vato);
 				}
 
 				if (do_shori) {
@@ -1431,7 +1434,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 								movestop.enter(this, &movestop, move_state);
 								move_state = &movestop;
 								MyVec3Normalize(atarihan->v, atarihan->v);
-								atarihan->v = atarihan->v * 0.001f;
+								atarihan->setV(&(atarihan->v * 0.001f));
 							
 							}
 
@@ -1445,9 +1448,9 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 					if (ddd > -0.4) {
 						MYVECTOR3 ddvec;
 						MyVec3Normalize(ddvec, kouten_housen);
-						ddvec = ddvec + atarihan->jyusin;
-						MyVec3Subtract(ddvec, ddvec, kouten_jyusin);
-						MyVec3Normalize(ddvec, ddvec);
+					//	ddvec = ddvec + atarihan->jyusin;
+					//	MyVec3Subtract(ddvec, ddvec, kouten_jyusin);
+					//	MyVec3Normalize(ddvec, ddvec);
 						float ddd = 1;
 						if (vlen < 0.001) {
 							ddd = 0.003 * dddbairitu;
@@ -1466,19 +1469,28 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 					//	is_kabe = true;
 					}
 					//vdayo = 0;
+					no_z = false;
 				}
 			}
 		}
+		if (isnan(dx) || isnan(dy) || isnan(dz)) return;
+
 		if (setdayo) {
 			atarihan->setXYZD(atarihan->x + dx, atarihan->y + dy, atarihan->z,2);
-		//	atarihan->setXYZD(atarihan->x , atarihan->y, atarihan->z+dz, 0.05f);
+			if (ato_setdayo) {
+				//	atarihan->setXYZD(atarihan->x , atarihan->y, atarihan->z+dz, 0.0005f);
+			}
 		}
 		else {
 			atarihan->setXYZD(atarihan->x + dx, atarihan->y + dy, atarihan->z,2);
-			atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + dz, 3.5f);
+			//if (no_z) {}
+			//else {
+				atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + dz, 2.25f);
+			//}
+		
 			if (ato_setdayo) {
 				setdayo = true;
-				setti_state = &setti;
+				//setti_state = &setti;
 			}
 
 			
@@ -1852,7 +1864,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 				
 				if (dt < 50) {
 				MYVECTOR3 xyz = atarihan->v * dt;
-				atarihan->v = atarihan->v / 1.003f;// MYVECTOR3(0,0,atarihan->v.float3.z * dt);
+				atarihan->setV(&(atarihan->v / 1.003f));// MYVECTOR3(0,0,atarihan->v.float3.z * dt);
 
 				atarihan->setXYZD(atarihan->x+xyz.float3.x , atarihan->y + xyz.float3.y , atarihan->z + xyz.float3.z,0.12f);
 				}
@@ -5098,7 +5110,7 @@ void RoboMovingState_FORWARD::exec(Graphics* g, Robo* robo, float dsecond, int s
 	if (dsecond > 200) return;
 	if (robo->move_state->isBoosterHi()) return;
 	if ((robo->setti_state == &robo->setti) || (robo->booster_state == &robo->boostontaiki)) {
-	float speed = 0.005f;
+		float speed = 0.018f;// 05f;
 	if (robo->booster_state == &robo->boostontaiki) {
 		speed *= 3.14f;
 	}
@@ -5109,7 +5121,7 @@ void RoboMovingState_FORWARD::exec(Graphics* g, Robo* robo, float dsecond, int s
 	mae = mae * speed;
 	//*dsecond;
 	if (robo->booster_state == &robo->boostoff) {
-		robo->atarihan->setXYZ(robo->atarihan->x+ robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond , robo->atarihan->z+ mae.float3.z);
+	//	robo->atarihan->setXYZ(robo->atarihan->x+ robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond , robo->atarihan->z+ mae.float3.z);
 		robo->atarihan->setV(&MYVECTOR3(mae.float3.x, mae.float3.y, robo->atarihan->v.float3.z));
 	}
 
@@ -5146,7 +5158,7 @@ void RoboMovingState_LEFTFORWARD::exec(Graphics* g, Robo* robo, float dsecond, i
 	if (dsecond > 200) return;
 	if (robo->move_state->isBoosterHi()) return;
 	if ((robo->setti_state == &robo->setti) || (robo->booster_state == &robo->boostontaiki)) {
-	float speed = 0.005f;
+		float speed = 0.018;// 05f;
 	if (robo->booster_state == &robo->boostontaiki) {
 		speed *= 3.14f;
 	}
@@ -5163,7 +5175,7 @@ void RoboMovingState_LEFTFORWARD::exec(Graphics* g, Robo* robo, float dsecond, i
 	mae =  mae * speed;
 	//*dsecond;
 	if (robo->booster_state == &robo->boostoff) {
-		robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
+	//	robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
 		robo->atarihan->setV(&MYVECTOR3(mae.float3.x, mae.float3.y, robo->atarihan->v.float3.z));
 	}
 
@@ -5198,7 +5210,7 @@ void RoboMovingState_RIGHTFORWARD::exec(Graphics* g, Robo* robo, float dsecond, 
 	if (dsecond > 200) return;
 	if (robo->move_state->isBoosterHi()) return;
 	if ((robo->setti_state == &robo->setti) || (robo->booster_state == &robo->boostontaiki)) {
-	float speed = 0.005f;
+		float speed = 0.018;// 5f;
 	if (robo->booster_state == &robo->boostontaiki) {
 		speed *= 3.14f;
 	}
@@ -5215,7 +5227,7 @@ void RoboMovingState_RIGHTFORWARD::exec(Graphics* g, Robo* robo, float dsecond, 
 	mae =  mae * speed;
 	//*dsecond;
 	if (robo->booster_state == &robo->boostoff) {
-		robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
+//		robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
 		robo->atarihan->setV(&MYVECTOR3(mae.float3.x, mae.float3.y, robo->atarihan->v.float3.z));
 	}
 
@@ -5249,7 +5261,7 @@ void RoboMovingState_LEFTBACK::exec(Graphics* g, Robo* robo, float dsecond, int 
 	if (dsecond > 200) return;
 	if (robo->move_state->isBoosterHi()) return;
 	if ((robo->setti_state == &robo->setti) || (robo->booster_state == &robo->boostontaiki)) {
-	float speed = 0.005f;
+		float speed = 0.018;// 05f;
 	if (robo->booster_state == &robo->boostontaiki) {
 		speed *= 3.14f;
 	}
@@ -5266,7 +5278,7 @@ void RoboMovingState_LEFTBACK::exec(Graphics* g, Robo* robo, float dsecond, int 
 	mae =  mae * speed;
 	//*dsecond;
 	if (robo->booster_state == &robo->boostoff) {
-		robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
+	//	robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
 		robo->atarihan->setV(&MYVECTOR3(mae.float3.x, mae.float3.y, robo->atarihan->v.float3.z));
 	}
 
@@ -5300,7 +5312,7 @@ void RoboMovingState_RIGHTBACK::exec(Graphics* g, Robo* robo, float dsecond, int
 	if (dsecond > 200) return;
 	if (robo->move_state->isBoosterHi()) return;
 	if ((robo->setti_state == &robo->setti) || (robo->booster_state == &robo->boostontaiki)) {
-	float speed = 0.005f;
+		float speed = 0.018;// 05f;
 	if (robo->booster_state == &robo->boostontaiki) {
 		speed *= 3.14f;
 	}
@@ -5317,7 +5329,7 @@ void RoboMovingState_RIGHTBACK::exec(Graphics* g, Robo* robo, float dsecond, int
 	mae =  mae * speed;
 	//*dsecond;
 	if (robo->booster_state == &robo->boostoff) {
-		robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
+//		robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
 		robo->atarihan->setV(&MYVECTOR3(mae.float3.x, mae.float3.y, robo->atarihan->v.float3.z));
 	}
 
@@ -5349,7 +5361,7 @@ int RoboMovingState_BACK::getStateID() {
 	return KTROBO_ID_ROBOMOVINGSTATE_BACK;
 }
 void RoboMovingState_BACK::exec(Graphics* g, Robo* robo, float dsecond, int stamp) {
-	float speed = 0.005f;
+	float speed = 0.018;// 05f;
 	if (robo->booster_state == &robo->boostontaiki) {
 		speed *= 3.14f;
 	}
@@ -5362,7 +5374,7 @@ void RoboMovingState_BACK::exec(Graphics* g, Robo* robo, float dsecond, int stam
 	mae =  mae * speed;
 	//*dsecond;
 	if (robo->booster_state == &robo->boostoff) {
-		robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
+	//	robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
 		robo->atarihan->setV(&MYVECTOR3(mae.float3.x, mae.float3.y, robo->atarihan->v.float3.z));
 	}
 
@@ -5392,7 +5404,7 @@ int RoboMovingState_LEFT::getStateID() {
 	return KTROBO_ID_ROBOMOVINGSTATE_LEFT;
 }
 void RoboMovingState_LEFT::exec(Graphics* g, Robo* robo, float dsecond, int stamp) {
-	float speed = 0.005f;
+	float speed = 0.018;// 05f;
 	if (robo->booster_state == &robo->boostontaiki) {
 		speed *= 3.14f;
 	}
@@ -5405,7 +5417,7 @@ void RoboMovingState_LEFT::exec(Graphics* g, Robo* robo, float dsecond, int stam
 	mae =  mae * speed;
 	//*dsecond;
 	if (robo->booster_state == &robo->boostoff) {
-		robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
+//		robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
 		robo->atarihan->setV(&MYVECTOR3(mae.float3.x, mae.float3.y, robo->atarihan->v.float3.z));
 	}
 
@@ -5435,7 +5447,7 @@ int RoboMovingState_RIGHT::getStateID() {
 	return KTROBO_ID_ROBOMOVINGSTATE_RIGHT;
 }
 void RoboMovingState_RIGHT::exec(Graphics* g, Robo* robo, float dsecond, int stamp) {
-	float speed = 0.005f;
+	float speed = 0.018;// 05f;
 	if (robo->booster_state == &robo->boostontaiki) {
 		speed *= 3.14f;
 	}
@@ -5448,7 +5460,7 @@ void RoboMovingState_RIGHT::exec(Graphics* g, Robo* robo, float dsecond, int sta
 	mae =  mae * speed;
 	//*dsecond;
 	if (robo->booster_state == &robo->boostoff) {
-		robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
+	//	robo->atarihan->setXYZ(robo->atarihan->x + robo->atarihan->v.float3.x*dsecond, robo->atarihan->y + robo->atarihan->v.float3.y * dsecond, robo->atarihan->z + mae.float3.z);
 		robo->atarihan->setV(&MYVECTOR3(mae.float3.x, mae.float3.y, robo->atarihan->v.float3.z));
 	}
 
@@ -5507,7 +5519,7 @@ void RoboMovingState_JUMP::enter(Robo* robo, RoboState* now_state, RoboState* be
 
 	RoboState::enter(robo,now_state,before_state);
 	robo->anime_loop_leg.setAnime(105,115,false);
-	robo->atarihan->v = MYVECTOR3(0,0,0.019f);
+	robo->atarihan->setV(&MYVECTOR3(0,0,0.019f));
 	robo->jump_f_z = 0.000019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
@@ -5525,7 +5537,7 @@ void RoboMovingState_JUMP::exec(Graphics* g, Robo* robo, float dsecond, int stam
 	t += dsecond;
 		if (dsecond > 200) return;
 	//	if (robo->setti_state == &robo->setti) {
-		robo->atarihan->v = robo->atarihan->v + MYVECTOR3(0,0,robo->jump_f_z*dsecond);
+		robo->atarihan->setV(&(robo->atarihan->v + MYVECTOR3(0,0,robo->jump_f_z*dsecond)));
 	//}
 }
 
@@ -5537,7 +5549,7 @@ void RoboMovingState_FORWARDJUMP::enter(Robo* robo, RoboState* now_state, RoboSt
 	MYVECTOR3 ve(0,-1,0);
 	MyVec3TransformNormal(ve,ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
 	MyVec3Normalize(ve,ve);
-	robo->atarihan->v = MYVECTOR3(0,0,0.019f)+ve * 0.02f;
+	robo->atarihan->setV(&(MYVECTOR3(0,0,0.019f)+ve * 0.02f));
 	robo->jump_f_z = 0.000019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
@@ -5557,7 +5569,7 @@ void RoboMovingState_FORWARDJUMP::exec(Graphics* g, Robo* robo, float dsecond, i
 	pos = pos + dpos;
 	robo->atarihan->setXYZ(pos.float3.x,pos.float3.y, pos.float3.z);
 	if (robo->setti_state == &robo->setti) {
-		robo->atarihan->v = robo->atarihan->v + MYVECTOR3(0,0,robo->jump_f_z*dsecond);
+		robo->atarihan->setV(&(robo->atarihan->v + MYVECTOR3(0,0,robo->jump_f_z*dsecond)));
 	}
 
 }
@@ -5570,7 +5582,7 @@ void RoboMovingState_BACKJUMP::enter(Robo* robo, RoboState* now_state, RoboState
 	MYVECTOR3 ve(0,1,0);
 	MyVec3TransformNormal(ve,ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
 	MyVec3Normalize(ve,ve);
-	robo->atarihan->v = MYVECTOR3(0,0,0.019f)+ve * 0.02f;
+	robo->atarihan->setV(&(MYVECTOR3(0,0,0.019f)+ve * 0.02f));
 	robo->jump_f_z = 0.000019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
@@ -5590,7 +5602,7 @@ void RoboMovingState_BACKJUMP::exec(Graphics* g, Robo* robo, float dsecond, int 
 	pos = pos + dpos;
 	robo->atarihan->setXYZ(pos.float3.x,pos.float3.y, pos.float3.z);
 	if (robo->setti_state == &robo->setti) {
-		robo->atarihan->v = robo->atarihan->v + MYVECTOR3(0,0,robo->jump_f_z*dsecond);
+		robo->atarihan->setV(&(robo->atarihan->v + MYVECTOR3(0,0,robo->jump_f_z*dsecond)));
 	}
 }
 
@@ -5602,7 +5614,7 @@ void RoboMovingState_LEFTJUMP::enter(Robo* robo, RoboState* now_state, RoboState
 	MYVECTOR3 ve(1,0,0);
 	MyVec3TransformNormal(ve,ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
 	MyVec3Normalize(ve,ve);
-	robo->atarihan->v = MYVECTOR3(0,0,0.019f)+ve * 0.02f;
+	robo->atarihan->setV(&(MYVECTOR3(0,0,0.019f)+ve * 0.02f));
 	robo->jump_f_z = 0.000019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
@@ -5622,7 +5634,7 @@ void RoboMovingState_LEFTJUMP::exec(Graphics* g, Robo* robo, float dsecond, int 
 	pos = pos + dpos;
 	robo->atarihan->setXYZ(pos.float3.x,pos.float3.y, pos.float3.z);
 	if (robo->setti_state == &robo->setti) {
-		robo->atarihan->v = robo->atarihan->v + MYVECTOR3(0,0,robo->jump_f_z*dsecond);
+		robo->atarihan->setV(&(robo->atarihan->v + MYVECTOR3(0,0,robo->jump_f_z*dsecond)));
 	}
 }
 
@@ -5634,7 +5646,7 @@ void RoboMovingState_RIGHTJUMP::enter(Robo* robo, RoboState* now_state, RoboStat
 	MYVECTOR3 ve(-1,0,0);
 	MyVec3TransformNormal(ve,ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
 	MyVec3Normalize(ve,ve);
-	robo->atarihan->v = MYVECTOR3(0,0,0.019f)+ve * 0.02f;
+	robo->atarihan->setV(&(MYVECTOR3(0,0,0.019f)+ve * 0.02f));
 	robo->jump_f_z = 0.000019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
@@ -5654,7 +5666,7 @@ void RoboMovingState_RIGHTJUMP::exec(Graphics* g, Robo* robo, float dsecond, int
 	pos = pos + dpos;
 	robo->atarihan->setXYZ(pos.float3.x,pos.float3.y, pos.float3.z);
 	if (robo->setti_state == &robo->setti) {
-		robo->atarihan->v = robo->atarihan->v + MYVECTOR3(0,0,robo->jump_f_z*dsecond);
+		robo->atarihan->setV(&(robo->atarihan->v + MYVECTOR3(0,0,robo->jump_f_z*dsecond)));
 	}
 }
 
@@ -5667,7 +5679,7 @@ void RoboMovingState_JUMPKABE::enter(Robo* robo, RoboState* now_state, RoboState
 	RoboState::enter(robo,now_state,before_state);
 	robo->resetSetKabe();
 	robo->anime_loop_leg.setAnime(105,115,false);
-	robo->atarihan->v = MYVECTOR3(0,0,0);//0.019f);
+	robo->atarihan->setV( &MYVECTOR3(0,0,0));//0.019f);
 	robo->jump_f_z_kabe = 0.0019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
@@ -6230,7 +6242,7 @@ void RoboBoosterCalc::Init(Robo* robo, RoboBooster* booster) {
 	this->robo = robo;
 	this->booster = booster;
 	this->energy_drain = 9000;
-	this->fudanspeed = 0.38f;// 0.018f;
+	this->fudanspeed = 0.018f;// 0.018f;
 	this->maxatospeed = 0.334f;// 0.024f;
 	this->maxspeed = 0.325f;// 0.025f;
 	this->time_backto_fudan = 1000;
@@ -6247,7 +6259,7 @@ float RoboBoosterCalc::getSpeed(float dsecond) {
 	if ((time_maxato_made < dsecond) && (time_backto_fudan > dsecond)) {
 
 		float te = (time_backto_fudan - time_maxato_made);
-		if (te < 0.00001) {
+		if (abs(te) < 0.00001) {
 			te = 1;
 		}
 
@@ -6256,7 +6268,7 @@ float RoboBoosterCalc::getSpeed(float dsecond) {
 
 	if ((time_maxspeed_jizoku_made < dsecond) && (time_maxato_made > dsecond)) {
 		float te = (time_maxato_made - time_maxspeed_jizoku_made);
-		if (te < 0.00001) {
+		if (abs(te) < 0.00001) {
 			te = 1;
 		}
 
@@ -6733,7 +6745,7 @@ void RoboMovingState_GAMEPAD_JUMP::enter(Robo* robo, RoboState* now_state, RoboS
 	MYVECTOR3 ve = muki;
 	MyVec3TransformNormal(ve, ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
 	MyVec3Normalize(ve, ve);
-	robo->atarihan->v = MYVECTOR3(0, 0, 0.019f) + ve * 0.02f;
+	robo->atarihan->setV(&(MYVECTOR3(0, 0, 0.019f) + ve * 0.02f));
 	robo->jump_f_z = 0.000019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y, robo->atarihan->z + 0.01f);
 }
@@ -6755,7 +6767,7 @@ void RoboMovingState_GAMEPAD_JUMP::exec(Graphics* g, Robo* robo, float dsecond, 
 	pos = pos + dpos;
 	//robo->atarihan->setXYZ(pos.float3.x, pos.float3.y, pos.float3.z);
 //	if (robo->setti_state == &robo->setti) {
-		robo->atarihan->v = robo->atarihan->v + MYVECTOR3(0, 0, robo->jump_f_z*dsecond);
+		robo->atarihan->setV(&(robo->atarihan->v + MYVECTOR3(0, 0, robo->jump_f_z*dsecond)));
 //	}
 }
 

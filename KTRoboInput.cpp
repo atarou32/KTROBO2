@@ -335,6 +335,7 @@ LRESULT CALLBACK Input::myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARA
 			
         case WM_DESTROY:
 			KillTimer(hWnd, 0);
+			Sleep(2000);
             PostQuitMessage( 0 );
             break;
 

@@ -48,7 +48,14 @@ void UMeshUnit::setWorld(MYMATRIX* nworld) {
 	is_updated = true;
 }
 void UMeshUnit::setXYZD(float x, float y, float z, float ddmax) {
-	
+	MYVECTOR3 mae(this->x, this->y, this->z);
+
+	if (isnan(x) || isnan(y) || isnan(z)) {
+		Sleep(1000);
+		return;
+	}
+
+
 	MYVECTOR3 tt = MYVECTOR3(this->x-x,this->y-y, this->z-z);
 	float td = MyVec3Dot(tt,tt);
 	if (td < ddmax) {
@@ -78,6 +85,11 @@ void UMeshUnit::setROTXYZ(float rotx, float roty, float rotz) {
 	is_updated = true;
 }
 void UMeshUnit::setV(MYVECTOR3* v) {
+	if (isnan(v->float3.x) || isnan(v->float3.y) || isnan(v->float3.z)) {
+		this->v = MYVECTOR3(0, 0, 0);
+
+	return;
+	}
 	this->v = *v;
 	is_updated = true;
 
@@ -110,7 +122,10 @@ void UMeshUnit::calcJyusinAndR(bool calcWorld) {
 	/*if (is_updated == false) {
 		return;
 	}*/
-
+	if (isnan(v.float3.x) || isnan(v.float3.y) || isnan(v.float3.z)) {
+		v = MYVECTOR3(0, 0, 0);
+		return;
+	}
 
 	is_updated = false;
 	vector<UMesh*>::iterator it = meshs.begin();
