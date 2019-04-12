@@ -544,6 +544,7 @@ void Game_SCENE::posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* g
 	if (game && gm && task->getIsExecTask()) {
 		watches.stopWatch(TASKTHREADS_UPDATEPOSBUTUKARI);
 		watches.startWatch(TASKTHREADS_UPDATEPOSBUTUKARI);
+//		CS::instance()->enter(CS_MESSAGE_CS, "test");
 		CS::instance()->enter(CS_DEVICECON_CS,"unko");
 		CS::instance()->enter(CS_RENDERDATA_CS, "unko");
 		
@@ -559,6 +560,7 @@ void Game_SCENE::posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* g
 		//DebugTexts::instance()->setText(g,6,L"endpos");
 		CS::instance()->leave(CS_RENDERDATA_CS, "unko");
 		CS::instance()->leave(CS_DEVICECON_CS, "unko");
+//		CS::instance()->leave(CS_MESSAGE_CS, "test");
 	}
 	//Sleep(5);
 
@@ -659,48 +661,49 @@ void Gamen_MISSION::posButukari(Graphics* g, Scene* scene, Game* game, AtariHant
 				Robo* roboaitedayo = game->roboaitedayo;
 
 				if (hantei->canGetAns()) {
-					this->atariShori(g, hantei, test,(int)stamp);
-				if (robodayo && robodayo->atarihan) {
-					robodayo->atarihan->calcJyusinAndR();
-					robodayo->atarishori(g, &game->view, hantei, test, (int)stamp);
-					robodayo->fireUpdate(g, game, scene, bullet_c, hantei,dsecond, (int)stamp);
-					if (robodayo->move_state->isJump()) {
-					//		DebugTexts::instance()->setText(g,4,L"jump");
-					}
-					if (robodayo->move_state->isJumpKABE()) {
-					//		DebugTexts::instance()->setText(g,4,L"jumk");
+					this->atariShori(g, hantei, test, (int)stamp);
+					if (robodayo && robodayo->atarihan) {
+						robodayo->atarihan->calcJyusinAndR();
+						robodayo->atarishori(g, &game->view, hantei, test, (int)stamp);
+						robodayo->fireUpdate(g, game, scene, bullet_c, hantei, dsecond, (int)stamp);
+						if (robodayo->move_state->isJump()) {
+							//		DebugTexts::instance()->setText(g,4,L"jump");
+						}
+						if (robodayo->move_state->isJumpKABE()) {
+							//		DebugTexts::instance()->setText(g,4,L"jumk");
+						}
+
+						char buf[512];
+						WCHAR buf2[512];
+						memset(buf, 0, 512);
+						itoa(robodayo->atarihan->z, buf, 10);
+						stringconverter sc;
+						sc.charToWCHAR(buf, buf2);
+						//DebugTexts::instance()->setText(g,wcslen(buf2),buf2);
+
+						if (robodayo->setti_state == &robodayo->setti) {
+							//	DebugTexts::instance()->setText(g,5,L"setti");
+						}
+						else {
+							//	DebugTexts::instance()->setText(g,5,L"setno");
+						}
+						if (robodayo->setkabe_state == &robodayo->setkabe) {
+							//	DebugTexts::instance()->setText(g,5,L"setka");
+						}
+						robodayo->setTarget(&MYVECTOR3(roboaitedayo->atarihan->x, roboaitedayo->atarihan->y, roboaitedayo->atarihan->z));
+						//			robodayo->aim(g, &game->view);
+						//			robodayo->atariAim(g, &game->view, test, (int)stamp);
+						//			robodayo->calcAim(g, &game->view, test, (int)stamp);// frameTime, (int)frame);
 					}
 
-					char buf[512];
-					WCHAR buf2[512];
-					memset(buf,0,512);
-					itoa(robodayo->atarihan->z,buf,10);
-					stringconverter sc;
-					sc.charToWCHAR(buf,buf2);
-					//DebugTexts::instance()->setText(g,wcslen(buf2),buf2);
-
-					if (robodayo->setti_state == &robodayo->setti) {
-					//	DebugTexts::instance()->setText(g,5,L"setti");
-					} else {
-					//	DebugTexts::instance()->setText(g,5,L"setno");
+					if (roboaitedayo && roboaitedayo->atarihan) {
+						roboaitedayo->atarihan->calcJyusinAndR();
+						roboaitedayo->atarishori(g, &game->view, hantei, test, (int)stamp);
+						//	roboaitedayo->atariAim(g, &game->view, frameTime, (int)frame);
 					}
-					if (robodayo->setkabe_state == &robodayo->setkabe) {
-					//	DebugTexts::instance()->setText(g,5,L"setka");
-					}
-					robodayo->setTarget(&MYVECTOR3(roboaitedayo->atarihan->x,roboaitedayo->atarihan->y,roboaitedayo->atarihan->z));
-		//			robodayo->aim(g, &game->view);
-		//			robodayo->atariAim(g, &game->view, test, (int)stamp);
-		//			robodayo->calcAim(g, &game->view, test, (int)stamp);// frameTime, (int)frame);
-				}
+					bullet_c->atariShori(game, hantei, &game->view, test, (int)stamp);
 
-				if (roboaitedayo && roboaitedayo->atarihan) {
-					roboaitedayo->atarihan->calcJyusinAndR();
-					roboaitedayo->atarishori(g, &game->view, hantei, test, (int)stamp);
-				//	roboaitedayo->atariAim(g, &game->view, frameTime, (int)frame);
-				}
-				bullet_c->atariShori(game, hantei, &game->view,test,(int)stamp);
-
-				hantei->setIsCalcKuwasikuGetted();
+					hantei->setIsCalcKuwasikuGetted();
 				}
 			}
 		

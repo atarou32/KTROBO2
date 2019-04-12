@@ -303,6 +303,25 @@ void UMeshUnit::calcJyusinAndR(bool calcWorld) {
 					ddr = dd;
 				}
 				*/
+				/*
+				MYVECTOR3 tmp;
+				tmp = em->bone_obbs[i].c - ans_jyusin;
+				float leng = MyVec3Length(tmp);
+				MyVec3Normalize(tmp, tmp);
+				MYVECTOR3 t0 = em->bone_obbs[i].u[0] * em->bone_obbs[i].e[0];
+				float m0 = MyVec3Dot(t0, tmp);
+				MYVECTOR3 t1 = em->bone_obbs[i].u[1] * em->bone_obbs[i].e[1];
+				float m1 = MyVec3Dot(t1, tmp);
+				MYVECTOR3 t2 = em->bone_obbs[i].u[2] * em->bone_obbs[i].e[2];
+				float m2 = MyVec3Dot(t2, tmp);
+				float test = max(abs(m0), abs(m1));
+				test = max(test, abs(m2));
+				float te = leng + abs(m0) + abs(m1) + abs(m2);
+				if (te > ans_r) {
+					ans_r = te;
+				}
+				*/
+
 
 				
 				MYVECTOR3 tmp;
@@ -321,6 +340,7 @@ void UMeshUnit::calcJyusinAndR(bool calcWorld) {
 				if (tempp > ans_r) {
 					ans_r = tempp;
 				}
+				
 			}
 			
 		}
@@ -2434,14 +2454,25 @@ void AtariHantei::drawKekka(Graphics* g, MYMATRIX* view, MYMATRIX* proj) {
 			(units[ans[k].atari_idx2].type == AtariUnit::AtariType::ATARI_TIKEI)) {
 
 			DWORD color = 0xFFFFFF00;
+			MYVECTOR3 up(0, 0, 1);
+			float dot = MyVec3Dot(up, ray.dir);
+			if (abs(dot) < 0.3) {
+				color = 0xFF00FFFF;
+			}
 			if (MyVec3Length(ray.dir) < 0.5) {
 				ray.dir = MYVECTOR3(0,0,1);
 
 				g->drawRAY(g,color,&idenmat,view,proj,50,&ray);
 			} else {
 
-				g->drawRAY(g,0xFF2222FF,&idenmat,view,proj,50,&ray);
+				g->drawRAY(g,color,&idenmat,view,proj,50,&ray);
 			}
+
+			OBB ob;
+			ob.c = ray.org;
+			ob.e = MYVECTOR3(0.3, 0.3, 0.3);
+			g->drawOBB(g, 0xFFFFFFFF, &idenmat, view, proj, &ob);
+
 		}else {
 			// ’nŒ`ˆÈŠO‚È‚Ì‚Ådrawobb
 			OBB ob;
