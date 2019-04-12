@@ -59,6 +59,9 @@ void UMeshUnit::setXYZD(float x, float y, float z, float ddmax) {
 	} else {
 		// ddmax ‚É‚µ‚ÄˆÚ“®‚³‚¹‚é
 		tt = -tt;
+		if (MyVec3Length(tt) < 0.001) {
+			return;
+		}
 		MyVec3Normalize(tt,tt);
 		this->x = this->x + tt.float3.x * ddmax;
 		this->y = this->y + tt.float3.y * ddmax;

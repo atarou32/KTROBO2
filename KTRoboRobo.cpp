@@ -1163,6 +1163,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 		for (int i = 0; i < atari_num; i++) {
 			if (ans[i].aite_type == AtariUnit::AtariType::ATARI_TIKEI) {
 				MYVECTOR3 kouten_housen = ans[i].ans->kouten_housen;
+				if (MyVec3Length(kouten_housen) < 0.3) continue;
 				MyVec3Normalize(kouten_housen, kouten_housen);
 				MYVECTOR3 kouten_jyusin = ans[i].ans->kouten_jyusin;
 				MYVECTOR3 robo_center = MYVECTOR3(atarihan->x, atarihan->y, atarihan->z);
@@ -1242,12 +1243,15 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 
 					if (do_shori) {
 
-						dz += min(0.08f, abs(sa.float3.z));
+						dz += min(0.8f, abs(sa.float3.z));
 						setdayo = false;
 						ato_setdayo = true;
 					}
 					else {
-						dz += min(0.05f, abs(sa.float3.z));
+						dz += min(0.5f, abs(sa.float3.z));
+						
+						//setdayo = false;
+						ato_setdayo = true;
 					}
 					vdayo = 0;
 
@@ -1471,9 +1475,10 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 		}
 		else {
 			atarihan->setXYZD(atarihan->x + dx, atarihan->y + dy, atarihan->z,2);
-			atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + dz, 0.5f);
+			atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + dz, 3.5f);
 			if (ato_setdayo) {
 				setdayo = true;
+				setti_state = &setti;
 			}
 
 			

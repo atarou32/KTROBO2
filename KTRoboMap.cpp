@@ -129,10 +129,17 @@ RMapSetterExample::RMapSetterExample(Graphics* g, Game* game, AtariHantei* hante
 	Mesh* mesh;
 	Mesh* mesh2;
 	Mesh* mesh3[11];
+	Mesh* unko;
 	MeshInstanced* mesh_is[100];
 	MeshInstanced* mesh_is2[30];
 	float frame = 0;
 
+	unko = new Mesh();
+	unko->readMesh(g, "resrc/model/sora/sora.MESH", loader);
+	unko->readAnime("resrc/model/sora/sora.ANIME");
+	unko->animate(frame, true);
+	m->registerMesh("resrc/model/sora/sora.MESH", unko);
+	
 	mesh = new Mesh();
 	mesh->readMesh(g, "resrc/model/tikei/tikei_douro.MESH", loader);
 	mesh->readAnime("resrc/model/tikei/tikei_douro.ANIME");
@@ -400,9 +407,43 @@ hantei->setUMeshUnit(umesh_unit, AtariUnit::AtariType::ATARI_CHARA);
 	memset(animw, 0, sizeof(animw));
 
 
+
+
+	MYMATRIX idenmat;
+	MyMatrixIdentity(idenmat);
+	UMeshUnit* umesh_unit = new UMeshUnit();
+	UMesh* um = new UMesh(g, "resrc/model/sora/sora.MESH", loader, mesh, false, &idenmat,
+		0, KTROBO_MESH_BONE_NULL, true); // doBone‚Ìobb‚ªtrue‚É‚È‚é‚Ì‚Å‘åä•v
+
+	mesh_is[75] = mids->makeInstanced(unko, unko, NULL, NULL, false, &idenmat);
+	umesh_unit->setUMesh(um);
+	m->registerTikei(umesh_unit, mesh_is[75]);
+
+	//umesh_units.push_back(umesh_unit);
+	umesh_unit->setSCALEXYZ(1000, 1000, 1000);
+	umesh_unit->setXYZ(0,0,0);
+	um->setAnimeFrame(0);
+	um->Animate(true);
+	umesh_unit->calcJyusinAndR();
+	mesh_is[75]->setWorld(&umesh_unit->world);
+	mesh_is[75]->setIsRender(true);
+	mesh_is[75]->setBoneIndexInfo(animf, animl, animw);
+	bool tyo_unko = true;
+	float frame_anime = 0;
+
+	//		umesh_unit->calcAnimeFrame(1,&frame_anime,&tyo_unko);
+	//		umesh_unit->calcJyusinAndR();
+	hantei->setUMeshUnit(umesh_unit, AtariUnit::AtariType::ATARI_TIKEI);
+	
+
+
+
+
+
 	for (int i = 0; i < 5; i++) {
 		for (int k = 0; k < 5; k++) {
 			{
+				//if ((i == 0) && (k == 0))continue;
 				MYMATRIX idenmat;
 				MyMatrixIdentity(idenmat);
 				UMeshUnit* umesh_unit = new UMeshUnit();
