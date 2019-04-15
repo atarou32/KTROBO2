@@ -1403,10 +1403,10 @@ void Game::Run() {
 	mesh_instanceds->render(g);
 	CS::instance()->enter(CS_RENDERDATA_CS, "unko");
 	if (robodayo) {
-		robodayo->byouga(g, &view, &proj);
+		robodayo->byouga(g,&view, &proj);
 	}
 	if (roboaitedayo) {
-	roboaitedayo->byouga(g, &view, &proj);
+	roboaitedayo->byouga(g,&view, &proj);
 	}
 	static int robodayo_boostereffect_count = 0;
 	robodayo_boostereffect_count++;
@@ -1458,8 +1458,8 @@ void Game::Run() {
 	//if (hantei->canGetAns()) {
 		if (robodayo && robodayo->atarihan) {
 				//	robodayo->atarishori(g, &view, hantei, frameTime, (int)frame);
-//					robodayo->calcAim(g, &view, frameTime, (int)frame);
-					robodayo->aim(g, &view);
+				//	robodayo->calcAim(g, &view, frameTime, (int)frame);
+					robodayo->aim(g, texdayo->getInstance(1),&view);
 				}
 
 				if (roboaitedayo->atarihan) {
@@ -1490,7 +1490,10 @@ void Game::Run() {
 	//CS::instance()->leave(CS_RENDERDATA_CS, "unko");
 	if (robodayo) {
 		robodayo->byougaRay(g, &view, &proj);
-	}	
+	}
+	if (roboaitedayo) {
+		roboaitedayo->byougaRay(g, &view, &proj);
+	}
 	//CS::instance()->enter(CS_RENDERDATA_CS, "unko");
 	
 	watches_for_keisoku.startWatch(4);

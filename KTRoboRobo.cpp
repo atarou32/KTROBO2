@@ -59,6 +59,7 @@ Robo::Robo(void)
 	setti_jizoku_count = 0;
 	setno_jizoku_count = 0;
 	muki = MYVECTOR3(0, -1, 0);
+	lock_tex = 0;
 }
 
 
@@ -125,6 +126,7 @@ void Robo::upDownMuki(float mouse_y, float dmouse_y) {
 }
 void Robo::byougaRay(Graphics* g, MYMATRIX* view, MYMATRIX* proj) {
 	LockOnSystem sys;
+	atarihan->calcJyusinAndR();
 	sys.byougaRAY(g, &atarihan->world, view, apinfo->dmin, apinfo->dmax, apinfo->mintate, apinfo->maxtate, apinfo->minyoko, apinfo->maxyoko, apinfo->dtate, apinfo->dyoko, apinfo->dd);
 	//	sys.byougaStudyPoint(g, &this->atarihan->world, view,apinfo->dmin,apinfo->dmax,apinfo->mintate,apinfo->maxtate,apinfo->minyoko,apinfo->maxyoko,apinfo->dtate,apinfo->dyoko,apinfo->dd);// 70,120,20,40,20,40,5,5,15);//fcs3 10,100,6,10,6,10,300,300,500);
 	//sys.byougaBigStudyPoint(120,g, &this->atarihan->world, view, 10,100,10,20,10,20,300,300,500);
@@ -570,11 +572,11 @@ void Robo::atariAim(Graphics* g, MYMATRIX* view, float dt, int stamp) {
 
 					if (!bunko) {
 						if (apinfo->isCalcFinished()) {
-							aim(g, view);
+							aim(g, NULL, view);
 							bunko = false;
 						} else {
 							aphelper->setMoku(&te);
-							aim(g,view);// new
+							aim(g,NULL,view);// new
 							bunko = true;
 						}
 				
@@ -867,12 +869,12 @@ void Robo::calcAim(Graphics* g, MYMATRIX* view, float dt, int stamp) {
 
 							if (!bunko) {
 								if (apinfo->isCalcFinished()) {
-									aim(g, view);
+									aim(g,NULL, view);
 									bunko = false;
 								}
 								else {
 									aphelper->setMoku(&te);
-									aim(g, view);// new
+									aim(g, NULL,view);// new
 									bunko = true;
 								}
 
@@ -1180,7 +1182,33 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 
 				float updot = MyVec3Dot(up, kouten_housen);
 				float downdot = MyVec3Dot(down, kouten_housen);
-				if (updot > 0.5) {
+				if (updot > 0.6) {
+					MYVECTOR3 pos(atarihan->x  - kouten_jyusin.float3.x, atarihan->y - kouten_jyusin.float3.y
+						, atarihan->z - kouten_jyusin.float3.z);
+					if (MyVec3Length(pos) < atarihan->r) {
+						setdayo = true;
+						setti_state = &setti;
+					}
+				}
+				if ((move_state->isBoosterHi() || (0.2 < MyVec3Length(atarihan->v))) && (updot <0.7)) {
+					if (abs(dx) + abs(dy) + abs(dz) < atarihan->r*0.5) {
+
+						dx += kouten_housen.float3.x * 0.02f;
+						dy += kouten_housen.float3.y * 0.02f;
+						dz += kouten_housen.float3.z * 0.02f;
+					}
+				//	if (move_state->isBoosterHi()) {
+				//		move_state->leave(this, &movestop, move_state);
+				//		movestop.enter(this, &movestop, move_state);
+				//		move_state = &movestop;
+				//	}
+
+				//	atarihan->setXYZ((atarihan->x + kouten_jyusin.float3.x)/2, (atarihan->y+kouten_jyusin.float3.y)/2, (atarihan->z+kouten_jyusin.float3.z)/2);
+					// 速さが大きかったり　ブースト移動してるときはぶつかり処理を容赦なく行う
+				}
+
+
+				if (updot > 0.1) {
 					OBB* ob = &atari_leg->bone_obbs[atari_leg->mesh->BoneIndexes["rightLegDownBone"]];
 					OBB obdayo = *ob;
 
@@ -1203,7 +1231,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 						
 						if (atari_head->is_bone_obbs_use[k]) {
 							OBB obkaku1 = atari_head->bone_obbs[k];
-							obkaku1.e = obkaku1.e * 1.8f + atarihan->v * dt;// *0.5;
+							obkaku1.e = obkaku1.e * (1.8f + MyVec3Length(atarihan->v) * dt);// *0.5;
 							//obkaku.c = obkaku.c - atarihan->v* dt;
 							if (majiwaruPointOBB(&kouten_jyusin, &obkaku1)) {
 								do_shori = true;
@@ -1213,7 +1241,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 						}
 						if (atari_head2->is_bone_obbs_use[k]) {
 							OBB obkaku1 = atari_head2->bone_obbs[k];
-							obkaku1.e = obkaku1.e * 1.8f + atarihan->v * dt;// *0.5;
+							obkaku1.e = obkaku1.e * (1.8f + MyVec3Length(atarihan->v) * dt);// *0.5;
 							//obkaku.c = obkaku.c - atarihan->v* dt;
 							if (majiwaruPointOBB(&kouten_jyusin, &obkaku1)) {
 								do_shori = true;
@@ -1222,7 +1250,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 						}
 						if (atari_head3->is_bone_obbs_use[k]) {
 							OBB obkaku = atari_head3->bone_obbs[k];
-							obkaku.e = obkaku.e * 1.8f + atarihan->v*dt;// *0.5;
+							obkaku.e = obkaku.e * (1.8f + MyVec3Length(atarihan->v) * dt);// *0.5;
 							//obkaku.c = obkaku.c - atarihan->v* dt;
 							if (majiwaruPointOBB(&kouten_jyusin, &obkaku)) {
 								do_shori = true;
@@ -1232,7 +1260,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 
 						if (atari_core->is_bone_obbs_use[k]) {
 							OBB obkaku = atari_core->bone_obbs[k];
-							obkaku.e = obkaku.e * 1.8f + atarihan->v * dt;// *0.5;
+							obkaku.e = obkaku.e * (1.8f + MyVec3Length(atarihan->v) * dt);// *0.5;
 							if (majiwaruPointOBB(&kouten_jyusin, &obkaku)) {
 								do_shori = true;
 								break;
@@ -1245,17 +1273,19 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 					if (do_shori) {
 
 						dz += min(0.08f, abs(sa.float3.z));
-						setdayo = false;
+						//setdayo = false;
 						ato_setdayo = true;
+						atarihan->setV(&MYVECTOR3(atarihan->v.float3.x, atarihan->v.float3.y, abs(atarihan->v.float3.z)));
+						MYVECTOR3 setpos(0, 0, 0);// kouten_jyusin.float3.x, kouten_jyusin.float3.y, kouten_jyusin.float3.z);
+						setpos = setpos + (kouten_housen * atarihan->r*0.6);
+						atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + setpos.float3.z, 0.5f);
 					}
 					else {
 						dz += min(0.05f, abs(sa.float3.z));
-						
-						//setdayo = false;
-						//ato_setdayo = false;
-						no_z = true;
+						atarihan->setV(&MYVECTOR3(atarihan->v.float3.x, atarihan->v.float3.y, abs(atarihan->v.float3.z)));
+
 					}
-					vdayo = 0;
+					//vdayo = 0;
 
 					continue; // 地面と考える
 
@@ -1309,7 +1339,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 					}
 					is_tenjyou = true;
 					no_z = false;
-					vdayo = 0;
+					//vdayo = 0;
 					continue;
 				}
 
@@ -1324,7 +1354,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 				for (int k = 0; k < KTROBO_MESH_BONE_MAX; k++) {
 					if (atari_head->is_bone_obbs_use[k]) {
 						OBB obkaku1 = atari_head->bone_obbs[k];
-						obkaku1.e = obkaku1.e * 1.8f + atarihan->v * dt;// *0.5;
+						obkaku1.e = obkaku1.e * (1.8f + MyVec3Length(atarihan->v) * dt);// *0.5;
 						//obkaku.c = obkaku.c - atarihan->v* dt;
 						if (majiwaruPointOBB(&kouten_jyusin, &obkaku1)) {
 							do_shori = true;
@@ -1334,7 +1364,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 					}
 					if (atari_head2->is_bone_obbs_use[k]) {
 						OBB obkaku1 = atari_head2->bone_obbs[k];
-						obkaku1.e = obkaku1.e * 1.8f + atarihan->v * dt;// *0.5;
+						obkaku1.e = obkaku1.e * (1.8f + MyVec3Length(atarihan->v) * dt);// *0.5;
 						//obkaku.c = obkaku.c - atarihan->v* dt;
 						if (majiwaruPointOBB(&kouten_jyusin, &obkaku1)) {
 							do_shori = true;
@@ -1343,7 +1373,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 					}
 					if (atari_head3->is_bone_obbs_use[k]) {
 						OBB obkaku = atari_head3->bone_obbs[k];
-						obkaku.e = obkaku.e * 1.8f + atarihan->v*dt;// *0.5;
+						obkaku.e = obkaku.e * (1.8f + MyVec3Length(atarihan->v) * dt);// *0.5;
 						//obkaku.c = obkaku.c - atarihan->v* dt;
 						if (majiwaruPointOBB(&kouten_jyusin, &obkaku)) {
 							do_shori = true;
@@ -1353,7 +1383,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 
 					if (atari_core->is_bone_obbs_use[k]) {
 						OBB obkaku = atari_core->bone_obbs[k];
-						obkaku.e = obkaku.e * 1.8f + atarihan->v * dt;// *0.5;
+						obkaku.e = obkaku.e * (1.8f + MyVec3Length(atarihan->v) * dt);// *0.5;
 						if (majiwaruPointOBB(&kouten_jyusin, &obkaku)) {
 							do_shori = true;
 							break;
@@ -1375,9 +1405,12 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 				sitatiten2 = obdayo.u[2] * obdayo.e[2];
 				sitatiten.float3.z += abs(sitatiten2.float3.z);
 				sitatiten = (sitatiten + center)*0.5;
-
-				if (center.float3.z + atarihan->r*0.2 >= kouten_jyusin.float3.z) continue;
-
+				if (!do_shori) {
+					if (center.float3.z + atarihan->r*0.2 >= kouten_jyusin.float3.z) continue;
+					MYVECTOR3 centertojyusin;
+					MyVec3Subtract(centertojyusin, center, kouten_jyusin);
+					if (MyVec3Length(centertojyusin) > atarihan->r * 1.4 + MyVec3Length(atarihan->v)*dt) continue;
+				}
 				float dbairitu=1;
 				if (!do_shori) {
 					do_shori = true;
@@ -1420,7 +1453,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 					float dddd = MyVec3Dot(vnor, kouten_housen);
 					float dddbairitu = 1;
 					float vlen = MyVec3Length(atarihan->v);
-					if ((dddd < -0.8)) {
+					if (true || (dddd < -0.0)) {
 						// 正面衝突
 					//	move_state->leave(this, &movestop, move_state);
 					//	movestop.enter(this, &movestop, move_state);
@@ -1428,21 +1461,22 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 						// vの成分を逆分増やすようにしてみる
 					
 
-						if ((abs(downdot) < 0.4) && (abs(updot) < 0.4)) {
+						//if ((abs(downdot) < 0.9) || (abs(updot) < 0.9)) {
+						
 							if (move_state->isBoosterHi()) {
 								move_state->leave(this, &movestop, move_state);
 								movestop.enter(this, &movestop, move_state);
 								move_state = &movestop;
-								MyVec3Normalize(atarihan->v, atarihan->v);
-								atarihan->setV(&(atarihan->v * 0.001f));
+								//MyVec3Normalize(atarihan->v, atarihan->v);
+								atarihan->setV(&(-atarihan->v * 0.08f));
 							
 							}
-
 							MYVECTOR3 sinv = atarihan->v;
-							sinv = sinv + kouten_housen *(0.0005+ MyVec3Length(atarihan->v) * 0.801);
+							
+							sinv = sinv + kouten_housen *(0.005+ MyVec3Length(sinv) * 0.801);
 										atarihan->setV(&sinv);
 										dddbairitu = 4;
-						}
+						//}
 					}
 
 					if (ddd > -0.4) {
@@ -1476,21 +1510,24 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 		if (isnan(dx) || isnan(dy) || isnan(dz)) return;
 
 		if (setdayo) {
-			atarihan->setXYZD(atarihan->x + dx, atarihan->y + dy, atarihan->z,2);
+			atarihan->setXYZD(atarihan->x + dx, atarihan->y + dy, atarihan->z,1.55);
 			if (ato_setdayo) {
 				//	atarihan->setXYZD(atarihan->x , atarihan->y, atarihan->z+dz, 0.0005f);
+				atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + dz, 15.055f);
+
 			}
+			setti_state = &setti;
 		}
 		else {
-			atarihan->setXYZD(atarihan->x + dx, atarihan->y + dy, atarihan->z,2);
+			atarihan->setXYZD(atarihan->x + dx, atarihan->y + dy, atarihan->z,1.55);
 			//if (no_z) {}
 			//else {
-				atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + dz, 2.25f);
+				atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + dz, 15.055f);
 			//}
 		
 			if (ato_setdayo) {
 				setdayo = true;
-				//setti_state = &setti;
+				setti_state = &setti;
 			}
 
 			
@@ -1772,14 +1809,22 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 							a.float3.z = 0;
 						}
 
-						atarihan->setXYZ(atarihan->x + a.float3.x * 1.0f*f*f,
+						atarihan->setXYZD(atarihan->x + a.float3.x * 1.0f*f*f,
 							atarihan->y + a.float3.y * 1.0f*f*f,
-							atarihan->z + a.float3.z * 1.0f*f*f);
+							atarihan->z + a.float3.z * 1.0f*f*f,3);
 					}
 
 				}
 			}
 		}
+	}
+
+	if (MyVec3Length(atarihan->v) > roboparam.boostercalc.getMaxSpeed()) {
+		MyVec3Normalize(atarihan->v, atarihan->v);
+		atarihan->setV(&(atarihan->v * roboparam.boostercalc.getMaxSpeed()));
+	}
+	if (MyVec3Length(atarihan->v) > 5) {// seigen
+		atarihan->setV(&MYVECTOR3(0, 0, 0));// atarihan->v.float3.x / 1.5f, atarihan->v.float3.y / 1.5f, atarihan->v.float3.z / 1.5f));
 	}
 
 	if (setdayo == true) {
@@ -1793,7 +1838,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 				setdayo = true;
 				setti_state = &setti;
 				setno_jizoku_count++;
-				if (setno_jizoku_count > 5) {
+				if (setno_jizoku_count > 7) {
 					setdayo = false;
 					setti_state = &kuutyuu;
 				}
@@ -1866,7 +1911,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 				MYVECTOR3 xyz = atarihan->v * dt;
 				atarihan->setV(&(atarihan->v / 1.003f));// MYVECTOR3(0,0,atarihan->v.float3.z * dt);
 
-				atarihan->setXYZD(atarihan->x+xyz.float3.x , atarihan->y + xyz.float3.y , atarihan->z + xyz.float3.z,0.12f);
+				atarihan->setXYZD(atarihan->x+xyz.float3.x , atarihan->y + xyz.float3.y , atarihan->z + xyz.float3.z,24.0f);
 				}
 		 
 	}
@@ -1909,9 +1954,9 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 		float xx = vdayo * dt;
 		atarihan->setDT(dt);
 		if (booster_state == &boostontaiki) {
-			atarihan->setXYZ(atarihan->x + atarihan->v.float3.x * dt, atarihan->y + atarihan->v.float3.y * dt, atarihan->z + xx);
+			atarihan->setXYZD(atarihan->x + atarihan->v.float3.x * dt, atarihan->y + atarihan->v.float3.y * dt, atarihan->z + xx,24);
 		} else {
-			atarihan->setXYZ(atarihan->x, atarihan->y, atarihan->z + xx);
+			atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + xx,24);
 			atarihan->setV(&MYVECTOR3(atarihan->v.float3.x,atarihan->v.float3.y,vdayo));
 		}
 	
@@ -1941,7 +1986,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 
 			if (dt < 200) {
 				MYVECTOR3 xyz = atarihan->v * dt;
-				atarihan->setXYZ(atarihan->x+xyz.float3.x , atarihan->y + xyz.float3.y , atarihan->z/* + xyz.float3.z*/);
+				atarihan->setXYZD(atarihan->x+xyz.float3.x , atarihan->y + xyz.float3.y , atarihan->z/* + xyz.float3.z*/,24);
 			}
 			
 		} else if (move_state->isJump()){
@@ -1949,7 +1994,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 			if (kuutyuu_count == 0) {
 				if (dt < 200) {
 				MYVECTOR3 xyz = atarihan->v * dt;
-				atarihan->setXYZ(atarihan->x+xyz.float3.x , atarihan->y + xyz.float3.y , atarihan->z + xyz.float3.z);
+				atarihan->setXYZD(atarihan->x+xyz.float3.x , atarihan->y + xyz.float3.y , atarihan->z + xyz.float3.z,24);
 				}
 
 			} else {
@@ -1959,7 +2004,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 			
 			if (dt < 200) {
 				MYVECTOR3 xyz = atarihan->v * dt;
-				atarihan->setXYZ(atarihan->x+xyz.float3.x , atarihan->y + xyz.float3.y , atarihan->z + xyz.float3.z);
+				atarihan->setXYZD(atarihan->x+xyz.float3.x , atarihan->y + xyz.float3.y , atarihan->z + xyz.float3.z,24);
 			}
 			if (booster_state != &boostontaiki) {
 				atarihan->setV(&MYVECTOR3(0, 0,vdayo));
@@ -1971,7 +2016,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 		// 地面との当たり判定のために　ほんの少しだけ上に移動させる
 		int rr = rand()%5;
 
-		atarihan->setXYZ(atarihan->x,atarihan->y,atarihan->z  + +0.00005f + 0.0001*rr/5.0f-0.00002f);
+		atarihan->setXYZD(atarihan->x,atarihan->y,atarihan->z  + +0.00005f + 0.0001*rr/5.0f-0.00002f,24);
 		//atarihan->setV(&(atarihan->v + MYVECTOR3(0,0,0.00000098*5)));
 
 	}
@@ -1982,16 +2027,14 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 	
 
 
-	if (MyVec3Length(atarihan->v) > 5) {// seigen
-		atarihan->setV(&MYVECTOR3(atarihan->v.float3.x/1.5f,atarihan->v.float3.y/1.5f, atarihan->v.float3.z/1.5f));
-	}
+	
 
 	
 	if (move_state->isBoosterHi() && (settenjyou_state == &kuutyuu) && (setkabe_state == &kuutyuu)) {
 
 		if (abs(dt) < 250) {
 			MYVECTOR3 xyz = atarihan->v * dt;
-			atarihan->setXYZD(atarihan->x + xyz.float3.x, atarihan->y + xyz.float3.y, atarihan->z + xyz.float3.z, 2.52f);
+			atarihan->setXYZD(atarihan->x + xyz.float3.x, atarihan->y + xyz.float3.y, atarihan->z + xyz.float3.z, 24.52f);
 		}
 
 
@@ -2015,7 +2058,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 
 }
 
-void Robo::aim(Graphics* g, MYMATRIX* view) {
+void Robo::aim(Graphics* g, Texture* tex2,MYMATRIX* view) {
 
 	// ロボ空間のtarget座標を取得する
 	MYMATRIX mat;
@@ -2027,7 +2070,28 @@ void Robo::aim(Graphics* g, MYMATRIX* view) {
 //	tempmo = target;
 	ArmPoint* podayo8[8];
 	LockOnSystem los;
+	if (tex2 && lock_tex) {
+		tex2->setRenderTextIsRender(lock_tex, false);
+	}
 	if (!los.isIn(&tempmo,apinfo->dmin,apinfo->dmax, apinfo->mintate, apinfo->maxtate, apinfo->minyoko, apinfo->maxyoko,apinfo->dtate, apinfo->dyoko, apinfo->dd)) return;
+	if (tex2) {
+		if (!lock_tex) {
+			lock_tex = tex2->getRenderText("lock!", 0, 0, 22, 150, 22);
+		}
+		MYVECTOR3 cc = target;
+		//MyVec3TransformCoord(cc, cc, atarihan->world);
+		MyVec3TransformCoord(cc, cc,*view );
+		MyVec3TransformCoord(cc, cc, *g->getProj());
+		tex2->setRenderTextIsRender(lock_tex, true);
+		tex2->setRenderTextPos(lock_tex, (cc.float3.x)*g->getScreenWidth()/2+g->getScreenWidth()/2, g->getScreenHeight()/2+(-cc.float3.y)*g->getScreenHeight()/2 - 45);
+	}
+	OBB cc;
+	cc.c = target;
+
+	cc.e = MYVECTOR3(7, 7, 7);
+	MYMATRIX idenmat;
+	MyMatrixIdentity(idenmat);
+	g->drawOBB(g, 0xFFFF0000, &idenmat, view, g->getProj(), &cc);
 
 
 /*
@@ -2677,7 +2741,19 @@ void Robo::init(Graphics* g, MyTextureLoader* tex_loader, AtariHantei* hantei) {
 
 
 	} else {
-		apinfo = new ArmPointIndexInfo("ktrobofcs8.txt", 60, 200, 46, 46, 46, 46, 6, 6, 40);// 150, 300, 30, 30, 30, 30, 6, 6, 40);//70,150,10,10,30,30,2,2,5);// 70,120,20,40,20,40,5,5,15);
+	//	apinfo = new ArmPointIndexInfo("ktrobofcs12.txt", 10, 90, 26, 40, 26,40, 4, 4, 4);// 近距離用
+	//	apinfo = new ArmPointIndexInfo("ktrobofcs12.txt", 30, 140, 36, 45, 36, 45, 4, 4, 4);// 近距離用
+	//	apinfo = new ArmPointIndexInfo("ktrobofcs12.txt", 5, 60, 26, 26, 26, 26, 4, 4, 4);// 近距離専用
+	//	apinfo = new ArmPointIndexInfo("ktrobofcs12.txt", 40, 250, 46, 86, 22, 52, 4, 4, 4);// 縦長
+	//	apinfo = new ArmPointIndexInfo("ktrobofcs13.txt", 40, 250, 22,52, 46, 86, 4, 4, 4);// 横長
+	//	apinfo = new ArmPointIndexInfo("ktrobofcs15.txt", 70, 300, 46, 62, 46, 62, 4, 4, 4);// ミサイル
+    //	apinfo = new ArmPointIndexInfo("ktrobofcs17.txt", 5, 180, 20, 30, 20, 30, 4, 4, 4);// 狙撃
+	//	apinfo = new ArmPointIndexInfo("ktrobofcs19.txt", 85, 380, 20, 35, 20, 35, 4, 4, 4);// 狙撃
+	//	apinfo = new ArmPointIndexInfo("ktrobofcs20.txt", 5, 220, 30, 40, 30, 40, 4, 4, 4);// 高性能
+		apinfo = new ArmPointIndexInfo("ktrobofcs21.txt", 35, 250, 40, 45, 40, 45, 4, 4, 4);// 高性能
+
+
+		// 150, 300, 30, 30, 30, 30, 6, 6, 40);//70,150,10,10,30,30,2,2,5);// 70,120,20,40,20,40,5,5,15);
 	}	
 	if (apinfo->hasFile()) {
 		apinfo->loadFile();
@@ -6223,9 +6299,9 @@ RoboBoosterCalc::RoboBoosterCalc() {
 	this->robo = NULL;
 	this->booster = NULL;
 	this->energy_drain = 9000;
-	this->fudanspeed = 0.38f;// 0.018f;
-	this->maxatospeed = 0.3234f;// 0.024f;
-	this->maxspeed = 0.325f;// 0.045f;
+	this->fudanspeed = 0.018f;// 0.018f;
+	this->maxatospeed = 0.06234f;// 0.024f;
+	this->maxspeed = 0.0625f;// 0.045f;
 	this->time_backto_fudan = 1000;
 	this->time_maxato_made = 700;
 	this->time_maxspeed_jizoku_made = 300;
@@ -6243,8 +6319,8 @@ void RoboBoosterCalc::Init(Robo* robo, RoboBooster* booster) {
 	this->booster = booster;
 	this->energy_drain = 9000;
 	this->fudanspeed = 0.018f;// 0.018f;
-	this->maxatospeed = 0.334f;// 0.024f;
-	this->maxspeed = 0.325f;// 0.025f;
+	this->maxatospeed = 0.0634f;// 0.024f;
+	this->maxspeed = 0.0625f;// 0.025f;
 	this->time_backto_fudan = 1000;
 	this->time_maxato_made = 700;
 	this->time_maxspeed_jizoku_made = 300;

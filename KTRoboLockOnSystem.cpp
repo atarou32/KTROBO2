@@ -483,7 +483,7 @@ bool updatepointdayo(int pointindex, int nowindex, float nowyoko, float nowtate,
 }
 
 
-void LockOnSystem::byougaRAY( Graphics* g, MYMATRIX* world,MYMATRIX* view, 
+void LockOnSystem::byougaRAY( Graphics* g, MYMATRIX* myworld,MYMATRIX* view, 
 		float rmin, float rmax, float mintate, float maxtate, 
 		float minyoko, float maxyoko,float dtate, float dyoko, float dr) {
 
@@ -508,40 +508,47 @@ void LockOnSystem::byougaRAY( Graphics* g, MYMATRIX* world,MYMATRIX* view,
 			ap[7].pos = MYVECTOR3(maxyoko, -rmax, maxtate);
 		
 			for (int i=0;i<8;i++) {
-			//	MyVec3TransformCoord(ap[i].pos,ap[i].pos,*world);
+			//	MyVec3TransformCoord(ap[i].pos, ap[i].pos, *world);
+				MyVec3TransformCoord(ap[i].pos,ap[i].pos,*myworld);
+			//	MyVec3TransformCoord(ap[i].pos, ap[i].pos, *world);
+				MYMATRIX inv;
+				//MyMatrixInverse(inv, NULL, *world);
+				//MyVec3TransformCoord(ap[i].pos, ap[i].pos, inv);
 			}
 			OBB b;
-			b.e = MYVECTOR3(0.3,0.3,0.3);
+			b.e = MYVECTOR3(1.3,1.3,1.3);
 			b.c = ap[0].pos;
+			MYMATRIX idenmat;
+			MyMatrixIdentity(idenmat);
 			ap8.setPoint(KTROBO_ARMPOINT8_MHS,&ap[0]);
-		//	g->drawOBBFill(g,0xFF0000FF,world,view,g->getProj(),&b);
+			g->drawOBBFill(g,0xFF0000FF,&idenmat,view,g->getProj(),&b);
 			ap8.setPoint(KTROBO_ARMPOINT8_MHU, &ap[1]);
 			b.c = ap[1].pos;
-		//	g->drawOBBFill(g,0xFF0000FF,world,view,g->getProj(),&b);
+			g->drawOBBFill(g,0xFF0000FF,&idenmat,view,g->getProj(),&b);
 
 			ap8.setPoint(KTROBO_ARMPOINT8_MMS, &ap[2]);
 			b.c = ap[2].pos;
-	//		g->drawOBBFill(g,0xFF0000FF,world,view,g->getProj(),&b);
+			g->drawOBBFill(g,0xFF0000FF,&idenmat,view,g->getProj(),&b);
 
 			ap8.setPoint(KTROBO_ARMPOINT8_MMU, &ap[3]);
 			b.c = ap[3].pos;
-		//	g->drawOBBFill(g,0xFF0000FF,world,view,g->getProj(),&b);
+			g->drawOBBFill(g,0xFF0000FF,&idenmat,view,g->getProj(),&b);
 
 			ap8.setPoint(KTROBO_ARMPOINT8_UHS,&ap[4]);
 			b.c = ap[4].pos;
-			g->drawOBBFill(g,0xFF0000FF,world,view,g->getProj(),&b);
+			g->drawOBBFill(g,0xFF0000FF,&idenmat,view,g->getProj(),&b);
 
 			ap8.setPoint(KTROBO_ARMPOINT8_UHU, &ap[5]);
 			b.c = ap[5].pos;
-			g->drawOBBFill(g,0xFF0000FF,world,view,g->getProj(),&b);
+			g->drawOBBFill(g,0xFF0000FF,&idenmat,view,g->getProj(),&b);
 
 			ap8.setPoint(KTROBO_ARMPOINT8_UMS, &ap[6]);
 			b.c = ap[6].pos;
-			g->drawOBBFill(g,0xFF0000FF,world,view,g->getProj(),&b);
+			g->drawOBBFill(g,0xFF0000FF,&idenmat,view,g->getProj(),&b);
 
 			ap8.setPoint(KTROBO_ARMPOINT8_UMU, &ap[7]);
 			b.c = ap[7].pos;
-			g->drawOBBFill(g,0xFF0000FF,world,view,g->getProj(),&b);
+			g->drawOBBFill(g,0xFF0000FF,&idenmat,view,g->getProj(),&b);
 
 			RAY ray;
 
@@ -550,27 +557,27 @@ void LockOnSystem::byougaRAY( Graphics* g, MYMATRIX* world,MYMATRIX* view,
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-			idenmat = *world;
+		//	idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_MHU].pos;
-		//	g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
+			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray); //
 			}
 			{
 				ray.dir = ap8.points[KTROBO_ARMPOINT8_MMS].pos-ap8.points[KTROBO_ARMPOINT8_MMU].pos;
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//			idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_MMU].pos;
-		//	g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
+			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);//
 			}
 			{
 			ray.dir = ap8.points[KTROBO_ARMPOINT8_UHS].pos-ap8.points[KTROBO_ARMPOINT8_UHU].pos;
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//				idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_UHU].pos;
 			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
@@ -581,7 +588,7 @@ void LockOnSystem::byougaRAY( Graphics* g, MYMATRIX* world,MYMATRIX* view,
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//			idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_UMU].pos;
 			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
@@ -591,56 +598,56 @@ void LockOnSystem::byougaRAY( Graphics* g, MYMATRIX* world,MYMATRIX* view,
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//				idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_UMU].pos;
-		//	g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
+			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);//
 			}{
 				ray.dir = ap8.points[KTROBO_ARMPOINT8_MHS].pos-ap8.points[KTROBO_ARMPOINT8_UHS].pos;
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//				idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_UHS].pos;
-		//	g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
+			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);//
 			}{
 			ray.dir = ap8.points[KTROBO_ARMPOINT8_UMS].pos-ap8.points[KTROBO_ARMPOINT8_MMS].pos;
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//				idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_MMS].pos;
-		//	g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
+			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);//
 			}{
 				ray.dir = ap8.points[KTROBO_ARMPOINT8_MMU].pos-ap8.points[KTROBO_ARMPOINT8_UMU].pos;
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//				idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_UMU].pos;
-		//	g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
+			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);//
 			}{
 			ray.dir = ap8.points[KTROBO_ARMPOINT8_MHU].pos-ap8.points[KTROBO_ARMPOINT8_UHU].pos;
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//				idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_UHU].pos;
-		//	g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
+			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);//
 			}{
 
 		ray.dir = ap8.points[KTROBO_ARMPOINT8_MMU].pos-ap8.points[KTROBO_ARMPOINT8_MHU].pos;
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//				idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_MHU].pos;
-		//	g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
+			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);//
 
 			}
 
@@ -650,10 +657,10 @@ void LockOnSystem::byougaRAY( Graphics* g, MYMATRIX* world,MYMATRIX* view,
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//				idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_MHS].pos;
-		//	g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
+			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);//
 
 			}
 
@@ -663,7 +670,7 @@ void LockOnSystem::byougaRAY( Graphics* g, MYMATRIX* world,MYMATRIX* view,
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//				idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_UHU].pos;
 			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);
@@ -676,7 +683,7 @@ void LockOnSystem::byougaRAY( Graphics* g, MYMATRIX* world,MYMATRIX* view,
 			float length = MyVec3Length(ray.dir);
 			MYMATRIX idenmat;
 			MyMatrixIdentity(idenmat);
-						idenmat = *world;
+		//				idenmat = *world;
 			MyVec3Normalize(ray.dir,ray.dir);
 			ray.org = ap8.points[KTROBO_ARMPOINT8_UHS].pos;
 			g->drawRAY(g,0xFFFFFFFF,&idenmat,view,g->getProj(),length,&ray);

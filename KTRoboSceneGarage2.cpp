@@ -2349,7 +2349,7 @@ void MyRobo_Garage2::render(Graphics* g, Texture* tex2, MYMATRIX* view, MYMATRIX
 		//g->getDeviceContext()->ClearRenderTargetView(g->getRenderTargetView(), clearColor);
 		if (robo) {
 
-			robo->aim(g, &view);
+			robo->aim(g,NULL, &view);
 			robo->byouga(g, &view, g->getProj());
 		}
 

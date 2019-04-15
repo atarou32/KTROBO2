@@ -910,7 +910,7 @@ bool Graphics::Init(HWND hwnd) {
 
 	if (!r) return false;
 
-	MyMatrixPerspectiveFovRH(proj, 1.57/2*2*2/3, this->getScreenWidth() / (float)this->getScreenHeight(), 1, 10000);
+	MyMatrixPerspectiveFovRH(proj, 1.57/2*2*2/3, this->getScreenWidth() / (float)this->getScreenHeight(), 10, 5000);
 
 	return true;
 }

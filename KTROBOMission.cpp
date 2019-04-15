@@ -691,9 +691,9 @@ void Gamen_MISSION::posButukari(Graphics* g, Scene* scene, Game* game, AtariHant
 							//	DebugTexts::instance()->setText(g,5,L"setka");
 						}
 						robodayo->setTarget(&MYVECTOR3(roboaitedayo->atarihan->x, roboaitedayo->atarihan->y, roboaitedayo->atarihan->z));
-						//			robodayo->aim(g, &game->view);
-						//			robodayo->atariAim(g, &game->view, test, (int)stamp);
-						//			robodayo->calcAim(g, &game->view, test, (int)stamp);// frameTime, (int)frame);
+									robodayo->aim(g,NULL, &game->view);
+									//robodayo->atariAim(g, &game->view, test, (int)stamp);
+									//robodayo->calcAim(g, &game->view, test, (int)stamp);// frameTime, (int)frame);
 					}
 
 					if (roboaitedayo && roboaitedayo->atarihan) {

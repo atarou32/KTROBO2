@@ -61,7 +61,7 @@ void Gamen_GARAGE::byouga(Graphics* g, GUI* gui, float dsecond, int stamp) {
 	//g->getDeviceContext()->ClearRenderTargetView(g->getRenderTargetView(), clearColor);
 	if (robo) {
 
-		robo->aim(g,&view);
+		robo->aim(g,NULL,&view);
 		robo->byouga(g,&view,g->getProj());
 	}
 

@@ -1435,7 +1435,8 @@ private:
 	float energy_drain;
 public:
 	void Init(Robo* robo, RoboBooster* booster);
-	float getFudanSpeed() {return fudanspeed;}
+	float getFudanSpeed() { return fudanspeed; };
+	float getMaxSpeed() { return maxspeed; };
 	float getSpeed(float dsecond);
 	bool isCanReload(float dsecond);
 	bool isCanMove(float dsecond) {
@@ -1780,7 +1781,7 @@ public:
 	RoboMovingState_GAMEPAD_JUMPKABE gamepad_jumpkabe;
 	RoboBoosterState_GAMEPAD_BOOST gamepad_boost;
 
-
+	int lock_tex;
 
 	float updown_muki;
 	int screen_height;
@@ -1839,7 +1840,7 @@ public:
 	void upDownMuki(float mouse_y, float dmouse_y);
 
 	//MYMATRIX world;
-	void aim(Graphics* g, MYMATRIX* view);
+	void aim(Graphics* g, Texture* tex2,MYMATRIX* view);
 	void setTarget(MYVECTOR3* t) {
 		target = *t;
 	}
@@ -1851,7 +1852,7 @@ public:
 
 	void boosterEffect(Game* game, Graphics* g, float dt, int stamp);
 	void byouga(Graphics* g, MYMATRIX* view, MYMATRIX* proj);
-	void byougaRay(Graphics* g, MYMATRIX* view, MYMATRIX* proj);
+	void byougaRay(Graphics* g,  MYMATRIX* view, MYMATRIX* proj);
 
 	void initWithOutLoadingParts(Graphics* g, MyTextureLoader* loader);
 	void loadFCS();
