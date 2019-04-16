@@ -1654,6 +1654,7 @@ public:
 
 };
 
+class ArmPositioner2;
 
 class Robo : public INPUTSHORICLASS, public AtariBase
 {
@@ -1667,6 +1668,12 @@ public:
 	ArmPositionerHelper* aphelper_hidari;
 
 	ArmPointIndexInfo* apinfo;
+
+	ArmPositioner2* ap2;
+	ArmPositioner2* ap2_hidari;
+
+
+
 public:
 	RoboHead* head;
 	RoboBody* body;

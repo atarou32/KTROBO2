@@ -151,34 +151,43 @@ void BulletController::atariShori(Game* game, AtariHantei* hantei, MYMATRIX* vie
 			Bullet* b = &bullets[umesh_id_to_bullet_indexs[kuwasiku[i].my_umesh->getUMESHID()]];
 			if (b->getIsUse() && b->getAtariJyunbi() && b->robo && (b->robo->atarihan != kuwasiku[i].aite)) {
 				//bullets[umesh_id_to_bullet_indexs[kuwasiku[i].my_umesh->getUMESHID()]].mesh_i->setIsRender(false);
-				MYMATRIX worldd;
-				MYVECTOR4 color;
-				MYVECTOR3 pos(0,0,0);
-				MYVECTOR3 vec(0,0,1);
-				MyVec3TransformCoord(pos, pos, b->atarihan->world);
-				MyVec3TransformNormal(vec, vec, b->atarihan->world);
-				color.w = 1;
-				color.x = 1;
-				color.y = 1;
-				color.z = 1;
-				WeaponEffect::butukariEffectS(b->robo_parts, game, b->robo, &pos, &vec);
-				Robo* aite_robo = game->rmap->getRobo(kuwasiku[i].aite_umesh->getUMESHID());
-				if (aite_robo) {
-					WeaponEffect::butukariShoriS(b->robo_parts, game, b->robo, aite_robo, b);
+				MYVECTOR3 kouten_jyusin = kuwasiku[i].ans->kouten_jyusin;
+				MYVECTOR3 posdayo(b->atarihan->x, b->atarihan->y, b->atarihan->z);
+				MYVECTOR3 sa;
+				MyVec3Subtract(sa, posdayo, kouten_jyusin);
+				float len = MyVec3Length(b->atarihan->v);
+				float dotdayo = MyVec3Dot(b->atarihan->v, kuwasiku[i].ans->kouten_housen);
+				if ((dotdayo<0) || (MyVec3Length(sa) < b->atarihan->r*(20 + dsecond * len))) {
+
+					MYMATRIX worldd;
+					MYVECTOR4 color;
+					MYVECTOR3 pos(0, 0, 0);
+					MYVECTOR3 vec(0, 0, 1);
+					MyVec3TransformCoord(pos, pos, b->atarihan->world);
+					MyVec3TransformNormal(vec, vec, b->atarihan->world);
+					color.w = 1;
+					color.x = 1;
+					color.y = 1;
+					color.z = 1;
+					WeaponEffect::butukariEffectS(b->robo_parts, game, b->robo, &pos, &vec);
+					Robo* aite_robo = game->rmap->getRobo(kuwasiku[i].aite_umesh->getUMESHID());
+					if (aite_robo) {
+						WeaponEffect::butukariShoriS(b->robo_parts, game, b->robo, aite_robo, b);
+					}
+					// “–‚½‚è”»’è‚ª‚¨‚«‚é‚Ì‚ð‚Ó‚¹‚®‚½‚ß‚Éƒ‰ƒ“ƒ_ƒ€‚ÉˆÚ“®‚³‚¹‚é
+					b->atarihan->setXYZ((rand() % 256) / 256 * 100, (rand() % 256) / 256 * 100, (rand() % 256) / 256 * 100);
+					b->atarihan->calcJyusinAndR(true);
+					b->setIsUse(false);
+					mm->setColor(&color);
+					//game->getSound()->playCue("se_maoudamashii_explosion03");
+					/*
+					Bullet* bb = this->getEmptyBullet();
+					bb->atarihan->setWorld(&kuwasiku[i].aite->world);
+					bb->atarihan->meshs[0]->bone_obbs[0] = kuwasiku[i].aite->meshs[0]->bone_obbs[0];
+					bb->atarihan->meshs[0]->is_bone_obbs_use[0] = true;
+					*/
+					//bb->fire(game,hantei);	
 				}
-				// “–‚½‚è”»’è‚ª‚¨‚«‚é‚Ì‚ð‚Ó‚¹‚®‚½‚ß‚Éƒ‰ƒ“ƒ_ƒ€‚ÉˆÚ“®‚³‚¹‚é
-				b->atarihan->setXYZ((rand() % 256)/256 * 100,(rand() % 256)/256 * 100, (rand() % 256)/256*100);
-				b->atarihan->calcJyusinAndR(true);
-				b->setIsUse(false);
-				mm->setColor(&color);
-				//game->getSound()->playCue("se_maoudamashii_explosion03");
-				/*
-				Bullet* bb = this->getEmptyBullet();
-				bb->atarihan->setWorld(&kuwasiku[i].aite->world);
-				bb->atarihan->meshs[0]->bone_obbs[0] = kuwasiku[i].aite->meshs[0]->bone_obbs[0];
-				bb->atarihan->meshs[0]->is_bone_obbs_use[0] = true;
-				*/
-				//bb->fire(game,hantei);	
 			}
 		}
 

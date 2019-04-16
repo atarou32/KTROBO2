@@ -7,6 +7,7 @@
 #include "KTRoboTexture.h"
 #include "KTRoboWeapon.h"
 #include "KTRoboInputGamePad.h"
+#include "KTRoboArmPositioner2.h"
 
 using namespace KTROBO;
 Robo::Robo(void)
@@ -60,6 +61,9 @@ Robo::Robo(void)
 	setno_jizoku_count = 0;
 	muki = MYVECTOR3(0, -1, 0);
 	lock_tex = 0;
+
+	ap2 = 0;
+	ap2_hidari = 0;
 }
 
 
@@ -2094,6 +2098,30 @@ void Robo::aim(Graphics* g, Texture* tex2,MYMATRIX* view) {
 	g->drawOBB(g, 0xFFFF0000, &idenmat, view, g->getProj(), &cc);
 
 
+	if (ap2) {
+		ap2->setTarget(&target);
+		for (int i = 0; i < 15; i++) {
+			ap2->calc(g, view, true);
+
+			if (raweapon) {
+				raweapon->weapon->animate(0, false);
+			}
+		}
+	}
+
+	if (ap2_hidari) {
+		ap2_hidari->setTarget(&target);
+		//ap2_hidari->calc(g,view, false);
+		for (int i = 0; i < 15; i++) {
+			ap2_hidari->calc(g, view, false);
+
+			if (laweapon) {
+				laweapon->weapon->animate(0, false);
+			}
+		}
+	}
+
+
 /*
 	tempmo.float3.x = apinfo->minyoko-1;
 	tempmo.float3.z = apinfo->mintate-1;
@@ -2147,7 +2175,7 @@ void Robo::aim(Graphics* g, Texture* tex2,MYMATRIX* view) {
 
 
 
-	
+	/*
 
     for (int i=0;i<8;i++) {
     		podayo8[i] = apinfo->getArmPointFromPointindex(i, &tempmo);
@@ -2196,7 +2224,7 @@ void Robo::aim(Graphics* g, Texture* tex2,MYMATRIX* view) {
 	}
 
 
-
+	*/
 
 }
 
@@ -2322,6 +2350,13 @@ void Robo::initWithOutLoadingParts(Graphics* g, MyTextureLoader* loader) {
 	ap_hidari = new ArmPositioner(3.14 / 60000, 3.14 / 3, 0.62);
 	ap_hidari->setTheta(0.96429, -0.92417, 0.1193, 0, 0.20, 0.19);
 	aphelper_hidari = new ArmPositionerHelper(this, ap_hidari, false);
+
+	ap2 = new ArmPositioner2();
+	ap2_hidari = new ArmPositioner2();
+	ap2->setRobo(this);
+	ap2->setTarget(&(MYVECTOR3(0, 0, 0)));
+	ap2_hidari->setRobo(this);
+	ap2_hidari->setTarget(&(MYVECTOR3(0, 0, 0)));
 
 	roboparam.Init(this);
 	roboparam.calcParam();
@@ -2688,7 +2723,12 @@ void Robo::init(Graphics* g, MyTextureLoader* tex_loader, AtariHantei* hantei) {
 	ap_hidari->setTheta(0.96429, -0.92417, 0.1193, 0, 0.20, 0.19);
 	aphelper_hidari = new ArmPositionerHelper(this, ap_hidari, false);
 
-
+	ap2 = new ArmPositioner2();
+	ap2_hidari = new ArmPositioner2();
+	ap2->setRobo(this);
+	ap2->setTarget(&(MYVECTOR3(0, 0, 0)));
+	ap2_hidari->setRobo(this);
+	ap2_hidari->setTarget(&(MYVECTOR3(0, 0, 0)));
 
 
 
@@ -2867,6 +2907,16 @@ void Robo::release() {
 	if (apinfo) {
 		delete apinfo;
 		apinfo = 0;
+	}
+
+	if (ap2) {
+		delete ap2;
+		ap2 = 0;
+	}
+
+	if (ap2_hidari) {
+		delete ap2_hidari;
+		ap2_hidari = 0;
 	}
 }
 
