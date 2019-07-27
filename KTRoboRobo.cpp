@@ -2100,8 +2100,8 @@ void Robo::aim(Graphics* g, Texture* tex2,MYMATRIX* view) {
 		tex2->setRenderTextPos(lock_tex, (cc.float3.x)*g->getScreenWidth()/2+g->getScreenWidth()/2, g->getScreenHeight()/2+(-cc.float3.y)*g->getScreenHeight()/2 - 45);
 	}
 	OBB cc;
-	cc.c = target;
-
+	cc.c = target + MYVECTOR3(0, 0, 0.0);
+	target = cc.c;
 	cc.e = MYVECTOR3(7, 7, 7);
 	MYMATRIX idenmat;
 	MyMatrixIdentity(idenmat);
@@ -6364,14 +6364,18 @@ void Robo::fireUpdate(Graphics* g, Game* game, Scene* scene,BulletController* bu
 		MyMatrixMultiply(bullet_world, bone->matrix_local, bone->combined_matrix);        //umesh_unit->meshs[0]->mesh->Bones[umesh_unit->meshs[0]->mesh->BoneIndexes["hidariteBone"]]->matrix_local,umesh_unit->meshs[0]->mesh->Bones[umesh_unit->meshs[0]->mesh->BoneIndexes["hidariteBone"]]->combined_matrix);
 		MyMatrixMultiply(bullet_world,bullet_world,atarihan->world);
 		MyVec3TransformCoord(bullet_pos,bullet_pos,bullet_world);
-		MyVec3TransformNormal(bullet_vec,bullet_vec,bullet_world);
-		MyVec3Normalize(bullet_vec,bullet_vec);
-		bullet_vec = bullet_vec * 0.31;//0.07
+		//MyVec3TransformNormal(bullet_vec,bullet_vec,bullet_world);
+		//MyVec3Normalize(bullet_vec,bullet_vec);
+		//bullet_vec = bullet_vec * 0.31;//0.07
 
 		// bullet_vec ‚ÌŽZo
 
 		// bullet_pos ‚ÌŽZo
-
+		//
+		MYVECTOR3 pp = target - bullet_pos;
+		MyVec3Normalize(pp, pp);
+		pp = pp * 0.31;
+		bullet_vec = pp;
 
 		raweapon->wf_rifle.fire(this, raweapon, g,game,scene, bullet_c, hantei, game->getSound(),&bullet_world,&bullet_vec, &bullet_pos,bone);
 	}
@@ -6387,14 +6391,17 @@ void Robo::fireUpdate(Graphics* g, Game* game, Scene* scene,BulletController* bu
 		MyMatrixMultiply(bullet_world, bone->matrix_local, bone->combined_matrix);        //umesh_unit->meshs[0]->mesh->Bones[umesh_unit->meshs[0]->mesh->BoneIndexes["hidariteBone"]]->matrix_local,umesh_unit->meshs[0]->mesh->Bones[umesh_unit->meshs[0]->mesh->BoneIndexes["hidariteBone"]]->combined_matrix);
 		MyMatrixMultiply(bullet_world, bullet_world, atarihan->world);
 		MyVec3TransformCoord(bullet_pos, bullet_pos, bullet_world);
-		MyVec3TransformNormal(bullet_vec, bullet_vec, bullet_world);
-		MyVec3Normalize(bullet_vec, bullet_vec);
-		bullet_vec = bullet_vec * 0.31;//0.07
+		//MyVec3TransformNormal(bullet_vec, bullet_vec, bullet_world);
+		//MyVec3Normalize(bullet_vec, bullet_vec);
+		//bullet_vec = bullet_vec * 0.31;//0.07
 
 		// bullet_vec ‚ÌŽZo
 
 		// bullet_pos ‚ÌŽZo
-
+		MYVECTOR3 pp = target - bullet_pos;
+		MyVec3Normalize(pp, pp);
+		pp = pp * 0.31;
+		bullet_vec = pp;
 
 		laweapon->wf_rifle.fire(this, laweapon, g, game, scene, bullet_c, hantei, game->getSound(), &bullet_world, &bullet_vec, &bullet_pos, bone);
 	}

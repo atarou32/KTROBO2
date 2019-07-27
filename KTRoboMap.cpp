@@ -577,7 +577,7 @@ void RMap::update() {
 	vector<UMeshUnit*>::iterator it = map_umeshunits.begin();
 	while (it != map_umeshunits.end()) {
 		UMeshUnit* mm = *it;
-		mm->setDT(5);
+		mm->setDT(35);
 	//	mm->setXYZ(mm->x + 0.01f, mm->y, mm->z);
 		mm->calcJyusinAndR();
 
@@ -618,7 +618,7 @@ void RMap::byougaHojyo(Graphics*g, MYMATRIX* view, MYMATRIX* proj) {
 	vector<UMeshUnit*>::iterator it = map_umeshunits.begin();
 	while (it != map_umeshunits.end()) {
 		UMeshUnit* mm = *it;
-		mm->setDT(5);
+		mm->setDT(35);
 		mm->setXYZ(mm->x, mm->y, mm->z);
 		mm->calcJyusinAndR();
  		//MyMatrixTranslation(world, mm->x, mm->y, mm->z);
