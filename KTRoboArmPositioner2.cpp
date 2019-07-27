@@ -388,33 +388,33 @@ void ArmPositioner2::calc(Graphics*g, MYMATRIX* view, bool is_migi) {
 
 	if (is_miginiaru) {
 		if (is_migi) {
-			dthetaza -= 0.06*abs(the) + 0.07f*asin(abs(migidot) / dist);
-			dthetazb -= 0.0008f*abs(migidot) / dist;
+			dthetaza -= (0.06*abs(the) + 0.07f*asin(abs(migidot) / dist))*3;
+			dthetazb -= (0.0008f*abs(migidot) / dist)*3;
 		}
 		else {
-			dthetaza += 0.06*abs(the) + 0.07f*asin(abs(migidot) / dist);
-					dthetazb += 0.0008f*abs(migidot) / dist;
+			dthetaza += (0.06*abs(the) + 0.07f*asin(abs(migidot) / dist))*3;
+					dthetazb += (0.0008f*abs(migidot) / dist)*3;
 		}
 	}
 	else {
 		if (is_migi) {
-			dthetaza += 0.06*abs(the) + 0.07f * asin(abs(migidot) / dist);
+			dthetaza += (0.06*abs(the) + 0.07f * asin(abs(migidot) / dist))*3;
 			//		dthetazb -= 0.8f*abs(migidot) / dist;
-			dthetazb += 0.0008f*abs(migidot) / dist;
+			dthetazb += (0.0008f*abs(migidot) / dist)*3;
 		}
 		else {
-			dthetaza -= 0.06*abs(the) + 0.07f * asin(abs(migidot) / dist);
-			dthetazb -= 0.0008f*abs(migidot) / dist;
+			dthetaza -= (0.06*abs(the) + 0.07f * asin(abs(migidot) / dist))*3;
+			dthetazb -= (0.0008f*abs(migidot) / dist)*3;
 		}
 	}
 	// *atteru* //
 	//is_ueniaru = !is_ueniaru;
 	if (is_ueniaru) {
-		dthetaxa += 0.01f * asin(abs(uedot)/dist);
+		dthetaxa += (0.01f * asin(abs(uedot)/dist))*3;
 	//	dthetaxb += 0.03f * abs(uedot) / disst2;
 	}
 	else {
-		dthetaxa -= 0.01f * asin(abs(uedot)/dist);
+		dthetaxa -= (0.01f * asin(abs(uedot)/dist))*3;
 	//	dthetaxb -= 0.03f * abs(uedot) / disst2;
 	}
 

@@ -14,6 +14,10 @@
 #include "KTRoboMeshInstanced.h"
 #endif
 
+#ifndef KTROBOWEAPON_H
+#include "KTRoboWeapon.h"
+#endif
+
 namespace KTROBO {
 #define BULLET_ATARI_JYUNBI_COUNT_MAX 2
 
@@ -29,6 +33,7 @@ class Bullet : public AtariBase {
 		MYVECTOR3 h_v; // ”­ŽË‚µ‚½‚Æ‚«‚Ì‘¬“x
 		MYMATRIX shoki_world;
 		float dtime; // ”­ŽË‚µ‚Ä‚©‚ç‚ÌŽžŠÔ
+		
 	public:
 		Robo* robo; // delete‚µ‚È‚¢
 		RoboParts* robo_parts; //delete‚µ‚È‚¢
@@ -37,6 +42,7 @@ class Bullet : public AtariBase {
 	private:
 		AtariBase* atari_robo; // delete‚µ‚È‚¢
 		AtariBase* atari_tikei; // delete‚µ‚È‚¢
+		WeaponEffectStruct* wes;
 	public:
 		Bullet() {
 			atarihan = 0;
@@ -54,9 +60,19 @@ class Bullet : public AtariBase {
 			MyMatrixIdentity(shoki_world);
 			is_atari_jyunbi = false;
 			atari_jyunbi_count = 0;
+			wes = 0;
 		}
 
 		~Bullet();
+
+		void setWES(WeaponEffectStruct* we) {
+			wes = we;
+		}
+
+		WeaponEffectStruct* getWES() {
+			return wes;
+		}
+
 
 		void setAtariJyunbi(bool t) {
 			if (!t) {

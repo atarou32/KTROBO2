@@ -75,7 +75,8 @@ public:
 	~WeaponEffectManager(); // struct のみを消すのみ　エフェクトは残す どこか他の場所でeffectmanager::deleteeffectimplみたいなものを呼ぶ
 
 	void update(float dt);
-	void makeWeaponEffect(char* effect_name, float alive_time, bool is_world_update, MYMATRIX* world, AtariBase* world_update_base,MeshBone* fire_bone);
+	void killEffectNow(WeaponEffectStruct* effe);
+	WeaponEffectStruct* makeWeaponEffect(char* effect_name, float alive_time, bool is_world_update, MYMATRIX* world, AtariBase* world_update_base,MeshBone* fire_bone);
 
 };
 }

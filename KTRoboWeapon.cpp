@@ -119,7 +119,7 @@ void WeaponEffectManager::update(float dt) {
 				MYMATRIX bullet_world;
 				MeshBone* bone = ss->fire_bone;//raweapon->weapon->Bones[raweapon->weapon->BoneIndexes["fireBone"]];
 				MyMatrixMultiply(bullet_world, bone->matrix_local, bone->combined_matrix);        //umesh_unit->meshs[0]->mesh->Bones[umesh_unit->meshs[0]->mesh->BoneIndexes["hidariteBone"]]->matrix_local,umesh_unit->meshs[0]->mesh->Bones[umesh_unit->meshs[0]->mesh->BoneIndexes["hidariteBone"]]->combined_matrix);
-				MyMatrixMultiply(bullet_world,bullet_world,ss->world_update_base->atarihan->world);
+				MyMatrixMultiply(bullet_world, bullet_world,ss->world_update_base->atarihan->world);
 
 
 				manager->setEffectImplWorld(ss->effect_impl_id,&bullet_world);
@@ -148,7 +148,14 @@ void WeaponEffectManager::update(float dt) {
 	CS::instance()->leave(CS_RENDERDATA_CS, "update effect impl");
 }
 
-void WeaponEffectManager::makeWeaponEffect(char* effect_name, float alive_time, bool is_world_update, MYMATRIX* world, AtariBase* world_update_base, MeshBone* fire_bone) {
+void WeaponEffectManager::killEffectNow(WeaponEffectStruct* effe) {
+	if (effe->is_use) {
+		effe->now_time = effe->alive_time + 1;
+		return;
+	}
+}
+
+WeaponEffectStruct* WeaponEffectManager::makeWeaponEffect(char* effect_name, float alive_time, bool is_world_update, MYMATRIX* world, AtariBase* world_update_base, MeshBone* fire_bone) {
 
 	bool has_unused = false;
 	WeaponEffectStruct* sss=0;
@@ -199,5 +206,5 @@ void WeaponEffectManager::makeWeaponEffect(char* effect_name, float alive_time, 
 		effect_structs.push_back(sss);
 	}
 
-
+	return sss;
 }

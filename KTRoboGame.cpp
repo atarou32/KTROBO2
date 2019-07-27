@@ -542,6 +542,7 @@ bool Game::Init(HWND hwnd) {
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER,"resrc/script/effect/EFFECT_bakuhatu.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER,"resrc/script/effect/EFFECT_boosterhi.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER,"resrc/script/effect/EFFECT_boostertaiki.lua");
+	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bulletkagayaki.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponrifle.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponbazooka.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponlaserrifle.lua");
@@ -1382,7 +1383,7 @@ void Game::Run() {
 	effect_suuji->update(&lookfromtoat);
 	CS::instance()->leave(CS_RENDERDATA_CS, "unko");
 	effect_managers->update(frameTime, (int)frame);
-	weapon_effect_manager->update(frameTime);
+	//weapon_effect_manager->update(frameTime);
 	OBB rec;
 	rec.c = MYVECTOR3(0, 0, 0);
 	//g->drawOBBFill(g, 0xFFFF0000, &idenmat, &view, g->getProj(), &rec);

@@ -126,7 +126,7 @@ void Bullet::update(Graphics* g, AtariHantei* hantei, float dsecond, int stamp) 
 		// rotx roty rotz を計算する必要がある // setworldを作ることで対応 bool calcworldをつけるようにした
 		//atarihan->setXYZ(rand() %1000/10.0,rand() % 1000/10.0,rand() %10000/10.0);//test,test2,0);
 		atarihan->setWorld(&world);
-		atarihan->setDT(dsecond);
+		atarihan->setDT(atarihan->dt+dsecond);
 		atarihan->calcJyusinAndR(false);
 
 		mesh_i->setWorld(&world);
@@ -146,7 +146,7 @@ void BulletController::atariShori(Game* game, AtariHantei* hantei, MYMATRIX* vie
 	
 	int temp = hantei->getAnsWaza(kuwasiku,2048);
 	for (int i=0;i<temp;i++) {
-		if (kuwasiku[i].aite_umesh && kuwasiku[i].my_umesh) {
+		if (kuwasiku[i].aite_umesh && kuwasiku[i].my_umesh && (kuwasiku[i].aite_type != AtariUnit::AtariType::ATARI_WAZA)) {
 			MeshInstanced * mm = bullets[umesh_id_to_bullet_indexs[kuwasiku[i].my_umesh->getUMESHID()]].mesh_i;
 			Bullet* b = &bullets[umesh_id_to_bullet_indexs[kuwasiku[i].my_umesh->getUMESHID()]];
 			if (b->getIsUse() && b->getAtariJyunbi() && b->robo && (b->robo->atarihan != kuwasiku[i].aite)) {
@@ -175,10 +175,13 @@ void BulletController::atariShori(Game* game, AtariHantei* hantei, MYMATRIX* vie
 						WeaponEffect::butukariShoriS(b->robo_parts, game, b->robo, aite_robo, b);
 					}
 					// 当たり判定がおきるのをふせぐためにランダムに移動させる
-					b->atarihan->setXYZ((rand() % 256) / 256 * 100, (rand() % 256) / 256 * 100, (rand() % 256) / 256 * 100);
+					b->atarihan->setXYZ((rand() % 256) / 256.0 * 100, (rand() % 256) / 256.0 * 100, (rand() % 256) / 256.0 * 100);
 					b->atarihan->calcJyusinAndR(true);
 					b->setIsUse(false);
 					mm->setColor(&color);
+					if (b->mesh_i) {
+						b->mesh_i->setIsRender(false);
+					}
 					//game->getSound()->playCue("se_maoudamashii_explosion03");
 					/*
 					Bullet* bb = this->getEmptyBullet();
@@ -200,7 +203,10 @@ void BulletController::atariShori(Game* game, AtariHantei* hantei, MYMATRIX* vie
 		//	bullets[umesh_id_to_bullet_indexs[kuwasiku[i].my_umesh->getUMESHID()]].mesh_i->setIsRender(false);
 		//}
 	}
-
+	//dt をクリアする
+	for (int i = 0; i < KTROBO_BULLET_CONTROLLER_BULLET_NUM; i++) {
+		bullets[i].atarihan->setDT(0);
+	}
 }
 
 void BulletController::byouga(Graphics* g, MYMATRIX* view, MYMATRIX* proj, float dsecond, int stamp) {

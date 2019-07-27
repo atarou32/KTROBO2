@@ -62,11 +62,12 @@ void Gamen_MISSION::setView(MYMATRIX* world, float R, float dsecond) {
 
 
 
-
 	float offset = 1;
 	float maxspeed = 1.57 / 2.0f*3; // Å‘å‘¬“x
+
+	//lookfromspeed = maxspeed / 10.0f;
 	if (vec.float3.z > 0.8f) {//0.5
-		maxspeed *= 1000.0f;
+		//maxspeed *= 1000.0f;
 		lookfromspeed = maxspeed;
 		offset = 6;
 	}
@@ -95,7 +96,7 @@ void Gamen_MISSION::setView(MYMATRIX* world, float R, float dsecond) {
 			if (lookfromspeed > maxspeed) {
 				lookfromspeed = maxspeed;
 			}
-		lookfrom = lookfrom + dlookfrom * kyori/dkyori;
+	//	lookfrom = lookfrom + dlookfrom * kyori/dkyori;
 		} else {
 			lookfromspeed += maxspeed /10.0f;
 			if (lookfromspeed > maxspeed) {
@@ -104,14 +105,14 @@ void Gamen_MISSION::setView(MYMATRIX* world, float R, float dsecond) {
 			lookfrom = lookfrom + dlookfrom/ 10.0f*offset;// temp_lookfrom;
 		}
 	} else {
-		lookfromspeed /= 1.1f;
+		lookfromspeed /= 3.1f;
 	}
 
 
 
 	maxspeed = 1.57/1.0f*100.0f;
 	if (vec.float3.z > 0.8f) {//0.5
-		maxspeed *= 100.0f;
+		//maxspeed *= 100.0f;
 		lookatspeed = maxspeed;
 	}
 	speed = lookatspeed;
@@ -138,7 +139,7 @@ void Gamen_MISSION::setView(MYMATRIX* world, float R, float dsecond) {
 			if (lookatspeed > maxspeed) {
 				lookatspeed = maxspeed;
 			}
-			lookat = lookat + dk * kyori/dkyor;
+//			lookat = lookat + dk * kyori/dkyor;
 		}else  {
 			lookatspeed += maxspeed / 10.0f;
 			if (lookatspeed > maxspeed) {
@@ -148,7 +149,7 @@ void Gamen_MISSION::setView(MYMATRIX* world, float R, float dsecond) {
 
 		}
 	} else {
-		lookatspeed /= 1.1f;
+		lookatspeed /= 3.1f;
 	}
 	
 /*
@@ -609,6 +610,7 @@ void Gamen_MISSION::posButukari(Graphics* g, Scene* scene, Game* game, AtariHant
 	if (bullet_c) {
 	//	DebugTexts::instance()->setText(g,8,L"bullet c");
 		bullet_c->update(g,hantei,dsecond, stamp);
+		game->weapon_effect_manager->update(dsecond);
 		game->watches_for_keisoku.startWatch(2);
 
 	game->watches_for_keisoku.startWatch(5);

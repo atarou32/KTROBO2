@@ -433,10 +433,10 @@ hantei->setUMeshUnit(umesh_unit, AtariUnit::AtariType::ATARI_CHARA);
 
 			umesh_unit->calcAnimeFrame(1,&frame_anime,&tyo_unko);
 			umesh_unit->calcJyusinAndR();
-	//hantei->setUMeshUnit(umesh_unit, AtariUnit::AtariType::ATARI_TIKEI);
+	hantei->setUMeshUnit(umesh_unit, AtariUnit::AtariType::ATARI_TIKEI);
 	
 	
-
+			return;
 
 
 

@@ -48,6 +48,7 @@ Robo::Robo(void)
 	target = MYVECTOR3(0,0,0);
 	kabe_housen = MYVECTOR3(0,0,1);
 	is_fireraweapon = false;
+	is_firelaweapon = false;
 	jump_f_z = 0;
 	jump_f_z_kabe = 0;
 	updown_muki = 0;
@@ -1189,17 +1190,20 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 				if (updot > 0.6) {
 					MYVECTOR3 pos(atarihan->x  - kouten_jyusin.float3.x, atarihan->y - kouten_jyusin.float3.y
 						, atarihan->z - kouten_jyusin.float3.z);
-					if (MyVec3Length(pos) < atarihan->r) {
+				/*	if (MyVec3Length(pos) < atarihan->r) {
 						setdayo = true;
 						setti_state = &setti;
-					}
+						//vdayo = 0;
+					}*/
 				}
 				if ((move_state->isBoosterHi() || (0.2 < MyVec3Length(atarihan->v))) && (updot <0.7)) {
 					if (abs(dx) + abs(dy) + abs(dz) < atarihan->r*0.5) {
-
+						
 						dx += kouten_housen.float3.x * 0.02f;
 						dy += kouten_housen.float3.y * 0.02f;
-						dz += kouten_housen.float3.z * 0.02f;
+						//if (!setdayo) {
+							dz += kouten_housen.float3.z * 0.02f;
+						//}
 					}
 				//	if (move_state->isBoosterHi()) {
 				//		move_state->leave(this, &movestop, move_state);
@@ -1286,7 +1290,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 					}
 					else {
 						dz += min(0.05f, abs(sa.float3.z));
-						atarihan->setV(&MYVECTOR3(atarihan->v.float3.x, atarihan->v.float3.y, abs(atarihan->v.float3.z)));
+					//	atarihan->setV(&MYVECTOR3(atarihan->v.float3.x, atarihan->v.float3.y, abs(atarihan->v.float3.z)));
 
 					}
 					//vdayo = 0;
@@ -1524,14 +1528,16 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 		}
 		else {
 			atarihan->setXYZD(atarihan->x + dx, atarihan->y + dy, atarihan->z,1.55);
+			//atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z+dz, 0.15);
 			//if (no_z) {}
 			//else {
-				atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + dz, 15.055f);
 			//}
 		
 			if (ato_setdayo) {
 				setdayo = true;
 				setti_state = &setti;
+				atarihan->setXYZD(atarihan->x, atarihan->y, atarihan->z + dz, 15.055f);
+
 			}
 
 			
@@ -1830,7 +1836,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 	if (MyVec3Length(atarihan->v) > 5) {// seigen
 		atarihan->setV(&MYVECTOR3(0, 0, 0));// atarihan->v.float3.x / 1.5f, atarihan->v.float3.y / 1.5f, atarihan->v.float3.z / 1.5f));
 	}
-
+	
 	if (setdayo == true) {
 		setti_jizoku_count = 1;
 		setno_jizoku_count = 0;
@@ -1859,7 +1865,7 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 			}
 		}
 	}
-
+	
 
 
 
@@ -1946,10 +1952,10 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 		vdayo = atarihan->v.float3.z;
 		if (booster_state != &boostoff) {
 			// ƒu[ƒXƒ^‚ª‚È‚Á‚Ä‚é‚Ì‚Å
-			atarihan->setV(&MYVECTOR3(atarihan->v.float3.x, atarihan->v.float3.y, -0.0002f));
+			atarihan->setV(&MYVECTOR3(atarihan->v.float3.x, atarihan->v.float3.y, -0.002f));
 			vdayo = atarihan->v.float3.z;
 		} else {
-			vdayo = vdayo - 0.000098*dt;
+			vdayo = vdayo - 0.000098*dt*2;
 		
 		}
 
@@ -2054,8 +2060,12 @@ void Robo::atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt
 	//ob2->e = ob2->e * 1.3;
 	*/
 
-
-	raweapon->wf_rifle.update(dt,stamp);
+	if (raweapon) {
+		raweapon->wf_rifle.update(dt, stamp);
+	}
+	if (laweapon) {
+		laweapon->wf_rifle.update(dt, stamp);
+	}
 	this->calcWorldWithoutRotX();
 	muki = MYVECTOR3(0, -1, 0);
 	MyVec3TransformNormal(muki, muki, atarihan->world);
@@ -2100,7 +2110,7 @@ void Robo::aim(Graphics* g, Texture* tex2,MYMATRIX* view) {
 
 	if (ap2) {
 		ap2->setTarget(&target);
-		for (int i = 0; i < 15; i++) {
+		for (int i = 0; i < 5; i++) {
 			ap2->calc(g, view, true);
 
 			if (raweapon) {
@@ -2112,7 +2122,7 @@ void Robo::aim(Graphics* g, Texture* tex2,MYMATRIX* view) {
 	if (ap2_hidari) {
 		ap2_hidari->setTarget(&target);
 		//ap2_hidari->calc(g,view, false);
-		for (int i = 0; i < 15; i++) {
+		for (int i = 0; i < 5; i++) {
 			ap2_hidari->calc(g, view, false);
 
 			if (laweapon) {
@@ -4388,6 +4398,12 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 			else {
 				is_fireraweapon = false;
 			}
+			if (input->getKEYSTATE()['Y'] & KTROBO_INPUT_BUTTON_PRESSED) {
+				is_firelaweapon = true;
+			}
+			else {
+				is_firelaweapon = false;
+			}
 			if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
 				if (input->getKEYSTATE()['F'] & KTROBO_INPUT_BUTTON_DOWN) {
 					if (booster_state == &boostoff) {
@@ -4792,6 +4808,12 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 			else {
 				is_fireraweapon = false;
 			}
+			if (input->getKEYSTATE()['Y'] & KTROBO_INPUT_BUTTON_PRESSED) {
+				is_firelaweapon = true;
+			}
+			else {
+				is_firelaweapon = false;
+			}
 			if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
 				if (input->getKEYSTATE()['F'] & KTROBO_INPUT_BUTTON_DOWN) {
 					if (booster_state == &boostoff) {
@@ -4825,6 +4847,12 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 			}
 			else {
 				is_fireraweapon = false;
+			}
+			if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_FIRE_LARM) & KTROBO_INPUT_BUTTON_DOWN) {
+				is_firelaweapon = true;
+			}
+			else {
+				is_firelaweapon = false;
 			}
 			
 			if (input->getMSGID() == KTROBO_INPUT_MESSAGE_ID_GAMEPAD_BUTTON) {
@@ -5110,6 +5138,12 @@ bool Robo::handleMessage(int msg, void* data, DWORD time) {
 			}
 			else {
 				is_fireraweapon = false;
+			}
+			if (input->gamepadstate.getStateAsButton(KTROBO_GAMEPAD_CONFIG_STATE_FIRE_LARM) & KTROBO_INPUT_BUTTON_DOWN) {
+				is_firelaweapon = true;
+			}
+			else {
+				is_firelaweapon = false;
 			}
 			if (input->getMSGID() == KTROBO_INPUT_MESSAGE_ID_GAMEPAD_BUTTON) {
 				//if (msg == KTROBO_INPUT_MESSAGE_ID_KEYDOWN) {
@@ -5646,7 +5680,7 @@ void RoboMovingState_JUMP::enter(Robo* robo, RoboState* now_state, RoboState* be
 	RoboState::enter(robo,now_state,before_state);
 	robo->anime_loop_leg.setAnime(105,115,false);
 	robo->atarihan->setV(&MYVECTOR3(0,0,0.019f));
-	robo->jump_f_z = 0.000019f;
+	robo->jump_f_z = 0.00019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
 void RoboMovingState_JUMP::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {
@@ -5676,7 +5710,7 @@ void RoboMovingState_FORWARDJUMP::enter(Robo* robo, RoboState* now_state, RoboSt
 	MyVec3TransformNormal(ve,ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
 	MyVec3Normalize(ve,ve);
 	robo->atarihan->setV(&(MYVECTOR3(0,0,0.019f)+ve * 0.02f));
-	robo->jump_f_z = 0.000019f;
+	robo->jump_f_z = 0.00019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
 void RoboMovingState_FORWARDJUMP::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {
@@ -5709,7 +5743,7 @@ void RoboMovingState_BACKJUMP::enter(Robo* robo, RoboState* now_state, RoboState
 	MyVec3TransformNormal(ve,ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
 	MyVec3Normalize(ve,ve);
 	robo->atarihan->setV(&(MYVECTOR3(0,0,0.019f)+ve * 0.02f));
-	robo->jump_f_z = 0.000019f;
+	robo->jump_f_z = 0.00019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
 void RoboMovingState_BACKJUMP::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {
@@ -5741,7 +5775,7 @@ void RoboMovingState_LEFTJUMP::enter(Robo* robo, RoboState* now_state, RoboState
 	MyVec3TransformNormal(ve,ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
 	MyVec3Normalize(ve,ve);
 	robo->atarihan->setV(&(MYVECTOR3(0,0,0.019f)+ve * 0.02f));
-	robo->jump_f_z = 0.000019f;
+	robo->jump_f_z = 0.00019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
 void RoboMovingState_LEFTJUMP::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {
@@ -5773,7 +5807,7 @@ void RoboMovingState_RIGHTJUMP::enter(Robo* robo, RoboState* now_state, RoboStat
 	MyVec3TransformNormal(ve,ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
 	MyVec3Normalize(ve,ve);
 	robo->atarihan->setV(&(MYVECTOR3(0,0,0.019f)+ve * 0.02f));
-	robo->jump_f_z = 0.000019f;
+	robo->jump_f_z = 0.00019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y , robo->atarihan->z + 0.01f);
 }
 void RoboMovingState_RIGHTJUMP::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {
@@ -6320,7 +6354,7 @@ void RoboState::enter(Robo* robo, RoboState* now_state, RoboState* before_state)
 void Robo::fireUpdate(Graphics* g, Game* game, Scene* scene,BulletController* bullet_c, AtariHantei* hantei, float dt, int stamp) {
 
 
-	if (is_fireraweapon) {
+	if (is_fireraweapon && raweapon) {
 
 		// bullet_world ‚ÌŽZo
 		MYVECTOR3 bullet_pos(0,0,0);
@@ -6332,7 +6366,7 @@ void Robo::fireUpdate(Graphics* g, Game* game, Scene* scene,BulletController* bu
 		MyVec3TransformCoord(bullet_pos,bullet_pos,bullet_world);
 		MyVec3TransformNormal(bullet_vec,bullet_vec,bullet_world);
 		MyVec3Normalize(bullet_vec,bullet_vec);
-		bullet_vec = bullet_vec * 0.11;//0.07
+		bullet_vec = bullet_vec * 0.31;//0.07
 
 		// bullet_vec ‚ÌŽZo
 
@@ -6340,6 +6374,29 @@ void Robo::fireUpdate(Graphics* g, Game* game, Scene* scene,BulletController* bu
 
 
 		raweapon->wf_rifle.fire(this, raweapon, g,game,scene, bullet_c, hantei, game->getSound(),&bullet_world,&bullet_vec, &bullet_pos,bone);
+	}
+
+
+	if (is_firelaweapon && laweapon) {
+
+		// bullet_world ‚ÌŽZo
+		MYVECTOR3 bullet_pos(0, 0, 0);
+		MYVECTOR3 bullet_vec(0, 0, 1);
+		MYMATRIX bullet_world;
+		MeshBone* bone = laweapon->weapon->Bones[laweapon->weapon->BoneIndexes["fireBone"]];
+		MyMatrixMultiply(bullet_world, bone->matrix_local, bone->combined_matrix);        //umesh_unit->meshs[0]->mesh->Bones[umesh_unit->meshs[0]->mesh->BoneIndexes["hidariteBone"]]->matrix_local,umesh_unit->meshs[0]->mesh->Bones[umesh_unit->meshs[0]->mesh->BoneIndexes["hidariteBone"]]->combined_matrix);
+		MyMatrixMultiply(bullet_world, bullet_world, atarihan->world);
+		MyVec3TransformCoord(bullet_pos, bullet_pos, bullet_world);
+		MyVec3TransformNormal(bullet_vec, bullet_vec, bullet_world);
+		MyVec3Normalize(bullet_vec, bullet_vec);
+		bullet_vec = bullet_vec * 0.31;//0.07
+
+		// bullet_vec ‚ÌŽZo
+
+		// bullet_pos ‚ÌŽZo
+
+
+		laweapon->wf_rifle.fire(this, laweapon, g, game, scene, bullet_c, hantei, game->getSound(), &bullet_world, &bullet_vec, &bullet_pos, bone);
 	}
 
 }
@@ -6872,7 +6929,7 @@ void RoboMovingState_GAMEPAD_JUMP::enter(Robo* robo, RoboState* now_state, RoboS
 	MyVec3TransformNormal(ve, ve, *robo->getWorldWithoutRotX());//robo->atarihan->world);
 	MyVec3Normalize(ve, ve);
 	robo->atarihan->setV(&(MYVECTOR3(0, 0, 0.019f) + ve * 0.02f));
-	robo->jump_f_z = 0.000019f;
+	robo->jump_f_z = 0.00019f;
 	robo->atarihan->setXYZ(robo->atarihan->x, robo->atarihan->y, robo->atarihan->z + 0.01f);
 }
 void RoboMovingState_GAMEPAD_JUMP::leave(Robo* robo, RoboState* now_state, RoboState* before_state) {

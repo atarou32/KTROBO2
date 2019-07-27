@@ -591,6 +591,7 @@ class LArmWeapon : public RoboParts{
 public:
 	Mesh* weapon;
 //	RoboData* data;
+	WeaponFireRifle wf_rifle;
 public:
 	LArmWeapon() {
 		weapon = 0;
@@ -1833,6 +1834,7 @@ public:
 
 	MYVECTOR3 target;
 	bool is_fireraweapon;
+	bool is_firelaweapon;
 
 	void remakeUMesh(Graphics* g, MyTextureLoader* tex_loader);
 	void settyakuRArmWeaponWithArm();

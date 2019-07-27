@@ -54,9 +54,13 @@ void WeaponEffect::Del() {
 
 
 
-void WE_Rifle::fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) {
+void WE_Rifle::fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) {
 	game->getSound()->playCue("se_maoudamashii_battle08");
 	game->weapon_effect_manager->makeWeaponEffect("bakuhatu", 800,true, robo_world, robo,fire_bone);
+	MYMATRIX ww;
+	bullet->mesh_i->getWorld(&ww);
+	bullet->setWES(game->weapon_effect_manager->makeWeaponEffect("bulletkagayaki", 10000, true, &ww, bullet, bullet->atarihan->meshs[0]->mesh->Bones[0]));
+
 
 }
 
@@ -78,7 +82,7 @@ void WE_Rifle::butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3*
 }
 
 void WE_Rifle::butukariShori(Game* game, Robo* robo, Robo* aite, Bullet* bullet) {
-	
+	game->weapon_effect_manager->killEffectNow(bullet->getWES());
 }
 
 void WE_Rifle::bulletMoveControl(Game* game, Robo* aite, Bullet* bullet) {
@@ -86,7 +90,7 @@ void WE_Rifle::bulletMoveControl(Game* game, Robo* aite, Bullet* bullet) {
 
 }
 
-void WE_LaserRifle::fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) {
+void WE_LaserRifle::fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) {
 
 }
 
@@ -103,7 +107,7 @@ void WE_LaserRifle::bulletMoveControl(Game* game, Robo* aite, Bullet* bullet) {
 }
 
 
-void WE_Bazooka::fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) {
+void WE_Bazooka::fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) {
 
 }
 
@@ -121,7 +125,7 @@ void WE_Bazooka::bulletMoveControl(Game* game, Robo* aite, Bullet* bullet) {
 }
 
 
-void WE_Pulsegun::fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) {
+void WE_Pulsegun::fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) {
 
 }
 
@@ -183,7 +187,7 @@ WeaponEffect* WeaponEffect::getWE(RoboParts* weapon) {
 
 }
 
-void WeaponEffect::fireEffectS(RoboParts* weaponparts,Game* game, Robo* robo, MYVECTOR3* pos, AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) {
+void WeaponEffect::fireEffectS(RoboParts* weaponparts,Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) {
 
 	getWE(weaponparts)->fireEffect(game, robo,pos , bullet, vec,robo_world,fire_bone);
 }

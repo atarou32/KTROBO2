@@ -26,13 +26,13 @@ public:
 	static void Init(WeaponEffectManager* w);
 	static void Del();
 
-	virtual void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos,  AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) = 0;
+	virtual void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos,  Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) = 0;
 	virtual void butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec) = 0;
 	virtual void butukariShori(Game* game, Robo* robo, Robo* aite, Bullet* bullet) = 0;
 	virtual void bulletMoveControl(Game* game, Robo* aite, Bullet* bullet) = 0;
 	virtual char* getBulletMeshIndexName()=0;
 
-	static void fireEffectS(RoboParts* weaponparts, Game* game, Robo* robo, MYVECTOR3* pos, AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
+	static void fireEffectS(RoboParts* weaponparts, Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
 	static void butukariEffectS(RoboParts* weaponparts, Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec);
 	static void butukariShoriS(RoboParts* weaponparts, Game* game, Robo* robo, Robo* aite, Bullet* bullet);
 	static void bulletMoveControlS(RoboParts* weaponparts, Game* game, Robo* aite, Bullet* bullet);
@@ -49,7 +49,7 @@ public:
 	};
 	~WE_Rifle() {};
 
-	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
+	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
 	void butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec);
 	void butukariShori(Game* game, Robo* robo, Robo* aite, Bullet* bullet);
 	void bulletMoveControl(Game* game, Robo* aite, Bullet* bullet);
@@ -65,7 +65,7 @@ public:
 	};
 	~WE_LaserRifle() {};
 
-	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
+	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
 	void butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec);
 	void butukariShori(Game* game, Robo* robo, Robo* aite, Bullet* bullet);
 	void bulletMoveControl(Game* game, Robo* aite, Bullet* bullet);
@@ -81,7 +81,7 @@ public:
 	};
 	~WE_Bazooka() {};
 
-	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
+	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
 	void butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec);
 	void butukariShori(Game* game, Robo* robo, Robo* aite, Bullet* bullet);
 	void bulletMoveControl(Game* game, Robo* aite, Bullet* bullet);
@@ -97,7 +97,7 @@ public:
 	};
 	~WE_Pulsegun() {};
 
-	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, AtariBase* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
+	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
 	void butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec);
 	void butukariShori(Game* game, Robo* robo, Robo* aite, Bullet* bullet);
 	void bulletMoveControl(Game* game, Robo* aite, Bullet* bullet);
