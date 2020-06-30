@@ -121,7 +121,8 @@ public:
 		ATARI_TIKEI=0, // 地形はすべての面と当たり判定を行う
 		ATARI_OBJECT=1, // オブジェクトは包括直方体(ボーンごと)と当たり判定を行う
 		ATARI_CHARA=2, // キャラクターは包括直方体(ボーンごと）と当たり判定を行う
-		ATARI_WAZA=3 // キャラクターの攻撃の技の判定 // ここをかきかえるときはshaderも書き換える
+		ATARI_WAZA=3, // キャラクターの攻撃の技の判定 // ここをかきかえるときはshaderも書き換える
+		ATARI_NONE=4 // あたらない
 	};
 
 	AtariType type;
@@ -268,13 +269,34 @@ public:
 
 };
 
+class Game;
+
 class AtariBase {
+protected: 
+	bool setdayo_formoveshori;
+	bool setkabedayo_formoveshori;
+	bool istenjyou_formoveshori;
+	float vdayo_formoveshori;
+	MYVECTOR3 atari_offsetdayo;
 public:
 	UMeshUnit* atarihan;
 public:
-	AtariBase(){};
+	AtariBase() { atari_offsetdayo = MYVECTOR3(0, 0, 0);  setdayo_formoveshori = false; istenjyou_formoveshori = false; setkabedayo_formoveshori = false; vdayo_formoveshori = 0; };
 	virtual ~AtariBase(){};// Atarihanの処理は子のクラスでやる
-
+	virtual void atarishori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt, int stamp) {};
+	virtual void moveshori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt, int stamp) {};
+	virtual void render(Graphics* g, Game* game, MYMATRIX* view, MYMATRIX* proj, float dt, int stamp) {};
+	void setSetDayo(bool s) { setdayo_formoveshori = s; };
+	void setSetKabeDayo(bool s) { setkabedayo_formoveshori = s; };
+	void setVdayo(float s) {
+		vdayo_formoveshori = s; 
+	};
+	void setAtariOffsetDayo(float x, float y, float z) {
+		atari_offsetdayo = MYVECTOR3(x, y, z);
+	};
+	void getAtariOffsetDayo(MYVECTOR3* pp) {
+		*pp = atari_offsetdayo;
+	};
 };
 
 
@@ -472,6 +494,7 @@ private:
 	AtariUnitInfo* au_info;
 	AtariUnitKumi* kumi;
 	AtariUnitAns* ans;
+	
 	AtariUnitOBB* obbs;
 	AtariUnitTikeiIgaiDousi* autid;
 	AtariUnitTikeiToSoreigai* autts;

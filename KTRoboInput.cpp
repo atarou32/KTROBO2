@@ -72,7 +72,7 @@ void Input::Init(HWND hwnd) {
     RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
 
 	HRESULT hr = InputGamePad::getInstance()->InitDirectInput(hwnd);
-	if (FAILED(hr)) throw GameError(KTROBO::FATAL_ERROR, "no gamepad");
+//	if (FAILED(hr)) throw GameError(KTROBO::FATAL_ERROR, "no gamepad");
 
 
 
@@ -103,7 +103,7 @@ LRESULT CALLBACK Input::myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARA
 
 
 
-
+/*
 	case WM_ACTIVATE:
 		if (WA_INACTIVE != wParam)
 		{
@@ -111,11 +111,11 @@ LRESULT CALLBACK Input::myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARA
 			InputGamePad::getInstance()->acquire();
 		}
 		break;
-
+		*/
 	case WM_TIMER:
 		// Update the input device every timer message
 		CS::instance()->enter(CS_MESSAGE_CS, "enter message make");
-		if (FAILED(InputGamePad::getInstance()->UpdateInputState(hWnd)))
+		if (FAILED(InputGamePad::getInstance()->UpdateInputState(hWnd)) || !InputGamePad::getInstance()->getPJOYSTICK())
 		{
 	//		KillTimer(hDlg, 0);
 	//		MessageBox(NULL, TEXT("Error Reading Input State. ") \
@@ -123,6 +123,25 @@ LRESULT CALLBACK Input::myWndProc( HWND hWnd, UINT message, WPARAM wParam, LPARA
 	//			MB_ICONERROR | MB_OK);
 	//		EndDialog(hDlg, TRUE);
 		//	mylog::writelog(KTROBO::INFO, "update input gamepad failed\n");
+			static int failed_count = 0;
+			if (InputGamePad::getInstance()->getPJOYSTICK()) {
+				InputGamePad::getInstance()->FreeDirectInput();
+				InputGamePad::getInstance()->setPJOYSTICK(NULL);
+			}
+
+			failed_count++;
+			/*
+			int test = failed_count % 160;
+			if (test == 0) {
+				// 再接続を試みる
+				InputGamePad::getInstance()->FreeDirectInput();
+
+				if (FAILED(InputGamePad::getInstance()->InitDirectInput(hWnd))) {
+					InputGamePad::getInstance()->FreeDirectInput();
+				}
+			}
+			*/
+			CS::instance()->leave(CS_MESSAGE_CS, "enter message make");
 			break;
 
 		}
@@ -1084,7 +1103,7 @@ void Input::saveGamePadRule() {
 void Input::loadGamePadRule() {
 
 	// もしゲームパッドがあれば
-	if (InputGamePad::getInstance()->getPJOYSTICK()) {
+	//if (InputGamePad::getInstance()->getPJOYSTICK()) {
 
 		FILE* fi;
 		const char* filename = "userdata/gamepad.myconfig";
@@ -1124,7 +1143,7 @@ void Input::loadGamePadRule() {
 
 			ma.deletedayo();
 		}
-	}
+	//}
 }
 
 

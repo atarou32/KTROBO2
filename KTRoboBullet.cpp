@@ -5,7 +5,7 @@
 #endif
 #include "KTRoboWeaponEffect.h"
 #include "KTRoboMap.h"
-
+#include "KTRoboEntity.h"
 
 using namespace KTROBO;
 Bullet::~Bullet() {
@@ -113,14 +113,18 @@ void Bullet::byouga(Graphics* g, MYMATRIX* view, MYMATRIX* proj, float dsecond, 
 }
 
 
-void Bullet::update(Graphics* g, AtariHantei* hantei, float dsecond, int stamp) {
+void Bullet::update(Graphics* g, Game* gg, AtariHantei* hantei, float dsecond, int stamp) {
 	if(mesh_i && is_fired && is_use){
 		
 		setAtariJyunbi(true);
 		MYMATRIX world = shoki_world;
 		MYMATRIX dpos_wor;
+		dtime = dtime + dsecond;
 
 		dpos = dpos + atarihan->v* dsecond;
+		this->fire_distance = MyVec3Length(dpos);
+		MYVECTOR3 temp_pos = dpos + this->h_pos;
+		atarihan->setXYZ(temp_pos.float3.x, temp_pos.float3.y, temp_pos.float3.z);
 		MyMatrixTranslation(dpos_wor, dpos.float3.x,dpos.float3.y,dpos.float3.z);
 		MyMatrixMultiply(world,world,dpos_wor);
 		// rotx roty rotz を計算する必要がある // setworldを作ることで対応 bool calcworldをつけるようにした
@@ -132,14 +136,83 @@ void Bullet::update(Graphics* g, AtariHantei* hantei, float dsecond, int stamp) 
 		mesh_i->setWorld(&world);
 		//mesh_i->setIsRender(true);
 
+		WeaponEffect::bulletMoveControlS(robo_parts, gg, this->aite_robo, this);
+
 	} else if(mesh_i) {
-	
+		dtime = 0;
+	}
+	else {
+		dtime = 0;
 	}
 
 }
 
 
+void BulletController::atariShoriForEntity(EntityManager* e_manager, Game* game, AtariHantei* hantei, MYMATRIX* view, float dsecond, int stamp) {
+	AtariUnitAnsKWSK kuwasiku[2048];
+	int temp = hantei->getAnsWaza(kuwasiku, 2048);
+	for (int i = 0; i < temp; i++) {
+		if (kuwasiku[i].aite_umesh && kuwasiku[i].my_umesh && (kuwasiku[i].aite_type != AtariUnit::AtariType::ATARI_WAZA)) {
+			MeshInstanced * mm = bullets[umesh_id_to_bullet_indexs[kuwasiku[i].my_umesh->getUMESHID()]].mesh_i;
+			Bullet* b = &bullets[umesh_id_to_bullet_indexs[kuwasiku[i].my_umesh->getUMESHID()]];
+			if (b->getIsUse() && b->getAtariJyunbi() && b->robo && (b->robo->atarihan != kuwasiku[i].aite)) {
+				//bullets[umesh_id_to_bullet_indexs[kuwasiku[i].my_umesh->getUMESHID()]].mesh_i->setIsRender(false);
+				MYVECTOR3 kouten_jyusin = kuwasiku[i].ans->kouten_jyusin;
+				MYVECTOR3 posdayo(b->atarihan->x, b->atarihan->y, b->atarihan->z);
+				MYVECTOR3 sa;
+				MyVec3Subtract(sa, posdayo, kouten_jyusin);
+				float len = MyVec3Length(b->atarihan->v);
+				float dotdayo = MyVec3Dot(b->atarihan->v, kuwasiku[i].ans->kouten_housen);
+				if ((dotdayo < 0) || (MyVec3Length(sa) < b->atarihan->r*(20 + dsecond * len))) {
 
+					MYMATRIX worldd;
+					MYVECTOR4 color;
+					MYVECTOR3 pos(0, 0, 0);
+					MYVECTOR3 vec(0, 0, 1);
+					MyVec3TransformCoord(pos, pos, b->atarihan->world);
+					MyVec3TransformNormal(vec, vec, b->atarihan->world);
+					color.w = 1;
+					color.x = 1;
+					color.y = 1;
+					color.z = 1;
+					WeaponEffect::butukariEffectS(b->robo_parts, game, b->robo, &pos, &vec);
+					Robo* aite_robo = game->rmap->getRobo(kuwasiku[i].aite_umesh->getUMESHID());
+					//if (aite_robo) {
+					WeaponEffect::butukariShoriS(b->robo_parts, game, b->robo, aite_robo, b);
+					//}
+					if (WeaponEffect::isExpireWhenButukari(b->robo_parts, game, b->robo, b)) {
+						// 当たり判定がおきるのをふせぐためにランダムに移動させる
+						b->atarihan->setXYZ((rand() % 256) / 256.0 * 100, (rand() % 256) / 256.0 * 100, (rand() % 256) / 256.0 * 100);
+						b->atarihan->calcJyusinAndR(true);
+						b->setIsUse(false);
+						mm->setColor(&color);
+						if (b->mesh_i) {
+							b->mesh_i->setIsRender(false);
+						}
+					}
+					//game->getSound()->playCue("se_maoudamashii_explosion03");
+					/*
+					Bullet* bb = this->getEmptyBullet();
+					bb->atarihan->setWorld(&kuwasiku[i].aite->world);
+					bb->atarihan->meshs[0]->bone_obbs[0] = kuwasiku[i].aite->meshs[0]->bone_obbs[0];
+					bb->atarihan->meshs[0]->is_bone_obbs_use[0] = true;
+					*/
+					//bb->fire(game,hantei);	
+				}
+			}
+		}
+
+
+
+	}
+	//dt をクリアする
+	for (int i = 0; i < KTROBO_BULLET_CONTROLLER_BULLET_NUM; i++) {
+		bullets[i].atarihan->setDT(0);
+	}
+
+
+
+}
 
 void BulletController::atariShori(Game* game, AtariHantei* hantei, MYMATRIX* view, float dsecond, int stamp) {
 	AtariUnitAnsKWSK kuwasiku[2048];
@@ -171,17 +244,19 @@ void BulletController::atariShori(Game* game, AtariHantei* hantei, MYMATRIX* vie
 					color.z = 1;
 					WeaponEffect::butukariEffectS(b->robo_parts, game, b->robo, &pos, &vec);
 					Robo* aite_robo = game->rmap->getRobo(kuwasiku[i].aite_umesh->getUMESHID());
-					if (aite_robo) {
+					//if (aite_robo) {
 						WeaponEffect::butukariShoriS(b->robo_parts, game, b->robo, aite_robo, b);
-					}
-					// 当たり判定がおきるのをふせぐためにランダムに移動させる
-					b->atarihan->setXYZ((rand() % 256) / 256.0 * 100, (rand() % 256) / 256.0 * 100, (rand() % 256) / 256.0 * 100);
-					b->atarihan->calcJyusinAndR(true);
-					b->setIsUse(false);
-					mm->setColor(&color);
-					if (b->mesh_i) {
-						b->mesh_i->setIsRender(false);
-					}
+					//}
+						if (WeaponEffect::isExpireWhenButukari(b->robo_parts, game, b->robo, b)) {
+							// 当たり判定がおきるのをふせぐためにランダムに移動させる
+							b->atarihan->setXYZ((rand() % 256) / 256.0 * 100, (rand() % 256) / 256.0 * 100, (rand() % 256) / 256.0 * 100);
+							b->atarihan->calcJyusinAndR(true);
+							b->setIsUse(false);
+							mm->setColor(&color);
+							if (b->mesh_i) {
+								b->mesh_i->setIsRender(false);
+							}
+						}
 					//game->getSound()->playCue("se_maoudamashii_explosion03");
 					/*
 					Bullet* bb = this->getEmptyBullet();
@@ -233,13 +308,44 @@ void BulletController::byouga(Graphics* g, MYMATRIX* view, MYMATRIX* proj, float
 
 }
 
+void BulletController::killExpiredBullet(Game* game) {
+	if (bullets) {
+		for (int i = 0; i < KTROBO_BULLET_CONTROLLER_BULLET_NUM; i++) {
+			Bullet* b = &bullets[i];
+			MeshInstanced* mm = b->mesh_i;
+			MYVECTOR4 color;
+			if (b) {
+				if (b->getdtime() > BULLET_ALIVETIME_DTIME) {
 
-void BulletController::update(Graphics* g, AtariHantei* hantei, float dsecond, int stamp) {
+					
+						// 当たり判定がおきるのをふせぐためにランダムに移動させる
+						b->atarihan->setXYZ((rand() % 256) / 256.0 * 100, (rand() % 256) / 256.0 * 100, (rand() % 256) / 256.0 * 100);
+						b->atarihan->calcJyusinAndR(true);
+						b->setIsUse(false);
+						color.w = 1;
+						color.x = 1;
+						color.y = 1;
+						color.z = 1;
+						if (b->mesh_i) {
+							mm->setColor(&color);
+							b->mesh_i->setIsRender(false);
+						}
+					
+					WeaponEffect::butukariShoriS(b->robo_parts, game, b->robo, NULL, b);
+				
+				}
+			}
+		}
+	}
+}
+void BulletController::update(Graphics* g,Game* gg, AtariHantei* hantei, float dsecond, int stamp) {
 	if (bullets) {
 	for (int i=0;i<KTROBO_BULLET_CONTROLLER_BULLET_NUM;i++) {
-		bullets[i].update(g,hantei, dsecond, stamp);
+		bullets[i].update(g,gg, hantei, dsecond, stamp);
 	}
+	killExpiredBullet(gg);
 	}
+
 }
 
 
@@ -252,10 +358,10 @@ BulletController::BulletController() {
 
 BulletController::~BulletController() {
 }
-void BulletController::Init(Graphics* g, AtariHantei* hantei, MyTextureLoader* loader) {
+void BulletController::Init(Graphics* g, AtariHantei* hantei, MyTextureLoader* loader, MeshInstanceds* maemis) {
 
 	this->hantei = hantei;
-
+	mis = maemis;
 	if (!dummy_mesh) {
 		dummy_mesh = new Mesh();
 		dummy_mesh->readMesh(g, KTROBO_BULLET_MESH_DUMMY_FILENAME,loader);
@@ -280,7 +386,21 @@ void BulletController::Init(Graphics* g, AtariHantei* hantei, MyTextureLoader* l
 		mm->animate(0,true);
 		bullet_mesh_index.insert(std::pair<string,int>(string(KTROBO_BULLET_MESH_LASERRIFLE_INDEXNAME),1));
 
+		Mesh* mmm = new Mesh();
+		mmm->readMesh(g, KTROBO_BULLET_MESH_SNIPERRIFLE_FILENAME, loader);
+		mmm->readAnime(KTROBO_BULLET_MESH_ANIME_SNIPERRIFLE_FILENAME);
+		bullet_meshs.push_back(mmm);
+		MyMatrixScaling(mmm->rootbone_matrix_local_kakeru, 1.2f, 1.2f, 1.2f);
+		mmm->animate(0, true);
+		bullet_mesh_index.insert(std::pair<string, int>(string(KTROBO_BULLET_MESH_SNIPERRIFLE_INDEXNAME), 2));
 
+		Mesh* mmmm = new Mesh();
+		mmmm->readMesh(g, KTROBO_BULLET_MESH_ENERGYBLADE_FILENAME, loader);
+		mmmm->readAnime(KTROBO_BULLET_MESH_ANIME_ENERGYBLADE_FILENAME);
+		bullet_meshs.push_back(mmmm);
+		MyMatrixScaling(mmmm->rootbone_matrix_local_kakeru, 1.2f, 1.2f, 1.2f);
+		mmmm->animate(0, true);
+		bullet_mesh_index.insert(std::pair<string, int>(string(KTROBO_BULLET_MESH_ENERGYBLADE_INDEXNAME), 3));
 
 
 	}

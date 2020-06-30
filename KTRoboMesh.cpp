@@ -636,7 +636,7 @@ void Mesh::readMeshOnlyForSaveVertexIndex(Graphics* g, char* filename, MyTexture
 			}
 
 			vertexs = new MESH_VERTEX[VertexCount];
-			memset( vertexs , 0, sizeof(MESH_VERTEX) * VertexCount);
+			//memset( vertexs , 0, sizeof(MESH_VERTEX) * VertexCount);
 			
 			MESH_VERTEX *v = vertexs;
 
@@ -886,16 +886,43 @@ void Mesh::readBoneInfo(MyTokenAnalyzer* a, bool is_read_weight, MESH_VERTEX* ve
 				*/
 
 				if (vertice_index < size) {
+					bool has_weight = false;
 					for (int j=0;j<group_size;j++) {
 						unsigned int inde = a->GetUIntToken();//a->GetIntToken() << (8*j);
 						float f = a->GetFloatToken();
+						unsigned char temp_inde;
 						if (j < MODEL_BLEND_COUNT) {
 							v[vertice_index].Index[j] = (unsigned char)inde;//0x00000001;//inde;
 						}
+						else {
+							temp_inde = (unsigned char)inde;
+						}
 						if (j < MODEL_BLEND_COUNT){
 							v[vertice_index].weight[j] = f;
+							if (f > 0.0001) {
+								has_weight = true;
+							}
+						}
+						else {
+							if (f > 0.0001) {
+								// ç≈Ç‡è¨Ç≥Ç¢èÍèäÇ…ì¸ÇÍÇÈ
+								int least_inde = 0;
+								int least = 10000;
+								for (int pp = 0; pp < MODEL_BLEND_COUNT; pp++) {
+									if ((v[vertice_index].weight[pp] < f) && v[vertice_index].weight[pp] < least) {
+										least_inde = pp;
+										least = v[vertice_index].weight[pp];
+									}
+								}
+								v[vertice_index].weight[least_inde] = f;
+								v[vertice_index].Index[least_inde] = temp_inde;
+							}
 						}
 					}
+					if (!has_weight) {
+						mylog::writelog(KTROBO::WARNING, "there is no weight bone groupsize=%d,%s\n", group_size,this->filename);
+					}
+
 				}
 			}
 		}

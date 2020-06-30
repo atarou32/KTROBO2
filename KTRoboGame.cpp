@@ -10,6 +10,7 @@
 #include "KTROBOMission.h"
 #include "KTRoboSceneGarage2.h"
 #include "KTRoboSceneGamePadConfig.h"
+#include "KTROBOQuest.h"
 
 using namespace KTROBO;
 
@@ -128,14 +129,16 @@ void CALCCOMBINEDTCB(TCB* thisTCB) {
 	Graphics* g = (Graphics*)thisTCB->Work[0];
 
 	//if (!mis->getIsLoad()) {
-	//CS::instance()->enter(CS_RENDERDATA_CS, "test");
+	//
 	CS::instance()->enter(CS_DEVICECON_CS, "lock");
+	CS::instance()->enter(CS_RENDERDATA_CS, "test");
 	mis->loadAnimeMatrixBasisToTexture(g);
 	mis->loadMatrixLocalToTexture(g);
 	mis->calcCombinedMatrixToTexture(g);
 	mis->loadColorToTexture(g);
+	CS::instance()->leave(CS_RENDERDATA_CS, "test");
 	CS::instance()->leave(CS_DEVICECON_CS, "unlock");
-	//CS::instance()->leave(CS_RENDERDATA_CS, "test");
+	//
 	//}
 }
 
@@ -512,8 +515,8 @@ bool Game::Init(HWND hwnd) {
 	
 	rmap->Init(hantei, mesh_instanceds);
 	
-	RMapSetterExample(g, this, hantei, mesh_instanceds, demo->tex_loader, rmap);
-
+//	RMapSetterExample(g, this, hantei, mesh_instanceds, demo->tex_loader, rmap);
+	
 //	sap = new ShudouArmPositioner(robodayo, robodayo->ap);
 //	sap->Init(hwnd, texdayo->getInstance(0), L , g->getScreenWidth(),g->getScreenHeight());
 
@@ -547,6 +550,8 @@ bool Game::Init(HWND hwnd) {
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponbazooka.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponlaserrifle.lua");
 	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_bakuhatu_weaponpulsegun.lua");
+	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_kiseki_weaponlaserrifle.lua");
+	effect_managers->getInstance(0)->loadFileFromLua(TASKTHREADS_UPDATEMAINRENDER, "resrc/script/effect/EFFECT_kiseki_weaponsniperrifle.lua");
 
 	WeaponEffect::Init(weapon_effect_manager);
 	lua_ets->getInstance(0)->setAITask(task_threads[TASKTHREADS_AIDECISION]);
@@ -591,9 +596,10 @@ bool Game::Init(HWND hwnd) {
 //	SceneGarage2* sg = new SceneGarage2(hantei,  texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 //	SceneGamePadConfig* sg = new SceneGamePadConfig(texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 
-	Game_SCENE* sg = new Game_SCENE(g,hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
+//	Game_SCENE* sg = new Game_SCENE(g,hantei,texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
+	QUEST_SCENE* sg = new QUEST_SCENE(g, hantei, texdayo->getInstance(0), texdayo->getInstance(1), demo->tex_loader);
 	this->setScene(sg);
-
+	
 	return true;
 }
 void Game::Del() {
@@ -1042,7 +1048,7 @@ void Game::Run() {
 
 	if (millisecond > RENDERTIME_IGNORETIME) {
 		CS::instance()->leave(CS_MAINTHREAD_CS, "leave main");
-		//Sleep(1);
+		Sleep(1);
 		millisecond = RENDERTIME_SETTIME;
 		c->plus((float)millisecond);
 		CS::instance()->enter(CS_MAINTHREAD_CS, "enter main");
@@ -1057,7 +1063,7 @@ void Game::Run() {
 	else {
 		CS::instance()->leave(CS_MAINTHREAD_CS, "leave main");
 		c->plus((float)millisecond);
-		//Sleep(1);
+		Sleep(1);
 		CS::instance()->enter(CS_MAINTHREAD_CS, "enter main");
 	}
 	CS::instance()->enter(CS_SOUND_CS, "enter");
@@ -1323,7 +1329,7 @@ void Game::Run() {
 	g2s->getInstance(0)->loopForMoveToAndTenmetu(dt);
 	CS::instance()->enter(CS_DEVICECON_CS, "device game");
 
-	mesh_instanceds->render(g);
+	//mesh_instanceds->render(g);
 
 	CS::instance()->enter(CS_RENDERDATA_CS, "ee");
 
@@ -1383,7 +1389,7 @@ void Game::Run() {
 	effect_suuji->update(&lookfromtoat);
 	CS::instance()->leave(CS_RENDERDATA_CS, "unko");
 	effect_managers->update(frameTime, (int)frame);
-	//weapon_effect_manager->update(frameTime);
+//	weapon_effect_manager->update(frameTime);
 	OBB rec;
 	rec.c = MYVECTOR3(0, 0, 0);
 	//g->drawOBBFill(g, 0xFFFF0000, &idenmat, &view, g->getProj(), &rec);
@@ -1400,7 +1406,7 @@ void Game::Run() {
 
 
 	CS::instance()->leave(CS_RENDERDATA_CS, "unko");
-
+	
 	mesh_instanceds->render(g);
 	CS::instance()->enter(CS_RENDERDATA_CS, "unko");
 	if (robodayo) {
@@ -1467,23 +1473,23 @@ void Game::Run() {
 			//		roboaitedayo->atarishori(g, &view, hantei, frameTime, (int)frame);
 		//			roboaitedayo->atariAim(g, &view, frameTime, (int)frame);
 				}
-		hantei->drawKekka(g,&this->view,g->getProj());
+		//hantei->drawKekka(g,&this->view,g->getProj());
 		
 	//}
 	watches_for_keisoku.stopWatch(3);
 
-	rmap->byougaHojyo(g, &this->view, g->getProj());
+//	rmap->byougaHojyo(g, &this->view, g->getProj());
 
 
 	CS::instance()->leave(CS_RENDERDATA_CS, "unko");
 
 //	g->getDeviceContext()->RSSetViewports(1, g->getViewPort());
-/*	CS::instance()->enter(CS_RENDERDATA_CS, "unko");
-	if (hantei->canGetAns()) {
+	CS::instance()->enter(CS_RENDERDATA_CS, "unko");
+	//if (hantei->canGetAns()) {
 		hantei->drawKekka(g,&view,&proj);
-	}
+	//}
 	CS::instance()->leave(CS_RENDERDATA_CS, "unko");
-*/	
+	
 	g->getDeviceContext()->OMSetRenderTargets(1, &v, Mesh::pDepthStencilView);
 	g->getDeviceContext()->RSSetViewports(1, g->getViewPort());
 	//g->getDeviceContext()->ClearRenderTargetView(g->getRenderTargetView(),clearColor);

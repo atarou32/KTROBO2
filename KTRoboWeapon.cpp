@@ -22,13 +22,13 @@ WeaponFire::~WeaponFire(void)
 }
 
 
-WeaponFireRifle::WeaponFireRifle(void)
+WeaponFireNormal::WeaponFireNormal(void)
 {
 
 }
 
 
-WeaponFireRifle::~WeaponFireRifle(void)
+WeaponFireNormal::~WeaponFireNormal(void)
 {
 
 }
@@ -49,11 +49,67 @@ void WeaponFire::fire(Robo* robo, RoboParts* parts, Graphics* g, Game* game, Sce
 	if (is_canfire) {
 		is_canfire = false;
 		dtime = 0;
+		RoboDataPart* par = parts->data->getData("RELOAD");
+		if (par) {
+			reloadtime = par->int_data * 10;
+		}
+
 	}
 
 }
+float WeaponFire::getFireVec(RoboParts* weapon) {
 
-void WeaponFireRifle::fire(Robo* robo, RoboParts* parts, Graphics* g, Game* game, Scene* scene, BulletController* controller, AtariHantei* hantei, MySound* sound, MYMATRIX* robo_world, MYVECTOR3* vec, MYVECTOR3* pos, MeshBone* fire_bone) {
+	if (hstrpos(weapon->data->getData("name")->string_data, "BZK") != -1) {
+		return 0.26;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "PUL") != -1) {
+		return 0.22;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "KTRWRF") != -1) {
+		return 0.51;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "KTLWRF") != -1) {
+		return 0.51;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "KTRWERF") != -1) {
+		return 0.51;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "KTLWERF") != -1) {
+		return 0.51;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "KTRWSRF") != -1) {
+		return 1.51;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "KTLWSRF") != -1) {
+		return 1.51;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "KTRWMC") != -1) {
+		return 0.51;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "KTLWMC") != -1) {
+		return 0.51;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "KTRWEBL") != -1) {
+		return 0.0;
+	}
+
+	if (hstrpos(weapon->data->getData("name")->string_data, "KTLWEBL") != -1) {
+		return 0.0;
+	}
+
+	return 0.3;
+}
+void WeaponFireNormal::fire(Robo* robo, RoboParts* parts, Graphics* g, Game* game, Scene* scene, BulletController* controller, AtariHantei* hantei, MySound* sound, MYMATRIX* robo_world, MYVECTOR3* vec, MYVECTOR3* pos, MeshBone* fire_bone) {
 
 	
 	if (is_canfire) {
@@ -74,7 +130,8 @@ void WeaponFireRifle::fire(Robo* robo, RoboParts* parts, Graphics* g, Game* game
 
 
 		c->setParam(robo,parts,pos,vec,&sworld);
-		Mesh* cmesh = controller->bullet_meshs[controller->bullet_mesh_index[WeaponEffect::getBulletMeshIndexNameS(parts)] ];
+		c->setAiteRobo(robo->target_robo);
+		Mesh* cmesh = controller->bullet_meshs[controller->bullet_mesh_index[WeaponEffect::getBulletMeshIndexNameS(parts)]];
 		// changemesh‚·‚éÛ‚Í@Œ³‚Ìobb_idx‚Æ‚©obb_use‚ª•Ï‚í‚ç‚È‚¢‚æ‚¤‚É‚µ‚È‚¯‚ê‚Î‚È‚ç‚È‚¢
 		c->atarihan->meshs[0]->changeMesh(cmesh);
 	//	c->atarihan->setWorld(&sworld);
@@ -148,11 +205,17 @@ void WeaponEffectManager::update(float dt) {
 	CS::instance()->leave(CS_RENDERDATA_CS, "update effect impl");
 }
 
-void WeaponEffectManager::killEffectNow(WeaponEffectStruct* effe) {
-	if (effe->is_use) {
-		effe->now_time = effe->alive_time + 1;
-		return;
+void WeaponEffectManager::killEffectNow(vector<WeaponEffectStruct*>* effe) {
+	vector<WeaponEffectStruct*>::iterator it = effe->begin();
+	while (it != effe->end()) {
+		WeaponEffectStruct* efe = *it;
+		if (efe->is_use) {
+			efe->now_time = efe->alive_time + 1;
+			
+		}
+		it++;
 	}
+	effe->clear();
 }
 
 WeaponEffectStruct* WeaponEffectManager::makeWeaponEffect(char* effect_name, float alive_time, bool is_world_update, MYMATRIX* world, AtariBase* world_update_base, MeshBone* fire_bone) {

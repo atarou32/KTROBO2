@@ -329,7 +329,7 @@ HRESULT InputGamePad::InitDirectInput(HWND hDlg) {
 
 		mylog::writelog(KTROBO::INFO, "there is no gamepad\n");
 
-		return S_OK;
+		return E_FAIL;
 	}
 
 	// Set the data format to "simple joystick" - a predefined data format 
@@ -373,9 +373,10 @@ HRESULT InputGamePad::UpdateInputState(HWND hDlg) {
 	          // DInput joystick state 
 
 	if (NULL == pJoystick)
-		return S_OK;
+		return E_FAIL;
 
 	// Poll the device to read the current state
+	hr = pJoystick->Acquire();
 	hr = pJoystick->Poll();
 	if (FAILED(hr))
 	{
@@ -384,15 +385,23 @@ HRESULT InputGamePad::UpdateInputState(HWND hDlg) {
 		// we don't have any special reset that needs to be done. We
 		// just re-acquire and try again.
 		hr = pJoystick->Acquire();
-	//	while (hr == DIERR_INPUTLOST)
+	//	if(hr == DIERR_INPUTLOST)
 	//		hr = pJoystick->Acquire();
-
+		if ((hr == ERROR_INVALID_ACCESS) || (hr == E_ACCESSDENIED)) {
+			// ‚¢‚Á‚½‚ñÁ‚µ‚Ä‚µ‚Ü‚¤
+		//	FreeDirectInput();
+		//	FreeDirectInput();
+			return S_OK;
+		}
+		if (hr == DIERR_INPUTLOST) {
+			return S_OK;
+		}
 		// hr may be DIERR_OTHERAPPHASPRIO or other errors.  This
 		// may occur when the app is minimized or in the process of 
-		// switching, so just try again later 
+		// switching, so just try again later
 		return S_OK;
 	}
-
+	hr = pJoystick->Acquire();
 	// Get the input's device state
 	if (FAILED(hr = pJoystick->GetDeviceState(sizeof(DIJOYSTATE2), &js)))
 		return hr; // The device should have been acquired during the Poll()

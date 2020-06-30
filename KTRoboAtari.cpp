@@ -144,10 +144,13 @@ void UMeshUnit::calcJyusinAndR(bool calcWorld) {
 	MyMatrixRotationZ(temp3,rotz);
 	MyMatrixTranslation(temp4,x,y,z);
 	MyMatrixScaling(temp5,scalex,scaley,scalez);
+	MYMATRIX mm;
+	MyMatrixIdentity(mm);
 	MyMatrixMultiply(world,temp5,temp);
 	MyMatrixMultiply(world,world,temp3);
 	MyMatrixMultiply(world,world,temp2);
-	MyMatrixMultiply(world,world,temp4);	
+	MyMatrixMultiply(world,world,temp4);
+	
 	}
 	// 現在のアニメフレームと位置と姿勢のときの各umesh のbone_obbs の計算を行う
 	// combined_matrix はすでにcalcanimeframe で計算されている
@@ -356,7 +359,7 @@ void UMeshUnit::calcJyusinAndR(bool calcWorld) {
 				float ppp2 = MyVec3Length(tt3);
 				ttt = max(ttt, ppp2);
 
-				tempp = MyVec3Length(tmp) + 1*MyVec3Dot(em->bone_obbs[i].e, em->bone_obbs[i].e);
+				tempp = MyVec3Length(tmp) + ttt;// 1 * MyVec3Dot(em->bone_obbs[i].e, em->bone_obbs[i].e);
 				if (tempp > ans_r) {
 					ans_r = tempp;
 				}
@@ -613,6 +616,7 @@ void AtariHantei::maecalcdayo(Graphics* g) {
 	int temp_obbs_count = KTROBO_ATARI_CALC_OBBS_IDX_DUMMY+1; //これから始める
 	for (int i=0;i<atari_unit_count;i++) {
 		if ((units[i].type != AtariUnit::AtariType::ATARI_TIKEI) // 地形はカウントされないのだがatariunitの計上にはobbs_useがtrueとなったumesh が地形には必要
+			&& (units[i].type != AtariUnit::AtariType::ATARI_NONE)
 			&& units[i].umesh /*&& units[i].umesh->mesh*/) {
 				UMesh* um = units[i].umesh;
 				for (int k=0;k<KTROBO_MESH_BONE_MAX;k++) {
@@ -815,6 +819,9 @@ void AtariHantei::maecalcdayo(Graphics* g) {
 			ans[i].obbidx2 = 0;
 		}
 
+	
+
+
 		if (buffer_ans) {
 			buffer_ans->Release();
 			buffer_ans  =0;
@@ -948,7 +955,7 @@ void AtariHantei::clearDummyInfo(bool is_use_in_mae_dummy) {
 
 void AtariHantei::calcKumi(Graphics* g) {
 	// 組の変数に値を入れる
-	if (!atari_start) return;
+	//if (!atari_start) return;
 	if (!need_calc_kumi) {
 		if (g->isCopied()) {
 			ID3D11DeviceContext* context;
@@ -983,7 +990,8 @@ void AtariHantei::calcKumi(Graphics* g) {
 			AtariUnit* auk = &units[k];
 
 			if (aui->umesh_unit == auk->umesh_unit) continue;
-
+			if (aui->type == AtariUnit::AtariType::ATARI_NONE) continue;
+			if (auk->type == AtariUnit::AtariType::ATARI_NONE) continue;
 
 			if ((aui->type == AtariUnit::AtariType::ATARI_TIKEI)
 				&& (auk->type == AtariUnit::AtariType::ATARI_TIKEI)) {
@@ -1097,7 +1105,7 @@ void AtariHantei::calcKumi(Graphics* g) {
 
 void AtariHantei::calcKumiKuwasiku(Graphics* g) {
 		// 組の変数に値を入れる
-	if (!atari_start) return;
+	//if (!atari_start) return;
 	int temp = 0;
 	int temp_igaidousi = 0;
 	int temp_tosoreigai = 0;
@@ -1107,6 +1115,8 @@ void AtariHantei::calcKumiKuwasiku(Graphics* g) {
 			AtariUnit* aui = &units[ans[i].atari_idx];
 			AtariUnit* auk = &units[ans[i].atari_idx2];
 			if (ans[i].atari_idx == ans[i].atari_idx2) continue;
+			if (aui->type == AtariUnit::AtariType::ATARI_NONE) continue;
+			if (auk->type == AtariUnit::AtariType::ATARI_NONE) continue;
 
 			if ((aui->type == AtariUnit::AtariType::ATARI_TIKEI)
 				&& (auk->type == AtariUnit::AtariType::ATARI_TIKEI)) {
@@ -1207,7 +1217,7 @@ void AtariHantei::calcKumiKuwasiku(Graphics* g) {
 
 
 void AtariHantei::calcAuInfo(Graphics* g, bool calc_vertex_and_index) {
-	if (!atari_start) return;
+	//if (!atari_start) return;
 	
 	int temp_index_place=0;
 	int temp_vertex_place=0;
@@ -1229,8 +1239,16 @@ void AtariHantei::calcAuInfo(Graphics* g, bool calc_vertex_and_index) {
 				if (vc + temp_vertex_place >= max_count.vertexs_count) {
 					throw new GameError(KTROBO::FATAL_ERROR, "no more vertex");
 				}
+		
 
 				for (int k=0;k<vc;k++) {
+					if (k + temp_vertex_place >= max_count.vertexs_count) {
+						throw new GameError(KTROBO::FATAL_ERROR, "no more vertex");
+					}
+
+					if (k >= au->umesh->mesh->VertexCount) {
+						throw new GameError(KTROBO::FATAL_ERROR, "too big vertexcount");
+					}
 					max_tikei_vertexs[k+temp_vertex_place].pos = MYVECTOR4(au->umesh->vertexs[k].pos.float3.x,
 						au->umesh->vertexs[k].pos.float3.y,au->umesh->vertexs[k].pos.float3.z, 1);
 					max_tikei_vertexs[k+temp_vertex_place].normal = MYVECTOR4(au->umesh->vertexs[k].normal.float3.x,
@@ -1334,12 +1352,12 @@ void AtariHantei::calcAuInfo(Graphics* g, bool calc_vertex_and_index) {
 
 
 void AtariHantei::calcObb(Graphics* g) {
-	if (!atari_start) return;
+	//if (!atari_start) return;
 	
 	for (int i = 0;i<au_count;i++) {
 		AtariUnit* au = &units[i];
 		for (int k=0;k<KTROBO_MESH_BONE_MAX;k++) {
-			if (au->umesh_unit && au->umesh_unit->getIsEnabled() && au->umesh && au->umesh->is_bone_obbs_use[k] && (au->type != AtariUnit::AtariType::ATARI_TIKEI)) {
+			if (au->umesh_unit && au->umesh_unit->getIsEnabled() && au->umesh && au->umesh->is_bone_obbs_use[k] && (au->type != AtariUnit::AtariType::ATARI_TIKEI) && (au->type != AtariUnit::AtariType::ATARI_NONE)) {
 				obbs[au->umesh->bone_obbs_idx[k]].c = au->umesh->bone_obbs[k].c;
 				obbs[au->umesh->bone_obbs_idx[k]].e = au->umesh->bone_obbs[k].e;
 				obbs[au->umesh->bone_obbs_idx[k]].u[0] =au->umesh->bone_obbs[k].u[0];

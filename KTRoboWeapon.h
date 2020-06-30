@@ -26,12 +26,14 @@ public:
 	~WeaponFire(void);
 	virtual void fire(Robo* robo, RoboParts* parts,Graphics* g, Game* game, Scene* scene, BulletController* controller, AtariHantei* hantei, MySound* sound, MYMATRIX* robo_world, MYVECTOR3* vec, MYVECTOR3* pos,MeshBone* fire_bone);
 	void update(float dsecond, int stamp);
+	float getFireVec(RoboParts* parts);
+
 };
 
-class WeaponFireRifle : public WeaponFire {
+class WeaponFireNormal : public WeaponFire {
 public:
-	WeaponFireRifle();
-	~WeaponFireRifle();
+	WeaponFireNormal();
+	~WeaponFireNormal();
 	void fire(Robo* robo, RoboParts* parts, Graphics* g, Game* game, Scene* scene, BulletController* controller, AtariHantei* hantei, MySound* sound, MYMATRIX* robo_world, MYVECTOR3* vec, MYVECTOR3* pos, MeshBone* fire_bone);
 
 };
@@ -75,7 +77,7 @@ public:
 	~WeaponEffectManager(); // struct のみを消すのみ　エフェクトは残す どこか他の場所でeffectmanager::deleteeffectimplみたいなものを呼ぶ
 
 	void update(float dt);
-	void killEffectNow(WeaponEffectStruct* effe);
+	void killEffectNow(vector<WeaponEffectStruct*>* effe);
 	WeaponEffectStruct* makeWeaponEffect(char* effect_name, float alive_time, bool is_world_update, MYMATRIX* world, AtariBase* world_update_base,MeshBone* fire_bone);
 
 };

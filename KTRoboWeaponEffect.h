@@ -19,6 +19,11 @@ public:
 	static WeaponEffect* we_pulsegun;
 	static WeaponEffect* we_laserrifle;
 	static WeaponEffect* we_bazooka;
+	static WeaponEffect* we_sniperrifle;
+	static WeaponEffect* we_machinegun;
+	static WeaponEffect* we_energyblade;
+
+
 	static WeaponEffect* getWE(RoboParts* weapon);
 public:
 	WeaponEffect(WeaponEffectManager* w);
@@ -26,18 +31,18 @@ public:
 	static void Init(WeaponEffectManager* w);
 	static void Del();
 
-	virtual void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos,  Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) = 0;
+	virtual void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone) = 0;
 	virtual void butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec) = 0;
 	virtual void butukariShori(Game* game, Robo* robo, Robo* aite, Bullet* bullet) = 0;
 	virtual void bulletMoveControl(Game* game, Robo* aite, Bullet* bullet) = 0;
-	virtual char* getBulletMeshIndexName()=0;
+	virtual char* getBulletMeshIndexName() = 0;
 
 	static void fireEffectS(RoboParts* weaponparts, Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
 	static void butukariEffectS(RoboParts* weaponparts, Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec);
 	static void butukariShoriS(RoboParts* weaponparts, Game* game, Robo* robo, Robo* aite, Bullet* bullet);
 	static void bulletMoveControlS(RoboParts* weaponparts, Game* game, Robo* aite, Bullet* bullet);
 	static char* getBulletMeshIndexNameS(RoboParts* weaponparts);
-
+	static bool isExpireWhenButukari(RoboParts* weaponparts, Game* game, Robo* robo, Bullet* bullet);
 
 
 };
@@ -48,6 +53,22 @@ public:
 
 	};
 	~WE_Rifle() {};
+
+	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
+	void butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec);
+	void butukariShori(Game* game, Robo* robo, Robo* aite, Bullet* bullet);
+	void bulletMoveControl(Game* game, Robo* aite, Bullet* bullet);
+
+	char* getBulletMeshIndexName();
+};
+
+
+class WE_EnergyBlade : public WeaponEffect {
+public:
+	WE_EnergyBlade(WeaponEffectManager* w) : WeaponEffect(w) {
+
+	};
+	~WE_EnergyBlade() {};
 
 	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
 	void butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec);
@@ -73,6 +94,21 @@ public:
 
 };
 
+
+class WE_SniperRifle : public WeaponEffect {
+public:
+	WE_SniperRifle(WeaponEffectManager* w) : WeaponEffect(w) {
+
+	};
+	~WE_SniperRifle() {};
+
+	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
+	void butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec);
+	void butukariShori(Game* game, Robo* robo, Robo* aite, Bullet* bullet);
+	void bulletMoveControl(Game* game, Robo* aite, Bullet* bullet);
+	char* getBulletMeshIndexName();
+
+};
 
 class WE_Bazooka : public WeaponEffect {
 public:
@@ -105,6 +141,22 @@ public:
 
 };
 
+
+
+class WE_Machinegun : public WeaponEffect {
+public:
+	WE_Machinegun(WeaponEffectManager* w) : WeaponEffect(w) {
+
+	};
+	~WE_Machinegun() {};
+
+	void fireEffect(Game* game, Robo* robo, MYVECTOR3* pos, Bullet* bullet, MYVECTOR3* vec, MYMATRIX* robo_world, MeshBone* fire_bone);
+	void butukariEffect(Game* game, Robo* robo, MYVECTOR3* pos, MYVECTOR3* vec);
+	void butukariShori(Game* game, Robo* robo, Robo* aite, Bullet* bullet);
+	void bulletMoveControl(Game* game, Robo* aite, Bullet* bullet);
+	char* getBulletMeshIndexName();
+
+};
 
 
 }

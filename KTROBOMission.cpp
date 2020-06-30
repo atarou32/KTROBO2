@@ -96,7 +96,7 @@ void Gamen_MISSION::setView(MYMATRIX* world, float R, float dsecond) {
 			if (lookfromspeed > maxspeed) {
 				lookfromspeed = maxspeed;
 			}
-	//	lookfrom = lookfrom + dlookfrom * kyori/dkyori;
+		lookfrom = lookfrom + dlookfrom * kyori/dkyori;
 		} else {
 			lookfromspeed += maxspeed /10.0f;
 			if (lookfromspeed > maxspeed) {
@@ -139,7 +139,7 @@ void Gamen_MISSION::setView(MYMATRIX* world, float R, float dsecond) {
 			if (lookatspeed > maxspeed) {
 				lookatspeed = maxspeed;
 			}
-//			lookat = lookat + dk * kyori/dkyor;
+			lookat = lookat + dk * kyori/dkyor;
 		}else  {
 			lookatspeed += maxspeed / 10.0f;
 			if (lookatspeed > maxspeed) {
@@ -291,7 +291,7 @@ void Gamen_MISSION::Init(Graphics* g, AtariHantei* hantei, MyTextureLoader* load
 	//t2->setRenderTexIsRender(screen_tex2,true);
 	//if (!bullet_c) {
 		bullet_c = new BulletController();
-		bullet_c->Init(g, hantei, loader);
+		bullet_c->Init(g, hantei, loader,NULL);
 	//}
 		cubemesh = new Mesh();
 		cubemesh->readMesh(g, KTROBO_MISSION_MESH_DUMMY_FILENAME,loader);
@@ -447,11 +447,17 @@ void Game_SCENE::mainrenderIMPL(bool is_focused, Graphics* g, Game* game) {
 }
 
 void Game_SCENE::renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* game) {
+	Sleep(1);
 	if (game && gm && task->getIsExecTask()) {
 		watches.stopWatch(TASKTHREADS_UPDATEANIMEFRAMENADO);
 		watches.startWatch(TASKTHREADS_UPDATEANIMEFRAMENADO);
 		gm->renderhojyo(g, watches.times[TASKTHREADS_UPDATEANIMEFRAMENADO],game->getTimeStamp());
-
+		if (game->robodayo) {
+			game->robodayo->moveshori(g, &gm->view, hantei, watches.times[TASKTHREADS_UPDATEANIMEFRAMENADO], game->getTimeStamp());
+		}
+		if (game->roboaitedayo) {
+			game->roboaitedayo->moveshori(g, &gm->view, hantei, watches.times[TASKTHREADS_UPDATEANIMEFRAMENADO], game->getTimeStamp());
+		}
 	}
 }
 
@@ -503,7 +509,7 @@ void Game_SCENE::posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g,  Game* g
 		sc.charToWCHAR(buf,wbuf);
 		DebugTexts::instance()->setText(g,wcslen(wbuf),wbuf);
 */
-		Sleep(1);
+	//	Sleep(1);
 	//	millisecond = POSBUTUKARITIME_SETTIME;
 		CS::instance()->enter(CS_TASK_CS, "enter main", TASKTHREADS_UPDATEPOSBUTUKARI);
 	}
@@ -609,10 +615,10 @@ void Gamen_MISSION::posButukari(Graphics* g, Scene* scene, Game* game, AtariHant
 //	DebugTexts::instance()->setText(g,18,L"posbutukari thread");
 	if (bullet_c) {
 	//	DebugTexts::instance()->setText(g,8,L"bullet c");
-		bullet_c->update(g,hantei,dsecond, stamp);
+		bullet_c->update(g,game, hantei,dsecond, stamp);
 		game->weapon_effect_manager->update(dsecond);
 		game->watches_for_keisoku.startWatch(2);
-
+		
 	game->watches_for_keisoku.startWatch(5);
 	hantei->ataristart();
 	hantei->maecalcdayo(g);
@@ -668,12 +674,7 @@ void Gamen_MISSION::posButukari(Graphics* g, Scene* scene, Game* game, AtariHant
 						robodayo->atarihan->calcJyusinAndR();
 						robodayo->atarishori(g, &game->view, hantei, test, (int)stamp);
 						robodayo->fireUpdate(g, game, scene, bullet_c, hantei, dsecond, (int)stamp);
-						if (robodayo->move_state->isJump()) {
-							//		DebugTexts::instance()->setText(g,4,L"jump");
-						}
-						if (robodayo->move_state->isJumpKABE()) {
-							//		DebugTexts::instance()->setText(g,4,L"jumk");
-						}
+						
 
 						char buf[512];
 						WCHAR buf2[512];
@@ -696,6 +697,7 @@ void Gamen_MISSION::posButukari(Graphics* g, Scene* scene, Game* game, AtariHant
 								//	robodayo->aim(g,NULL, &game->view);
 									//robodayo->atariAim(g, &game->view, test, (int)stamp);
 									//robodayo->calcAim(g, &game->view, test, (int)stamp);// frameTime, (int)frame);
+						robodayo->setTargetRobo(roboaitedayo);
 					}
 
 					if (roboaitedayo && roboaitedayo->atarihan) {

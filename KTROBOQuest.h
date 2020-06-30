@@ -62,6 +62,14 @@
 */
 
 #pragma once
+#include "KTRoboScene.h"
+#include "KTRoboInput.h"
+#include "KTRoboAtari.h"
+#include "KTRoboTexture.h"
+#include "KTRoboEntity.h"
+#include "KTRoboCameraWork.h"
+#include "KTRoboBullet.h"
+
 class KTROBOQuest
 {
 public:
@@ -69,6 +77,53 @@ public:
 	~KTROBOQuest(void);
 };
 
+
+namespace KTROBO {
+
+
+
+	class QUEST_SCENE : public Scene, public INPUTSHORICLASS {
+
+	private:
+		Graphics* g;
+		AtariHantei* hantei;
+		Texture* tex;
+		Texture* tex2;
+		MyTextureLoader* loader;
+		Text* exampletext;
+	
+		Clock butukari_clock;
+		ClockWatches watches;
+		bool quest_loaded;
+		bool quest_started;
+		EntityManager* e_manager;
+		TikeiMap* tikei;
+		CameraWork* camera_work;
+		BulletController* bullet_c;
+		float dtime;
+	public:
+		QUEST_SCENE(Graphics* g, AtariHantei* hantei, Texture* tex, Texture* tex2, MyTextureLoader* loader);
+		~QUEST_SCENE(void);
+
+	public:
+		void mainrenderIMPL(bool is_focused, Graphics* g, Game* game);
+		void renderhojyoIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+		void aiIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+		void posbutukariIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+		void loaddestructIMPL(Task* task, TCB* thisTCB, Graphics* g, Game* game);
+
+		void enter();
+		void leave();
+		bool handleMessage(int msg, void* data, DWORD time);
+	};
+
+
+
+
+
+
+
+}
 
 
 #endif

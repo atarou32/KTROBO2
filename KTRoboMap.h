@@ -63,10 +63,18 @@ public:
 };
 
 class MAP_ENT_OBJECT : public MAP_ENT {
+	UMeshUnit * unit;
+	MeshInstanced* mesh_inst;
 
 public:
-	MAP_ENT_OBJECT() {};
+	MAP_ENT_OBJECT(UMeshUnit* u, MeshInstanced* mi)
+		{
+		unit = u;
+		mesh_inst = mi;
+	};
 	virtual ~MAP_ENT_OBJECT() {};
+	virtual void update();
+
 };
 
 class Robo;
@@ -97,7 +105,11 @@ private:
 	AtariHantei * hantei;
 	MeshInstanceds * mesh_instanceds;
 
-	private:
+	public:
+		Mesh* example1;
+		Mesh* example2;
+		Mesh* example3;
+private:
 		map <string, int> map_mesh_names;
 		vector<Mesh*> map_meshs;
 		vector<UMeshUnit*> map_umeshunits;
@@ -109,13 +121,13 @@ private:
 		map <int, int> umeshid_to_map_indexs;
 
 	public:
-		RMap() { max_struct_id = 0; hantei = 0; mesh_instanceds = 0; player_robo = 0; };
+		RMap() { max_struct_id = 0; hantei = 0; mesh_instanceds = 0; player_robo = 0; example1 = 0; example2 = 0; example3 = 0; };
 		~RMap() {};
 		
 		void registerMesh(string name, Mesh* m);
 		void registerTikei(UMeshUnit* um, MeshInstanced* mi);
 		void registerRobo(Robo* r, MAP_ENTITY_SHOZOKU_TYPE shoz);
-		void registerObject();
+		void registerObject(UMeshUnit* um, MeshInstanced* mi);
 		void registerChara(UMeshUnit* um);
 		void changePlayer(Robo* r); // player_robo‚¾‚¯‚ð’u‚«Š·‚¦‚é
 		Robo* getRobo(int UMESH_ID);
@@ -175,6 +187,18 @@ private:
 			}
 			map_structs.clear();
 
+			if (example1) {
+				delete example1;
+				example1 = 0;
+			}
+			if (example2) {
+				delete example2;
+				example2 = 0;
+			}
+			if (example3) {
+				delete example3;
+				example3 = 0;
+			}
 
 		}
 

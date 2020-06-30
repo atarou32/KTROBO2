@@ -533,8 +533,9 @@ public:
 	Mesh* weapon;
 //	RoboData* data;
 
-	WeaponFireRifle wf_rifle;
+	WeaponFireNormal wf_normal;
 public:
+	WeaponFire* getWFFromParts(RoboParts* parts);
 	RArmWeapon() {
 		weapon = 0;
 		data = 0;
@@ -591,8 +592,9 @@ class LArmWeapon : public RoboParts{
 public:
 	Mesh* weapon;
 //	RoboData* data;
-	WeaponFireRifle wf_rifle;
+	WeaponFireNormal wf_normal;
 public:
+	WeaponFire* getWFFromParts(RoboParts* parts);
 	LArmWeapon() {
 		weapon = 0;
 		data = 0;
@@ -652,6 +654,7 @@ public:
 		Mesh* weapon;
 //		RoboData* data;
 public:
+	WeaponFire* getWFFromParts(RoboParts* parts);
 	RShoulderWeapon() {
 		weapon = 0;
 		data = 0;
@@ -711,6 +714,7 @@ public:
 	Mesh* weapon;
 //	RoboData* data;
 public:
+	WeaponFire* getWFFromParts(RoboParts* parts);
 	LShoulderWeapon() {
 		weapon = 0;
 		data = 0;
@@ -771,6 +775,7 @@ public:
 	Mesh* weapon;
 //	RoboData* data;
 public:
+	WeaponFire* getWFFromParts(RoboParts* parts);
 	InsideWeapon() {
 		weapon = 0;
 		data = 0;
@@ -1419,6 +1424,8 @@ public:
 	RoboBoosterCalc();
 	~RoboBoosterCalc();
 private:
+	float taiki_maxspeed;
+
 	float time_maxspeed_made;
 	float maxspeed;
 
@@ -1439,6 +1446,7 @@ public:
 	float getFudanSpeed() { return fudanspeed; };
 	float getMaxSpeed() { return maxspeed; };
 	float getSpeed(float dsecond);
+	float getTaikiMaxSpeed() { return taiki_maxspeed; };
 	bool isCanReload(float dsecond);
 	bool isCanMove(float dsecond) {
 		if (dsecond > time_to_canmove) {
@@ -1676,6 +1684,7 @@ public:
 
 
 public:
+	const float model_bairitu = 2.0f;
 	RoboHead* head;
 	RoboBody* body;
 	RoboLeg* leg;
@@ -1696,12 +1705,14 @@ public:
 
 public:
 	RoboState* move_state;
+	RoboState* jump_state;
 	RoboState* moveturn_state;
 
 	RoboState* setti_state;
 	RoboState* setkabe_state;
 	RoboState* settenjyou_state;
 	RoboState* booster_state;
+	
 	int kuutyuu_count;
 	int pressed_space_count;
 	int setti_count;
@@ -1709,6 +1720,7 @@ public:
 	int setti_jizoku_count;
 	int setno_jizoku_count;
 	MYVECTOR3 kabe_housen;
+	
 
 	float jump_f_z;
 	float jump_f_z_kabe;
@@ -1833,6 +1845,8 @@ public:
 	RoboAnimeLoop anime_loop_leg;
 
 	MYVECTOR3 target;
+	Robo* target_robo;
+
 	bool is_fireraweapon;
 	bool is_firelaweapon;
 
@@ -1853,6 +1867,9 @@ public:
 	void setTarget(MYVECTOR3* t) {
 		target = *t;
 	}
+	void setTargetRobo(Robo* r) {
+		target_robo = r;
+	}
 
 	bool handleMessage(int msg, void* data, DWORD time);
 public:
@@ -1868,6 +1885,7 @@ public:
 	void init(Graphics* g, MyTextureLoader* tex_loader, AtariHantei* hantei);
 	void release();
 	void atarishori(Graphics* g , MYMATRIX* view, AtariHantei* hantei, float dt, int stamp);
+	void moveshori(Graphics* g, MYMATRIX* view, AtariHantei* hantei, float dt, int stamp);
 	void fireUpdate(Graphics* g, Game* game, Scene* scene,BulletController* bullet_c, AtariHantei* hantei, float dt, int stamp);
 	void atariAim(Graphics* g, MYMATRIX* view, float dt, int stamp);
 	void calcAim(Graphics* g, MYMATRIX* view, float dt, int stamp);

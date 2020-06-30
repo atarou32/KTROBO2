@@ -895,7 +895,7 @@ void EffectManager::deleteEffectImpl() {
 void EffectManager::update(float dtime, int stamp) {
 
 
-	if (dtime > 200) return;
+	if (dtime > 800) return;
 
 	// 管理しているエフェクトの実体の状態を更新する
 	CS::instance()->enter(CS_RENDERDATA_CS, "update effect impl");

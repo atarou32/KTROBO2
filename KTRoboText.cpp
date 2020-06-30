@@ -3,6 +3,19 @@
 #include "KTRoboDebugText.h"
 
 using namespace KTROBO;
+TextCBuf1 Text::cbuf1;
+ID3D11Buffer* Text::cbuf1_buffer = 0;
+void Text::updateCBuf1(Graphics* g, MYMATRIX* view, MYMATRIX* proj) {
+	cbuf1.proj = *proj;
+	cbuf1.view = *view;
+
+	g->getDeviceContext()->UpdateSubresource(cbuf1_buffer, 0, NULL, &cbuf1, 0, 0);
+
+}
+
+void Text::setVIEWPROJ(Graphics* g, MYMATRIX* view, MYMATRIX* proj) {
+	updateCBuf1(g, view, proj);
+}
 Text::Text(WCHAR* m_str, int length)
 {
 	memset(str,0,sizeof(WCHAR)*MYTEXT_LENGTH);
@@ -23,6 +36,8 @@ void Text::changeText(WCHAR* new_str, int length) {
 
 }
 MYSHADERSTRUCT Text::mss;
+
+MYSHADERSTRUCT Text::mss2;
 
 void Text::loadShader(Graphics* g, MYSHADERSTRUCT* s, char* shader_filename, char* vs_func_name, char* gs_func_name,
 								char* ps_func_name, unsigned int ds_width,unsigned int ds_height,
@@ -237,10 +252,18 @@ void Text::Init(Graphics* g, Font* f) {
 		{"TEX", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 8, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0,16,D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
+ D3D11_INPUT_ELEMENT_DESC layout2[] = {
+	 {"POS", 0, DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
+	   {"TEX", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	   {"COLOR", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0,20,D3D11_INPUT_PER_VERTEX_DATA, 0},
+ };
 
  loadShader(g, &mss, MYTEXT_SHADER_FILENAME, MYTEXT_SHADER_VS, MYTEXT_SHADER_GS, MYTEXT_SHADER_PS,
 	 g->getScreenWidth(),g->getScreenHeight(), layout, 3,true);
 
+
+ loadShader(g, &mss2, MYTEXT_SHADER_WORLD_FILENAME, MYTEXT_SHADER_VS, MYTEXT_SHADER_GS, MYTEXT_SHADER_PS,
+	 g->getScreenWidth(), g->getScreenHeight(), layout2, 3, true);
 
  // vertex buffer çÏÇÈ
  	D3D11_BUFFER_DESC bd;
@@ -257,18 +280,174 @@ void Text::Init(Graphics* g, Font* f) {
 		throw new KTROBO::GameError(KTROBO::FATAL_ERROR, "vertex buffer make error");;
 	}
 
+	// vertex buffer çÏÇÈ
+	{
+		D3D11_BUFFER_DESC bd;
+		memset(&bd, 0, sizeof(bd));
+		bd.Usage = D3D11_USAGE_DYNAMIC;
+		bd.ByteWidth = sizeof(MYTEXT_RENDER_WORLD_STRUCT)*MYTEXT_RENDER_STRUCT_SIZE;
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		bd.MiscFlags = 0;
+
+		HRESULT hr = g->getDevice()->CreateBuffer(&bd, NULL, &(render_world_vertexbuffer));
+		if (FAILED(hr)) {
+			Del();
+			throw new KTROBO::GameError(KTROBO::FATAL_ERROR, "vertex buffer make error");;
+		}
+	}
+	memset(&cbuf1, 0, sizeof(TextCBuf1));
+	D3D11_BUFFER_DESC des;
+	des.ByteWidth = sizeof(TextCBuf1);
+	des.Usage = D3D11_USAGE_DEFAULT;
+	des.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	des.CPUAccessFlags = 0;
+	des.MiscFlags = 0;
+	des.StructureByteStride = 0;
+
+	D3D11_SUBRESOURCE_DATA idat;
+	idat.pSysMem = &cbuf1;
+	idat.SysMemPitch = 0;
+	idat.SysMemSlicePitch = 0;
+	hr = g->getDevice()->CreateBuffer(&des, &idat, &cbuf1_buffer);
+	if (FAILED(hr)) {
+		Del();
+		throw new KTROBO::GameError(KTROBO::FATAL_ERROR, "cbuf make error");
+	}
+
 }
 void Text::Del() {
 
 	mss.Del();
+	mss2.Del();
 	if (render_vertexbuffer) {
 		render_vertexbuffer->Release();
 		render_vertexbuffer = 0;
 	}
-
+	if (render_world_vertexbuffer) {
+		render_world_vertexbuffer->Release();
+		render_world_vertexbuffer = 0;
+	}
+	if (cbuf1_buffer) {
+		cbuf1_buffer->Release();
+		cbuf1_buffer = 0;
+	}
 }
 
 ID3D11Buffer* Text::render_vertexbuffer=0;
+ID3D11Buffer* Text::render_world_vertexbuffer = 0;
+void Text::renderWorld(Graphics* g, DWORD color, MYMATRIX* world, float height, float wd, float h) {
+
+	MYTEXT_RENDER_WORLD_STRUCT structdayo[MYTEXT_RENDER_STRUCT_SIZE];
+	unsigned int screen_width = g->getScreenWidth();
+	unsigned int screen_height = g->getScreenHeight();
+
+	if (fo) {
+		// MYFONT_TEXTURE_COUNT ÇÃêîÇæÇØÉãÅ[ÉvÇ∑ÇÈ
+		for (int fon = 0; fon < MYFONT_TEXTURE_COUNT; fon++) {
+			int temp_count = 0;
+			CS::instance()->enter(CS_RENDERDATA_CS, "render text");
+			int leng = wcslen(str);
+			for (int i = 0; i < leng; i++) {
+				MYTEXT_RENDER_WORLD_STRUCT* v = &structdayo[temp_count * 6];
+				WCHAR* w = &str[i];
+				int texture_index = (fo->fonttexture_index)[(int)(*w)];
+				if (texture_index != fon) continue;
+				int font_code = (fo->fontindex)[(int)(*w)];
+
+				float xcode_offset = MYFONT_FONTSIZE / (float)MYFONT_TEXTURE_WIDTH;
+				float ycode_offset = MYFONT_FONTSIZE / (float)MYFONT_TEXTURE_HEIGHT;
+				float xcode = (float)(font_code % MYFONT_TEXTURE_WIDTH) / (float)MYFONT_TEXTURE_WIDTH + xcode_offset;
+				float ycode = (float)(font_code / MYFONT_TEXTURE_WIDTH) / (float)MYFONT_TEXTURE_HEIGHT;
+
+
+				float xoffset = wd/ screen_width;
+				float yoffset = height / screen_height;
+
+				//float x = 0 + xoffset * i;// + sx / (float)screen_width;
+				//float y = 0.5;// -  sy / (float)screen_height;
+				
+				MYVECTOR3 pp(0, 0, 0);
+				MyVec3TransformCoord(pp, pp, *world);
+				float x = pp.float3.x + xoffset*i;
+				float y = pp.float3.y;
+				float z = pp.float3.z;
+				v[0].pos.float3.x = x; v[0].pos.float3.y = y; /*v[0].pos.float3.z = 0.0f;*/
+				v[0].tex.x = xcode; v[0].tex.y = ycode; /*v[0].tex_coord_plus_tex_index.float3.z = (float)texture_index;*/
+
+				v[1].pos.float3.x = x; v[1].pos.float3.y = y - yoffset; /*v[1].pos.float3.z = 0.0f;*/
+				v[1].tex.x = xcode; v[1].tex.y = ycode + ycode_offset; /*v[1].tex_coord_plus_tex_index.float3.z = (float)texture_index;*/
+
+				v[2].pos.float3.x = x + xoffset; v[2].pos.float3.y = y;/* v[2].pos.float3.z = 0.0f;*/
+				v[2].tex.x = xcode + xcode_offset; v[2].tex.y = ycode;/* v[2].tex_coord_plus_tex_index.float3.z = (float)texture_index;*/
+
+				v[3].pos.float3.x = x + xoffset; v[3].pos.float3.y = y; /*v[3].pos.z = 0.0f;*/
+				v[3].tex.x = xcode + xcode_offset; v[3].tex.y = ycode; /*v[3].tex_coord_plus_tex_index.float3.z = (float)texture_index;*/
+
+				v[4].pos.float3.x = x; v[4].pos.float3.y = y - yoffset; //v[4].pos.z = 0.0f;
+				v[4].tex.x = xcode; v[4].tex.y = ycode + ycode_offset;/* v[4].tex_coord_plus_tex_index.float3.z = (float)texture_index;*/
+
+				v[5].pos.float3.x = x + xoffset; v[5].pos.float3.y = y - yoffset; //v[5].pos.z = 0.0f;
+				v[5].tex.x = xcode + xcode_offset; v[5].tex.y = ycode + ycode_offset;/* v[5].tex_coord_plus_tex_index.float3.z = (float)texture_index;*/
+
+				for (int k = 0; k < 6; k++) {
+					v[k].color = color;
+					v[k].pos.float3.z = z;// pp.float3.z;
+				}
+
+
+				temp_count++;
+			}
+			CS::instance()->leave(CS_RENDERDATA_CS, "render text");
+			if (temp_count > 0) {
+				// ï`âÊÇ∑ÇÈÇ‡ÇÃÇ™Ç†ÇÈÇÃÇ≈
+				unsigned int stride = sizeof(MYTEXT_RENDER_WORLD_STRUCT);
+				unsigned int offset = 0;
+				CS::instance()->enter(CS_DEVICECON_CS, "render exec");
+				D3D11_MAPPED_SUBRESOURCE sub;
+				sub.pData = 0;
+				sub.DepthPitch = 0;
+				sub.RowPitch = 0;
+				D3D11_VIEWPORT vp;
+				vp.Height = screen_height;// h;
+				vp.MaxDepth = 1.0f;
+				vp.MinDepth = 0.0f;
+				vp.TopLeftX = 0;// sx;
+				vp.TopLeftY = 0;// sy;
+				vp.Width = screen_width;// wd;
+				g->getDeviceContext()->RSSetViewports(1, &vp);
+				g->getDeviceContext()->Map(render_world_vertexbuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &sub);
+				memcpy(sub.pData, structdayo, sizeof(MYTEXT_RENDER_WORLD_STRUCT)*temp_count * 6);
+				g->getDeviceContext()->Unmap(render_world_vertexbuffer, 0);
+
+				g->getDeviceContext()->IASetInputLayout(mss2.vertexlayout);
+				g->getDeviceContext()->IASetVertexBuffers(0, 1, &render_world_vertexbuffer, &stride, &offset);
+				g->getDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				g->getDeviceContext()->RSSetState(mss2.rasterstate);
+				g->getDeviceContext()->VSSetConstantBuffers(0, 1, &cbuf1_buffer);
+				float blendFactor[4] = { 1.0f,1.0f,1.0f,1.0f };
+
+				g->getDeviceContext()->OMSetBlendState(mss2.blendstate, blendFactor, 0xFFFFFFFF/*0xFFFFFFFF*/);
+				g->getDeviceContext()->VSSetShader(mss2.vs, NULL, 0);
+				g->getDeviceContext()->GSSetShader(NULL, NULL, 0);
+				g->getDeviceContext()->PSSetShaderResources(0, 1, &fo->fonttextureviews[fon]);//render_target_tex->view);
+				g->getDeviceContext()->PSSetSamplers(0, 1, &(DebugTexts::instance()->p_sampler));
+
+				g->getDeviceContext()->PSSetShader(mss2.ps, NULL, 0);
+
+				g->getDeviceContext()->Draw(temp_count * 6, 0);
+
+				CS::instance()->leave(CS_DEVICECON_CS, "render exec");
+
+			}
+
+
+
+		}
+	}
+
+
+}
 
 void Text::render(Graphics* g, DWORD color, float sx, float sy, float height,float wd, float h) {
 	MYTEXT_RENDER_STRUCT structdayo[MYTEXT_RENDER_STRUCT_SIZE];
